@@ -15,7 +15,8 @@ const LOOKBACK = 24 * 3_600_000;
 
 /**
  * How far before the previous poll the next one looks again: GitHub's lists can show a change a little after it
- * happened, and the platform drops what was already reported by id.
+ * happened, and the platform drops what was already reported by id. The window starts from GitHub's clock when it
+ * gave one, since the times it compares are GitHub's: a Mac running fast would otherwise skip what happened between.
  */
 const OVERLAP = 5 * 60_000;
 
@@ -46,7 +47,7 @@ export async function pollGithub(visibility: Visibility, input: PollInput): Prom
 
   const next: GithubState = {
     ...found.state,
-    since: input.now - OVERLAP,
+    since: (session.serverTime() ?? input.now) - OVERLAP,
     etags: session.etags(),
     actors: recentActors(state.actors, found.activity, input.now),
   };

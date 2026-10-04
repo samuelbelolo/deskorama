@@ -1,3 +1,4 @@
+import { FIXTURE_TIME, type Responder } from '@deskorama/test-utils';
 import { describe, expect, test } from 'vitest';
 import { createGithub } from '../src/create-github.ts';
 import { answerFrom } from './answer-from.ts';
@@ -13,6 +14,22 @@ const NEXT_PAGE =
   '<https://api.github.com/repositories/700001/pulls?page=2>; rel="next", <https://api.github.com/repositories/700001/pulls?page=2>; rel="last"';
 
 describe('the GitHub Connector catching up', () => {
+  test('starts the next window from GitHub’s clock, so a Mac running fast skips nothing', async () => {
+    const github = answerFrom(TRAMLO_APP_REPOSITORY, firstPollOfApp());
+
+    const dated: Responder = (request) => {
+      const answer = github(request);
+
+      return { ...answer, headers: { ...answer.headers, Date: new Date(FIXTURE_TIME).toUTCString() } };
+    };
+
+    const ahead = await pollOnce(createGithub(), TRAMLO_APP, dated, null, 10 * MINUTE);
+    const undated = await pollOnce(createGithub(), TRAMLO_APP, github, null, 10 * MINUTE);
+
+    expect(JSON.parse(ahead.result.cursor ?? '{}')).toMatchObject({ since: FIXTURE_TIME - 5 * MINUTE });
+    expect(JSON.parse(undated.result.cursor ?? '{}')).toMatchObject({ since: FIXTURE_TIME + 5 * MINUTE });
+  });
+
   test('reads the next page while the last one still ends on something new', async () => {
     const routes = {
       ...firstPollOfApp(),

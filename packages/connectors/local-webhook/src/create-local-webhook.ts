@@ -38,20 +38,26 @@ export function createLocalWebhook(options: LocalWebhookOptions): LocalWebhook {
   if (options.secret.length < MIN_SECRET_LENGTH) {
     throw new Error(`The Local webhook secret needs at least ${MIN_SECRET_LENGTH} characters.`);
   }
+
   let port = options.port;
   const servers: Server[] = [];
   const listener = createRequestListener({ ...options, port: () => port });
+
   const stop = async (): Promise<void> => {
     await Promise.all(servers.map((server) => new Promise((resolve) => server.close(resolve))));
     servers.length = 0;
   };
+
   const bind = async (address: string, optional: boolean): Promise<void> => {
     const server = createServer(listener);
     const bound = await listen(server, address, port, optional);
+
     if (bound === null) return;
+
     port = bound;
     servers.push(server);
   };
+
   return {
     async start() {
       try {
@@ -63,8 +69,10 @@ export function createLocalWebhook(options: LocalWebhookOptions): LocalWebhook {
         await stop();
         throw error;
       }
+
       return port;
     },
+
     stop,
   };
 }

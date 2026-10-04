@@ -26,6 +26,8 @@ export interface GithubSession {
   readonly etags: () => Readonly<Record<string, string>>;
   /** The longest wait GitHub asked for during this poll, in milliseconds. */
   readonly wait: () => number | undefined;
+  /** When GitHub answered first during this poll, by its own clock (the `Date` header); undefined without one. */
+  readonly serverTime: () => number | undefined;
 }
 
 /** What a session needs: the repository's API address, the token, the injected `fetch` and the previous ETags. */
@@ -49,6 +51,7 @@ export function createGithubSession(options: GithubSessionOptions): GithubSessio
   const etags: Record<string, string> = {};
 
   let wait: number | undefined;
+  let serverTime: number | undefined;
 
   const get = async (path: string, permission: string, read: ReadOptions = {}): Promise<GithubAnswer> => {
     const conditional = read.conditional ?? true;
@@ -63,6 +66,10 @@ export function createGithubSession(options: GithubSessionOptions): GithubSessio
     };
 
     const response = await sendRequest(options.fetch, `${options.base}${path}`, { method: 'GET', headers });
+
+    const date = Date.parse(response.headers.get('date') ?? '');
+
+    if (!Number.isNaN(date)) serverTime = Math.min(serverTime ?? date, date);
 
     const asked = askedWait(response.headers, options.now);
 
@@ -85,5 +92,5 @@ export function createGithubSession(options: GithubSessionOptions): GithubSessio
     return { kind: 'changed', body: await readJson(response, 'GitHub’s answer'), headers: response.headers };
   };
 
-  return { get, etags: () => etags, wait: () => wait };
+  return { get, etags: () => etags, wait: () => wait, serverTime: () => serverTime };
 }

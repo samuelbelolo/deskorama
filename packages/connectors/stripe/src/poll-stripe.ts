@@ -1,4 +1,5 @@
 import {
+  ConnectorError,
   parsePayload,
   readJson,
   responseFailure,
@@ -16,9 +17,10 @@ import { toStripeSourceEvent } from './to-stripe-source-event.ts';
 /**
  * Polls Stripe once: one read of the account's event list, after the event the cursor names, with the restricted key.
  * Stripe lists the newest first, so the Events come back reversed, oldest first, and the newest event becomes the
- * cursor, whether it meant something or not. More events waiting poll again at once; a cursor Stripe no longer knows
- * starts over at once. A refused key names the payments permission, since one 403 cannot tell which resource it
- * lacked.
+ * cursor, whether it meant something or not. An event whose object its schema refuses is skipped rather than failing
+ * the page, so one odd event never holds the cursor back; a changed API still fails loudly on the page itself. More
+ * events waiting poll again at once; a cursor Stripe no longer knows starts over at once. A refused key names the
+ * payments permission, since one 403 cannot tell which resource it lacked.
  * @example
  * await pollStripe({ settings: { name: 'Kavelo', values: {}, token: 'rk_live_…' }, cursor: null, fetch, now });
  * // { events: [ … ], cursor: 'evt_1KvSubNew0001' }
@@ -43,7 +45,7 @@ export async function pollStripe(input: PollInput): Promise<PollResult> {
   const page = await parsePayload(STRIPE_EVENT_PAGE_SCHEMA, await readJson(response, what), what);
 
   const read = await Promise.all(
-    page.data.toReversed().map((event) => toStripeSourceEvent(event, input.settings.name)),
+    page.data.toReversed().map((event) => skipUnreadable(toStripeSourceEvent(event, input.settings.name))),
   );
 
   const events = read.filter((event): event is SourceEvent => event !== null);
@@ -54,4 +56,19 @@ export async function pollStripe(input: PollInput): Promise<PollResult> {
   const more = input.cursor !== null && page.has_more;
 
   return { events, cursor, ...(more ? { delay: 0 } : {}) };
+}
+
+/**
+ * Returns the Event a read gives, or null when Stripe sent an object its schema refuses; any other error is thrown.
+ * @example
+ * await skipUnreadable(toStripeSourceEvent(oddSubscription, 'Kavelo')); // null
+ */
+async function skipUnreadable(read: Promise<SourceEvent | null>): Promise<SourceEvent | null> {
+  try {
+    return await read;
+  } catch (error) {
+    if (error instanceof ConnectorError && error.failure.kind === 'invalid-response') return null;
+
+    throw error;
+  }
 }

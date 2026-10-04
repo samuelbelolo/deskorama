@@ -36,7 +36,8 @@ export const STRIPE_EVENT_TYPES: readonly string[] = Object.keys(READERS);
 
 /**
  * Returns the Event a Stripe event means, named after the Source, or null for one that means nothing new, such as a
- * subscription renewed. Its object is validated by the schema of its type, so a changed API fails loudly here.
+ * subscription renewed. Its object is validated by the schema of its type, and an object that schema refuses throws
+ * an `invalid-response` error, which the poll turns into a skipped event.
  * @example
  * await toStripeSourceEvent({ id: 'evt_1KvPaid0001', type: 'payment_intent.succeeded', created: 1791121800,
  *   data: { object: { amount: 4900, amount_received: 4900, currency: 'eur' } } }, 'Kavelo');

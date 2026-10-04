@@ -100,6 +100,21 @@ describe('the Feed', () => {
     expect(sent[1]?.url).toBe('https://api.tramlo.example/deskorama/events');
   });
 
+  test('waits the usual time when more Events are announced behind no new cursor, which would loop', async () => {
+    const stuck = { status: 200, body: { events: [], next_cursor: null, has_more: true, poll_interval: 60 } };
+    const same = { status: 200, body: { events: [], next_cursor: 'c_9', has_more: true } };
+
+    const { results } = await pollTimes([stuck, same], 2, '{"cursor":"c_9","etag":null}');
+
+    expect(results.map((result) => result.delay)).toEqual([60_000, undefined]);
+  });
+
+  test('waits the usual time on a 410 Gone that came without a cursor, which would loop', async () => {
+    const { results } = await pollTimes([{ status: 410 }], 1);
+
+    expect(results[0]).toEqual({ events: [], cursor: null });
+  });
+
   test('refuses an address that is not HTTPS, so the token never travels in clear', async () => {
     const fake = createFakeFetch(inOrder([]));
     const settings = { ...TRAMLO_FEED, values: { url: 'http://api.tramlo.example/events' } };

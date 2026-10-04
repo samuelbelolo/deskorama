@@ -207,13 +207,28 @@ describe('the Stripe Connector', () => {
     expect(result.events[0]?.gauge).toBeUndefined();
   });
 
-  test('reports a payment whose object changed shape as an unexpected response', async () => {
-    const page = { object: 'list', has_more: false, data: [] as unknown[] };
+  test('skips an event whose object changed shape and moves the cursor past it, so the next ones still play', async () => {
     const broken = { id: 'evt_1KvKaveloBroken01', type: 'payment_intent.succeeded', created: 1_791_120_000 };
+    const paid = { id: 'evt_1KvKaveloPaid0002', type: 'payment_intent.succeeded', created: 1_791_120_100 };
+    const intent = { amount: 4900, amount_received: 4900, currency: 'eur' };
 
-    page.data.push({ ...broken, data: { object: { amount: '49.00', currency: 'eur' } } });
+    const page = {
+      object: 'list',
+      has_more: false,
+      data: [
+        { ...paid, data: { object: intent } },
+        { ...broken, data: { object: { amount: '49.00', currency: 'eur' } } },
+      ],
+    };
 
-    await expect(pollOnce({ status: 200, body: page })).rejects.toMatchObject({
+    const { result } = await pollOnce({ status: 200, body: page }, 'evt_1KvKaveloBefore01');
+
+    expect(result.events.map((event) => event.id)).toEqual(['evt_1KvKaveloPaid0002']);
+    expect(result.cursor).toBe('evt_1KvKaveloPaid0002');
+  });
+
+  test('reports an event list that changed shape as an unexpected response', async () => {
+    await expect(pollOnce({ status: 200, body: { object: 'list', data: 'none' } })).rejects.toMatchObject({
       failure: { kind: 'invalid-response' },
     });
   });

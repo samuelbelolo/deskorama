@@ -5,8 +5,8 @@ import { reportedGauges } from './reported-gauges.ts';
 
 /**
  * Returns what a Feed page means for the platform: its Events and Gauges, the cursor to persist, and the delay
- * before the next poll (none when more Events wait, the backend's hint otherwise). The ETag is kept only when the
- * cursor stays the same, since it describes the answer to that cursor.
+ * before the next poll (none when more Events wait behind a new cursor, the backend's hint otherwise). The ETag is
+ * kept only when the cursor stays the same, since it describes the answer to that cursor.
  * @example
  * const page = { events: [], next_cursor: 'c_7', has_more: false, poll_interval: 120 };
  * toPollResult(page, [], { cursor: 'c_7', etag: null }, '"p7"');
@@ -22,7 +22,10 @@ export function toPollResult(
 
   const next: FeedState = { cursor, etag: cursor === previous.cursor ? etag : null };
 
-  const delay = nextDelay(page);
+  // More Events behind the same cursor would only return this page again: poll at the usual pace instead.
+  const advanced = page.next_cursor !== null && page.next_cursor !== previous.cursor;
+
+  const delay = nextDelay(page, advanced);
 
   const gauges = page.gauges === undefined ? undefined : reportedGauges(page.gauges);
 
@@ -35,14 +38,15 @@ export function toPollResult(
 }
 
 /**
- * Returns the wait a page asks for, in milliseconds: none while more Events wait, the backend's hint in seconds
- * otherwise, and nothing for a hint of zero, which would poll in a loop; the platform keeps it within the bounds.
+ * Returns the wait a page asks for, in milliseconds: none while more Events wait behind a cursor that `advanced`,
+ * the backend's hint in seconds otherwise, and nothing for a hint of zero, which would poll in a loop; the platform
+ * keeps it within the bounds.
  * @example
- * nextDelay({ events: [], next_cursor: 'c_7', has_more: true }); // 0
- * nextDelay({ events: [], next_cursor: 'c_7', has_more: false, poll_interval: 120 }); // 120000
+ * nextDelay({ events: [], next_cursor: 'c_7', has_more: true }, true); // 0
+ * nextDelay({ events: [], next_cursor: 'c_7', has_more: false, poll_interval: 120 }, true); // 120000
  */
-function nextDelay(page: FeedPage): number | undefined {
-  if (page.has_more) return 0;
+function nextDelay(page: FeedPage, advanced: boolean): number | undefined {
+  if (page.has_more && advanced) return 0;
 
   if (page.poll_interval === undefined || page.poll_interval === 0) return undefined;
 

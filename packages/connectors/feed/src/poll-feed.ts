@@ -17,8 +17,9 @@ import { toPollResult } from './to-poll-result.ts';
 
 /**
  * Polls a Feed once: `GET` on its address with the cursor and the token, and `If-None-Match` when the last answer
- * to that cursor had an ETag. A `304` returns nothing new, a `410 Gone` starts over from no cursor at once, and a
- * page returns its Events, named after the Source as the person named it, the next cursor and when to poll again.
+ * to that cursor had an ETag. A `304` returns nothing new, a `410 Gone` starts over from no cursor (at once, unless
+ * there was already none, which would ask again in a loop), and a page returns its Events, named after the Source
+ * as the person named it, the next cursor and when to poll again.
  * @example
  * await pollFeed({ settings: { name: 'Tramlo', values: { url }, token }, cursor: null, fetch, now });
  * // { events: [ … ], cursor: '{"cursor":"c_1042","etag":null}', delay: 0 } while has_more is true
@@ -40,7 +41,7 @@ export async function pollFeed(input: PollInput): Promise<PollResult> {
 
   const response = await sendRequest(input.fetch, feedUrl(address, state.cursor), { method: 'GET', headers });
 
-  if (response.status === 410) return { events: [], cursor: null, delay: 0 };
+  if (response.status === 410) return { events: [], cursor: null, ...(state.cursor === null ? {} : { delay: 0 }) };
 
   if (response.status === 304) return { events: [], cursor: input.cursor };
 
