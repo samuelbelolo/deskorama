@@ -34,6 +34,18 @@ export interface Strings {
     readonly end: string;
     readonly coin: string;
   };
+  /** The concierge when the site collapses: her sigh, and her line on two rows. */
+  readonly concierge: { readonly sigh: string; readonly line: readonly [string, string] };
+  /** What the collapsing site shouts: the crack as it gives way, the worker left hanging from the hook. */
+  readonly collapse: { readonly crack: string; readonly help: string };
+  /** The board of what was missed while the wallpaper was hidden. */
+  readonly recap: {
+    readonly title: string;
+    /** One noun per Role, and one for the Events without a Role, in the singular and the plural. */
+    readonly nouns: Readonly<Record<Archetype | 'other', Forms>>;
+    /** The last cell, counting the Roles the board leaves out. */
+    readonly more: Forms;
+  };
   /** What a screen reader announces for the whole picture. */
   readonly description: string;
 }

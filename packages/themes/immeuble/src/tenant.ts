@@ -14,5 +14,7 @@ export interface Tenant {
   nextAt: number;
   /** They jump with their arms up until this Clock time. */
   cheerUntil: number;
+  /** A red "!" pops over their head until this Clock time. */
+  alarmUntil: number;
   readonly look: number;
 }

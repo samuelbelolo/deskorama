@@ -1,7 +1,7 @@
-import { BAY, BUILDING_BAYS } from './grid.ts';
+import { BUILDING_BAYS } from './grid.ts';
 import type { Layout } from './layout.ts';
+import { makeRoom } from './make-room.ts';
 import type { Room } from './room.ts';
-import { toStage } from './to-stage.ts';
 
 /** The first column of each three-bay flat; the stairwell owns columns 6 to 8. */
 const FLAT_COLS = [0, 3, 9, 12, 15, 18, 21] as const;
@@ -28,31 +28,4 @@ export function buildRooms(layout: Layout): Room[] {
     rooms.push(makeRoom(`attic-${col}`, col, layout.topRow + ATTIC_ROW, 1));
 
   return rooms;
-}
-
-/**
- * Returns one three-bay room at a tile column and row.
- * @example
- * makeRoom('f1-0', 0, 9, 2).floorY; // 162
- */
-function makeRoom(id: string, col: number, row: number, rows: number): Room {
-  const x = col * BAY;
-  const y = row * BAY;
-  const w = 3 * BAY;
-  const h = rows * BAY;
-
-  return {
-    id,
-    col,
-    row,
-    rows,
-    bays: 3,
-    x,
-    y,
-    w,
-    h,
-    floorY: y + h - 3,
-    seed: (col * 7 + row * 13) % 11,
-    stage: toStage({ x, y, w, h }),
-  };
 }

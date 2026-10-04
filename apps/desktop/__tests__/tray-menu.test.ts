@@ -123,7 +123,7 @@ describe('the menu-bar menu', () => {
     expect(menu({ ...STATE, paused: true }, 'fr').items[0]).toMatchObject({ label: 'Mettre en pause', checked: true });
   });
 
-  test('switches the Theme, with the one drawn now checked and a Theme not shipped yet greyed out', () => {
+  test('switches the Theme, with the one drawn now checked', () => {
     const { items, opened } = menu(STATE);
     const submenu = items.find((item) => item.label === 'Theme')?.submenu;
     const themes = Array.isArray(submenu) ? submenu : [];
@@ -131,13 +131,13 @@ describe('the menu-bar menu', () => {
     // Electron enables an item unless it says otherwise.
     expect(themes.map(({ label, checked, enabled }) => ({ label, checked, enabled: enabled !== false }))).toEqual([
       { label: 'L’Aéroport', checked: true, enabled: true },
-      { label: 'L’Immeuble (coming soon)', checked: false, enabled: false },
+      { label: 'L’Immeuble', checked: false, enabled: true },
     ]);
 
-    const click = themes[0]?.click;
+    const click = themes[1]?.click;
 
     if (click !== undefined) Reflect.apply(click, undefined, []);
 
-    expect(opened).toEqual(['aeroport']);
+    expect(opened).toEqual(['immeuble']);
   });
 });

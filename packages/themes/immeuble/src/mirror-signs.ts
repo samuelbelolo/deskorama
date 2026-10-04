@@ -4,6 +4,7 @@ import type { Copy } from './create-copy.ts';
 import type { Mirror } from './create-mirror.ts';
 import { hallLines } from './hall-lines.ts';
 import type { Layout } from './layout.ts';
+import { muralLines } from './mural-lines.ts';
 import { PAL } from './palette.ts';
 import { posterLines } from './poster-lines.ts';
 import { mirrorSign } from './mirror-sign.ts';
@@ -12,7 +13,8 @@ import { signHomes } from './sign-homes.ts';
 import { signWords } from './sign-words.ts';
 
 /**
- * Mirrors what the ground floor's signs read, over their homes: the board, the poster and the hall's tally.
+ * Mirrors what the permanent signs read, over their homes: the board, the total's sign and, in the building, the
+ * hall's tally.
  * @example
  * mirrorSigns(mirror, copy, layout, { gauges, blocked: 2 });
  */
@@ -24,11 +26,12 @@ export function mirrorSigns(
 ): void {
   const homes = signHomes(layout);
   const frames = signFrames(layout);
-  const words: Record<'board' | 'poster' | 'hall', string> = {
-    board: signWords(boardLines(copy, state.gauges, frames.board)),
-    poster: signWords(posterLines(copy, state.gauges.total, frames.poster, PAL.ink)),
-    hall: signWords(hallLines(copy, state.blocked, layout)),
-  };
+  const total =
+    layout.side === 'next'
+      ? muralLines(copy, state.gauges.total, frames.poster)
+      : posterLines(copy, state.gauges.total, frames.poster, PAL.ink);
 
-  for (const sign of ['board', 'poster', 'hall'] as const) mirrorSign(mirror, sign, homes[sign], words[sign]);
+  mirrorSign(mirror, 'board', homes.board, signWords(boardLines(copy, state.gauges, frames.board)));
+  mirrorSign(mirror, 'poster', homes.poster, signWords(total));
+  if (homes.hall !== null) mirrorSign(mirror, 'hall', homes.hall, signWords(hallLines(copy, state.blocked, layout)));
 }

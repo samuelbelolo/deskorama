@@ -9,6 +9,7 @@ import { playCheckpoint } from './play-checkpoint.ts';
 import { playCross } from './play-cross.ts';
 import { playDelivery } from './play-delivery.ts';
 import { playEraser } from './play-eraser.ts';
+import { playFireworks } from './play-fireworks.ts';
 import { playLetterbox } from './play-letterbox.ts';
 import { playLike } from './play-like.ts';
 import { playNewcomer } from './play-newcomer.ts';
@@ -25,16 +26,17 @@ import { roleOf } from './role-of.ts';
 export type Repertoire = (event: WallpaperEvent) => Gag;
 
 /**
- * Returns the Gags of one screen, one per everyday Role, typed by `Archetype` so a new Role does not compile until it
- * has a Gag; the busy Roles take turns between two pictures, each screen keeping its own turns. A Gag is chosen by
- * the Event's Role only: never by its kind, never by its Source. An Event without a Role, of a kind nobody
- * described, or of a Role whose scene comes later plays the delivery.
+ * Returns the Gags of one screen, one per Role but the deploy, typed by `Archetype` so a new Role does not compile
+ * until it has a Gag; the busy Roles take turns between two pictures, each screen keeping its own turns. A Gag is
+ * chosen by the Event's Role only: never by its kind, never by its Source. An Event without a Role or of a kind
+ * nobody described plays the delivery, and so does a deploy that reaches the director, which the site should have
+ * taken.
  * @example
  * const gagFor = createRepertoire();
  * gagFor(event)(event, env);
  */
 export function createRepertoire(): Repertoire {
-  const gags: Readonly<Record<Archetype | 'other', Gag>> = {
+  const gags: Readonly<Record<Exclude<Archetype, 'deploy'> | 'other', Gag>> = {
     arrival: alternate([playNewcomer, playLetterbox]),
     partner: playRedCarpet,
     departure: playEraser,
@@ -48,11 +50,13 @@ export function createRepertoire(): Repertoire {
     money: alternate([playRegister, playPiggyBank]),
     error: createRedScreen(),
     blocked: playCheckpoint,
-    // Their own scenes come later; meanwhile they are delivered with their plaque, so nothing a Source sends is lost.
-    celebration: playDelivery,
-    deploy: playDelivery,
+    celebration: playFireworks,
     other: playDelivery,
   };
 
-  return (event) => gags[roleOf(event)];
+  return (event) => {
+    const role = roleOf(event);
+
+    return role === 'deploy' ? playDelivery : gags[role];
+  };
 }

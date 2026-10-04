@@ -17,6 +17,8 @@ export interface GagEnv {
   shake(pixels: number, ms: number): void;
   /** Makes the tenants of the lit rooms near a screen rectangle cheer until a Clock time. */
   cheerNear(rect: Rect, until: number): void;
+  /** Lights every empty room of the building for a moment, from a Clock time. */
+  party(now: number): void;
 }
 
 /** A Gag on stage: its held room and plaque, its timeline, and how to draw any instant of it. */
@@ -27,6 +29,8 @@ export interface Act {
   readonly keyT: number;
   /** The held room, in screen pixels. */
   readonly stage: FreeSpot;
+  /** More held rooms the Gag draws in, given back with its stage: a big moment spreads over the building. */
+  readonly also?: readonly FreeSpot[];
   readonly plaque: Plaque;
   /** What the picture shows, for the mirror: "stamp", "thumb", "heart"... */
   readonly prop: string;

@@ -1,5 +1,6 @@
 import type { Screen } from '@deskorama/core';
 import { BAY, BLOCK_ROWS, BUILDING_BAYS, SCALE, TILE } from './grid.ts';
+import { sideOf, type Side } from './side-of.ts';
 
 /**
  * The building's geometry on one screen, in native pixels unless named otherwise. The block of 15 tile rows (sky,
@@ -8,6 +9,8 @@ import { BAY, BLOCK_ROWS, BUILDING_BAYS, SCALE, TILE } from './grid.ts';
  * 900 px crops the cellar and the street, never the roof and its crane.
  */
 export interface Layout {
+  /** The building itself, or the next building along the street. */
+  readonly side: Side;
   /** The screen's size in screen pixels. */
   readonly width: number;
   readonly height: number;
@@ -33,6 +36,7 @@ export interface Layout {
  * @example
  * layoutFor({ id: 'builtin', x: 0, y: 0, width: 1440, height: 900 }).rdcY; // 165
  * layoutFor({ id: 'builtin', x: 0, y: 0, width: 1512, height: 982 }).top; // 15: one more tile row of sky
+ * layoutFor({ id: 'external', x: 1440, y: 0, width: 1600, height: 900 }).side; // "next"
  */
 export function layoutFor(screen: Screen): Layout {
   const topRow = Math.max(0, Math.floor(screen.height / TILE) - BLOCK_ROWS);
@@ -40,6 +44,7 @@ export function layoutFor(screen: Screen): Layout {
   const streetY = top + 13 * BAY;
 
   return {
+    side: sideOf(screen),
     width: screen.width,
     height: screen.height,
     W: Math.ceil(screen.width / SCALE),

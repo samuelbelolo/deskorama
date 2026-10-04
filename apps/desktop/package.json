@@ -23,6 +23,7 @@
     "@deskorama/core": "workspace:*",
     "@deskorama/test-utils": "workspace:*",
     "@deskorama/theme-aeroport": "workspace:*",
+    "@deskorama/theme-immeuble": "workspace:*",
     "@fontsource/barlow-condensed": "catalog:",
     "@fontsource/jost": "catalog:",
     "@types/node": "catalog:",

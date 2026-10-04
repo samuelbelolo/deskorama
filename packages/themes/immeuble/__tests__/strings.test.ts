@@ -70,9 +70,10 @@ function limits(lang: Language): [string, string, number][] {
     ['hall', hall[1], 27],
     ['stop', copy.text.props.stop, 15],
     ['arcade title', arcade.title, 66],
-    ['arcade ask', copy.fill(arcade.ask, { n: 9 }), 71],
-    ['arcade end', arcade.end, 71],
-    ['arcade coin', arcade.coin, 71],
+    ['arcade ask', copy.fill(arcade.ask, { n: 9 }), 69],
+    ['arcade end', arcade.end, 69],
+    ['arcade coin', arcade.coin, 69],
+    ['recap title', `${copy.text.recap.title} 999`, 97],
     ['board title', copy.fill(copy.text.board.title), 50],
   ];
 }
@@ -102,7 +103,7 @@ describe("L'Immeuble's words", () => {
   });
 
   test('the French scene paints French words: nothing is left as the English one, GAME OVER included', () => {
-    const shared = new Set(['STOP', 'VIA', '+1', 'ACCIDENT', 'BZZT !']);
+    const shared = new Set(['STOP', 'VIA', '+1', 'ACCIDENT', 'BZZT !', 'MESSAGE', 'MESSAGES']);
     const english = new Map(leaves(TEXT.en));
     const same = leaves(TEXT.fr).filter(
       ([path, word]) => typeof word === 'string' && english.get(path) === word && !shared.has(word),

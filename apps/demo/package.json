@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@deskorama/core": "workspace:*",
-    "@deskorama/theme-aeroport": "workspace:*"
+    "@deskorama/theme-aeroport": "workspace:*",
+    "@deskorama/theme-immeuble": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",

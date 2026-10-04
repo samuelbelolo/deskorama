@@ -20,6 +20,8 @@ export interface Residents {
   litIds(): ReadonlySet<string>;
   /** Makes the tenant of a room jump with their arms up until a Clock time. */
   cheer(roomId: string, until: number): void;
+  /** Pops a red "!" over every tenant's head until a Clock time; nothing under reduced motion. */
+  alarm(until: number): void;
   /** Steps everyone; true when anyone moved, so the frame needs drawing. */
   update(now: number, hour: number): boolean;
   draw(ctx: CanvasRenderingContext2D, now: number, hour: number): void;
@@ -57,6 +59,11 @@ export function createResidents(rooms: readonly Room[], host: ScreenHost): Resid
     cheer(roomId, until) {
       const tenant = tenants.get(roomId);
       if (tenant !== undefined && !host.reducedMotion) tenant.cheerUntil = until;
+    },
+    alarm(until) {
+      // Still tenants are drawn at a constant instant, so an alarm would never end: they keep calm.
+      if (host.reducedMotion) return;
+      for (const tenant of tenants.values()) tenant.alarmUntil = until;
     },
     update(now, hour) {
       if (host.reducedMotion) return false;

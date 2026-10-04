@@ -5,7 +5,7 @@
  */
 export const THEME_CHOICES = [
   { id: 'aeroport', name: 'L’Aéroport', available: true },
-  { id: 'immeuble', name: 'L’Immeuble', available: false },
+  { id: 'immeuble', name: 'L’Immeuble', available: true },
 ] as const;
 
 /** A Theme the app ships, the only kind a person may pick and a page may draw. */

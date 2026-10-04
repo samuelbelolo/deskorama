@@ -10,7 +10,9 @@ import { toner } from './toner.ts';
 
 const BOLLARDS = [8, 40, 132, 160, 196, 252, 328, 380] as const;
 const BINS = [74, 288] as const;
-const LAMPS = [232, 318] as const;
+
+/** The lamp posts stand off the signs: by the building's shops, or either side of the vacant lot's hoarding. */
+const LAMPS = { building: [232, 318], next: [104, 392] } as const;
 
 /**
  * Draws the street and what lies under it: the sidewalk, the cobbled road, bollards, recycling bins, cast-iron lamp
@@ -35,7 +37,7 @@ export function drawStreet(ctx: CanvasRenderingContext2D, layout: Layout, mode: 
 
   for (const x of BOLLARDS) paint(ctx, x, sidewalkY - 3, 2, 5, tone('wood'));
   for (const x of BINS) blit(ctx, sprite('bin', FURNITURE.BIN, LEGEND, tone, mode), x, sidewalkY - 5);
-  for (const x of LAMPS) drawLampPost(ctx, layout, x, mode, tone);
+  for (const x of LAMPS[layout.side]) drawLampPost(ctx, layout, x, mode, tone);
 
   drawCellar(ctx, layout, tone);
 }

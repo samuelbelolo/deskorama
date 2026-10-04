@@ -3,8 +3,8 @@ import { TILE } from './grid.ts';
 import type { Layout } from './layout.ts';
 import { rowY } from './row-y.ts';
 
-/** The named horizontal bands a Gag may ask for. */
-export type Band = 'rdc' | 'sidewalk' | 'facade';
+/** The named horizontal bands a Gag may ask for: the sky over the roof, the floors, and down to the sidewalk. */
+export type Band = 'sky' | 'floors' | 'rdc' | 'sidewalk' | 'facade';
 
 /** What a Gag asks for, in screen pixels. */
 interface SpotAsk {
@@ -35,6 +35,8 @@ export interface Placement {
 export function createPlacement(host: ScreenHost, layout: Layout): Placement {
   const { width, height } = layout;
   const bands: Readonly<Record<Band, Rect>> = {
+    sky: { x: 0, y: TILE, w: width, h: rowY(layout, 4) - TILE },
+    floors: { x: 0, y: rowY(layout, 5), w: width, h: 6 * TILE },
     rdc: { x: 0, y: rowY(layout, 11), w: width, h: 2 * TILE },
     sidewalk: { x: 0, y: rowY(layout, 12), w: width, h: 2 * TILE },
     facade: { x: 0, y: TILE, w: width, h: rowY(layout, 11) - TILE },

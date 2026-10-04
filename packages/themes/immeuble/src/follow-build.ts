@@ -8,7 +8,8 @@ import type { SiteState } from './site-state.ts';
 /**
  * Moves the site to a build state: a deploy starts the works (the crane rolling to a visible stretch of roof first),
  * a deploy that went live delivers (with the ribbon when the works were on, at once after a failure), a failure
- * wrecks the site and starts the day count again. An idle site shows the last deploy that went live, if any.
+ * wrecks the site where it can be seen and starts the day count again. An idle site shows the last deploy that went
+ * live, if any. The yard next door never moves.
  * @example
  * followBuild(state, 'building', { host, layout, copy });
  */
@@ -21,14 +22,18 @@ export function followBuild(
   const last = host.today().lastDeploy;
   const now = host.clock.now();
 
+  const rolls = stage.layout.side === 'building';
+
   if (build === 'building' && state.phase !== 'building') {
     state.phase = 'building';
     state.since = now;
-    state.targetX = craneSpot(host, stage.layout, state.cx);
+    if (rolls) state.targetX = craneSpot(host, stage.layout, state.cx);
     if (host.reducedMotion) state.cx = state.targetX;
   } else if (build === 'ready' && (state.phase === 'building' || state.phase === 'failed')) {
     deliver(state, stage.copy, last, { now, ribbon: state.phase === 'building' });
   } else if (build === 'error' && state.phase !== 'failed') {
+    // The collapse must be seen: a crane parked behind a window gives way where the roof shows.
+    if (rolls && state.phase !== 'building') state.cx = state.targetX = craneSpot(host, stage.layout, state.cx);
     state.phase = 'failed';
     state.since = now;
     state.failedAt = last?.meta.step === 'failed' ? last.at.getTime() : now;

@@ -38,7 +38,18 @@ export function settleTenants(
 
   const make = (room: Room): Tenant => {
     const x = homeX(host, room);
-    return { room, x, targetX: x, dir: 1, frame: 0, pose: 'FRONT', nextAt: 0, cheerUntil: 0, look: context.nextLook() };
+    return {
+      room,
+      x,
+      targetX: x,
+      dir: 1,
+      frame: 0,
+      pose: 'FRONT',
+      nextAt: 0,
+      cheerUntil: 0,
+      alarmUntil: 0,
+      look: context.nextLook(),
+    };
   };
 
   const a = adjust(

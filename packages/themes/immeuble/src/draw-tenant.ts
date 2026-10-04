@@ -1,6 +1,7 @@
 import { blit } from './blit.ts';
 import { dimToner } from './dim-toner.ts';
 import { dither } from './dither.ts';
+import { drawText } from './draw-text.ts';
 import { FURNITURE, LEGEND } from './furniture-sprites.ts';
 import { LIT } from './lit.ts';
 import { paint } from './paint.ts';
@@ -12,7 +13,8 @@ import type { Tenant } from './tenant.ts';
 
 /**
  * Draws a tenant in their room: walking, cheering with a hop, in their pose, or on the sofa in front of the TV and
- * its blue glow in the deep night. A constant `now` holds the TV's picture still.
+ * its blue glow in the deep night, with a red "!" over their head while they are alarmed. A constant `now` holds the
+ * TV's picture still.
  * @example
  * drawTenant(ctx, tenant, { now, nightTv: false });
  */
@@ -40,9 +42,10 @@ export function drawTenant(
   );
   const hop = cheering && Math.floor(at.now / 200) % 2 === 0 ? 2 : 0;
 
-  blit(ctx, art, tenant.x, tenant.room.floorY - 1 - art.height - hop, {
-    flip: (walking || at.nightTv) && tenant.dir < 0,
-  });
+  const top = tenant.room.floorY - 1 - art.height - hop;
+  blit(ctx, art, tenant.x, top, { flip: (walking || at.nightTv) && tenant.dir < 0 });
+
+  if (at.now < tenant.alarmUntil) drawText(ctx, '!', tenant.x + 1, Math.max(tenant.room.y + 1, top - 7), PAL.accent);
 }
 
 /**

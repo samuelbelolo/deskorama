@@ -3,11 +3,14 @@ import { FAKE_SCREEN } from '@deskorama/test-utils';
 import { afterEach, describe, expect, test } from 'vitest';
 import { page, server } from 'vitest/browser';
 import { DEFAULT_WINDOWS } from './default-windows.ts';
+import { group } from './recap-group.ts';
 import { genericEvent } from './generic-event.ts';
 import { AFTERNOON, NIGHT } from './instants.ts';
+import { milestone } from './milestone.ts';
 import { mountBuilding, type MountedBuilding } from './mount-building.ts';
 import { roleEvent } from './role-event.ts';
 import { rootOf } from './root-of.ts';
+import { sendDeploy } from './send-deploy.ts';
 
 let mounted: MountedBuilding | undefined;
 
@@ -107,5 +110,70 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
     mounted.host.setGauges(GAUGES);
 
     await expect.element(locate(mounted.layer)).toMatchScreenshot('scene-1728');
+  });
+
+  test.each(['fr', 'en'] as const)(
+    'the celebration in %s behind the default windows, at its key pose',
+    async (lang) => {
+      await page.viewport(1440, 900);
+      mounted = mountBuilding({ lang, start: AFTERNOON, reducedMotion: true });
+      mounted.host.setGauges(GAUGES);
+      mounted.host.setWindowFrames(DEFAULT_WINDOWS);
+      mounted.host.send(milestone(lang));
+      mounted.host.clock.advance(200);
+
+      await expect.element(locate(mounted.layer)).toMatchScreenshot(`celebration-${lang}`);
+    },
+  );
+
+  test.each(['fr', 'en'] as const)(
+    'the failed deploy in %s behind the default windows, at its key frame',
+    async (lang) => {
+      await page.viewport(1440, 900);
+      mounted = mountBuilding({ lang, start: AFTERNOON, reducedMotion: true });
+      mounted.host.setGauges(GAUGES);
+      mounted.host.setWindowFrames(DEFAULT_WINDOWS);
+      sendDeploy(mounted.host, lang, 'failed');
+      mounted.host.clock.advance(600);
+
+      await expect.element(locate(mounted.layer)).toMatchScreenshot(`jackpot-${lang}`);
+    },
+  );
+
+  test('a deploy under way, its plaque by the site sign', async () => {
+    await page.viewport(1440, 900);
+    mounted = mountBuilding({ lang: 'fr', start: AFTERNOON, reducedMotion: true });
+    mounted.host.setGauges(GAUGES);
+    sendDeploy(mounted.host, 'fr', 'started');
+    mounted.host.clock.advance(200);
+
+    await expect.element(locate(mounted.layer)).toMatchScreenshot('deploy-started');
+  });
+
+  test('the recap board, its counts all up', async () => {
+    await page.viewport(1440, 900);
+    mounted = mountBuilding({ lang: 'fr', start: AFTERNOON, reducedMotion: true });
+    mounted.host.setGauges(GAUGES);
+    const groups = [group('celebration', 'rare', 1), group('approval', 'notable', 5), group('error', 'common', 2)];
+    mounted.host.sendRecap({
+      from: new Date(AFTERNOON - 7_200_000),
+      to: new Date(AFTERNOON),
+      total: 12,
+      groups,
+      more: 4,
+    });
+    mounted.host.clock.advance(200);
+
+    await expect.element(locate(mounted.layer)).toMatchScreenshot('recap');
+  });
+
+  test('the next building along the street, on the external screen', async () => {
+    await page.viewport(1600, 900);
+    const external = { id: 'external', x: 1440, y: 0, width: 1600, height: 900 };
+    mounted = mountBuilding({ lang: 'fr', start: AFTERNOON, screen: external, screens: [FAKE_SCREEN, external] });
+    mounted.host.setGauges({ ...GAUGES, build: 'building' });
+    mounted.host.clock.advance(200);
+
+    await expect.element(locate(mounted.layer)).toMatchScreenshot('next-building');
   });
 });

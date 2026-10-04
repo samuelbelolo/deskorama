@@ -211,20 +211,6 @@ describe("L'Immeuble's everyday Gags", () => {
     expect(sounds).toEqual(['BIP !', 'BZZT !', 'AÏE !']);
   });
 
-  test.each(['celebration', 'deploy'] as const)(
-    'a %s is delivered with its plaque until its own scene comes',
-    (role) => {
-      mounted = mountBuilding({ lang: 'en', start: AFTERNOON });
-      const event = roleEvent('en', role);
-      mounted.host.send(event);
-
-      expect(mounted.layer.querySelector(`[data-gag="${role}"]`)?.getAttribute('data-prop')).toBe('parcel');
-      expect(mounted.layer.querySelector('[data-part="caption-fact"]')?.textContent?.trim()).toBe(
-        plainText(event.label),
-      );
-    },
-  );
-
   describe.each(
     LANGUAGES.flatMap((lang) => (['foreign', 'undescribed'] as const).map((shape) => [shape, lang] as const)),
   )('the generic Gag for a %s Event in %s', (shape, lang) => {

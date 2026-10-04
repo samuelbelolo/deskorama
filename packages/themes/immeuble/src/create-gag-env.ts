@@ -22,7 +22,7 @@ function near(a: Rect, b: Rect): boolean {
 
 /**
  * Returns what every Gag of one screen plays with: placement, words, the tenants, the shake (still under reduced
- * motion) and the cheer of the neighbours.
+ * motion), the cheer of the neighbours and the building's party lights.
  * @example
  * const env = createGagEnv({ host, layout, copy, renderer, ambient });
  */
@@ -51,5 +51,6 @@ export function createGagEnv(stage: {
       for (const room of ambient.rooms)
         if (lit.has(room.id) && near(room.stage, rect)) ambient.residents.cheer(room.id, until);
     },
+    party: (now) => ambient.lights.party(now),
   };
 }

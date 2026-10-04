@@ -24,7 +24,7 @@ describe('the preferences in settings.json', () => {
 
   test('fall back one by one: a Theme not shipped, an unknown language or a bad Gauge Source loses only itself', () => {
     const file = JSON.stringify({
-      theme: 'immeuble',
+      theme: 'lighthouse',
       language: 'de',
       brand: 'src-1',
       gauges: { crowd: 7, daily: 'src-2' },

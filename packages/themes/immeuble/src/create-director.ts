@@ -25,18 +25,20 @@ export interface Director {
   dispose(): void;
 }
 
-/** A Gag playing: its act, when it started, and what stops it early. */
+/** A Gag playing: its Role, its act, when it started, and what stops it early. */
 interface Playing {
+  readonly role: string;
   readonly act: Act;
   readonly start: number;
   readonly stop: Cancel;
 }
 
 /**
- * Returns the director of one screen. Gags play side by side, each in its own held room with its plaque, each drawn
- * clipped to that room, so nothing of it shows outside visible space. An Event that finds no room waits in line. A
- * Gag ends after its action and its key pose's hold, mirrored meanwhile as `data-gag`, blinking out at the end when
- * it asks to and playing its cue once on the Clock; its plaque stays 2.5 s more.
+ * Returns the director of one screen. Gags play side by side, each in its own held rooms with its plaque, each drawn
+ * clipped to those rooms, so nothing of it shows outside visible space. An Event that finds no room waits in line;
+ * so does a notable one while a big moment plays, which nothing notable may upstage. A Gag ends after its action and
+ * its key pose's hold, mirrored meanwhile as `data-gag`, blinking out at the end when it asks to and playing its cue
+ * once on the Clock; its plaque stays 2.5 s more.
  * @example
  * const director = createDirector({ env, mirror, plaques });
  * host.onEvent((event) => director.play(event));
@@ -52,13 +54,22 @@ export function createDirector(stage: {
   const playing = new Set<Playing>();
   let serial = 0;
 
+  const upstaged = (event: WallpaperEvent): boolean =>
+    event.rarity === 'notable' && Array.from(playing).some((each) => each.role === 'celebration');
+
   const start = (event: WallpaperEvent): boolean => {
+    if (upstaged(event)) return false;
     const act = gagFor(event)(event, env);
     if (act === null) return false;
 
     serial += 1;
     const now = clock.now();
-    const unmirror = mirror.set(`gag-${serial}`, { box: act.stage, data: { gag: roleOf(event), prop: act.prop } });
+    const role = roleOf(event);
+    const rooms = [act.stage, ...(act.also ?? [])];
+    const unmirrors = rooms.map((room, i) =>
+      mirror.set(`gag-${serial}-${i}`, { box: room, data: { gag: role, prop: i === 0 ? act.prop : 'burst' } }),
+    );
+    const unmirror = (): void => unmirrors.forEach((each) => each());
     const unplaque = plaques.add(act.plaque, event, now + plaqueSpan(act.duration));
     const { cue } = act;
     const cued = cue === undefined ? null : clock.after(cue.at, () => cue.run(clock.now()));
@@ -67,10 +78,12 @@ export function createDirector(stage: {
       unmirror();
       waiting.retry();
     });
+    const release = (): void => rooms.forEach((room) => room.release());
     const entry: Playing = {
+      role,
       act,
       start: now,
-      stop: () => [end, cued ?? noop, unmirror, unplaque, () => act.stage.release()].forEach((stop) => stop()),
+      stop: () => [end, cued ?? noop, unmirror, unplaque, release].forEach((stop) => stop()),
     };
 
     playing.add(entry);
@@ -101,16 +114,17 @@ export function createDirector(stage: {
 }
 
 /**
- * Draws a Gag at `t` of its own timeline, clipped to its held room.
+ * Draws a Gag at `t` of its own timeline, clipped to its held rooms.
  * @example
  * drawClipped(ctx, act, 1200, now);
  */
 function drawClipped(ctx: CanvasRenderingContext2D, act: Act, t: number, now: number): void {
-  const box = toNative(act.stage);
-
   ctx.save();
   ctx.beginPath();
-  ctx.rect(box.x, box.y, box.w, box.h);
+  for (const room of [act.stage, ...(act.also ?? [])]) {
+    const box = toNative(room);
+    ctx.rect(box.x, box.y, box.w, box.h);
+  }
   ctx.clip();
   act.draw(ctx, t, now);
   ctx.restore();
