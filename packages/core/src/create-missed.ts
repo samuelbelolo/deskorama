@@ -3,6 +3,7 @@ import { rankRecapGroups } from './rank-recap-groups.ts';
 import type { Rarity } from './rarity.ts';
 import { rarityRank } from './rarity-rank.ts';
 import type { Recap, RecapGroup } from './recap.ts';
+import { stepOf } from './step-of.ts';
 import type { WallpaperEvent } from './wallpaper-event.ts';
 
 /** How many of the latest missed Events are kept to play after a short hide; older ones only count. */
@@ -18,8 +19,11 @@ export interface Missed {
   latest(): readonly WallpaperEvent[];
   /** The recap of everything missed between `from` and `to`. */
   recap(from: Date, to: Date): Recap;
-  /** The missed failed deploy to play after the recap; null when none failed, or a later deploy succeeded. */
-  failedDeploy(): WallpaperEvent | null;
+  /**
+   * The missed deploy step the scene still has to show: the latest one, when it failed or started. Null when no
+   * deploy step was missed, or the latest one succeeded, which leaves nothing on the runway.
+   */
+  owedDeploy(): WallpaperEvent | null;
 }
 
 /**
@@ -30,7 +34,7 @@ export interface Missed {
  * missed.add(like);
  * missed.add(deployFailed);
  * missed.recap(new Date(from), new Date(to)).groups; // the failed deploy first, then the like
- * missed.failedDeploy(); // deployFailed
+ * missed.owedDeploy(); // deployFailed
  */
 export function createMissed(): Missed {
   const groups = new Map<Archetype | null, RecapGroup>();
@@ -49,7 +53,7 @@ export function createMissed(): Missed {
 
       latest = [...latest, event].slice(-LATEST_KEPT);
 
-      if (event.meta.step === 'succeeded' || event.meta.step === 'failed') lastDeploy = event;
+      if (stepOf(event) !== undefined) lastDeploy = event;
     },
 
     isEmpty: () => groups.size === 0,
@@ -62,7 +66,7 @@ export function createMissed(): Missed {
       return { from, to, total, ...rankRecapGroups(all) };
     },
 
-    failedDeploy: () => (lastDeploy?.meta.step === 'failed' ? lastDeploy : null),
+    owedDeploy: () => (lastDeploy === null || stepOf(lastDeploy) === 'succeeded' ? null : lastDeploy),
   };
 }
 

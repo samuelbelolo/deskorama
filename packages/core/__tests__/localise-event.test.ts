@@ -31,6 +31,14 @@ describe('localising an Event', () => {
     expect(event.at.toISOString()).toBe('2026-10-04T14:00:00.000Z');
   });
 
+  test('drops a deploy step sent with another Role, or with a deploy nobody described', () => {
+    const error = { ...deployFailed, kind: 'error.raised', archetype: 'error' } satisfies SourceEvent;
+    const odd = { ...deployFailed, recognised: false } satisfies SourceEvent;
+
+    expect(localiseEvent(error, 'en').meta).toEqual({ detail: 'web, docs, admin', tag: 'FAILED' });
+    expect(localiseEvent(odd, 'en').meta.step).toBeUndefined();
+  });
+
   test('carries a Gauge move only when the Source sent one', () => {
     expect('gauge' in localiseEvent(deployFailed, 'fr')).toBe(false);
     const pushed = { ...deployFailed, gauge: { role: 'daily', by: 3 } } satisfies SourceEvent;

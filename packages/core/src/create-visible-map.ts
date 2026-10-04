@@ -29,42 +29,59 @@ export interface VisibleMap extends VisibleRegions {
 export function createVisibleMap(screen: Screen, clock: Clock, random: Random): VisibleMap {
   const grid = { cols: Math.ceil(screen.width / TILE_SIZE), rows: Math.ceil(screen.height / TILE_SIZE) };
   const holds = createHolds(clock);
+
   let covered = new Uint8Array(grid.cols * grid.rows);
   let hidden = false;
+
   const taken = (): Uint8Array => {
     const mask = covered.slice();
     holds.markInto(mask, grid);
+
     return mask;
   };
+
   const visibleFraction = (rect: Rect = { x: 0, y: 0, w: screen.width, h: screen.height }): number => {
     const block = tilesUnder(rect, grid);
     let visible = 0;
+
     for (let row = block.row; row < block.row + block.rows; row += 1) {
       for (let col = block.col; col < block.col + block.cols; col += 1)
         if (covered[row * grid.cols + col] === 0) visible += 1;
     }
+
     return block.cols * block.rows === 0 ? 0 : visible / (block.cols * block.rows);
   };
+
   return {
     update(frames) {
       covered = new Uint8Array(grid.cols * grid.rows);
+
       for (const frame of frames) {
         markBlock(covered, grid, tilesUnder({ ...frame, x: frame.x - screen.x, y: frame.y - screen.y }, grid));
       }
+
       hidden = !covered.includes(0);
     },
+
     visibleFraction,
+
     largestFree(options = {}) {
       const block = largestClearBlock(options.skipHeld === true ? taken() : covered, grid);
+
       return block === null ? null : blockRect(block, screen);
     },
+
     freeSpot(request) {
       const found = findFreeSpot({ grid, width: screen.width, height: screen.height, taken: taken(), random }, request);
+
       if (found === null) return null;
+
       const hold = request.hold ?? 0;
       const release = hold > 0 ? holds.add(found.block, clock.now() + hold) : () => {};
+
       return { ...found.rect, release };
     },
+
     reserve(rect) {
       return holds.add(tilesUnder(rect, grid), Infinity);
     },

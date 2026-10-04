@@ -26,24 +26,33 @@ export interface Gauges {
 export function createGauges(): Gauges {
   let current: GaugeValues = { crowd: 0, daily: 0, total: 0, build: 'idle' };
   const listeners = createListeners<GaugeValues>();
+
   const set = (values: Partial<GaugeValues>): void => {
     const next = { ...current, ...values };
+
     const changed =
       next.crowd !== current.crowd ||
       next.daily !== current.daily ||
       next.total !== current.total ||
       next.build !== current.build;
+
     if (!changed) return;
+
     current = next;
     listeners.emit(current);
   };
+
   return {
     values: () => current,
+
     set,
+
     move({ role, by }) {
       const value = Math.max(0, current[role] + by);
+
       set(role === 'crowd' ? { crowd: value } : role === 'daily' ? { daily: value } : { total: value });
     },
+
     onChange: listeners.add,
   };
 }

@@ -79,6 +79,16 @@ describe('an engine on several screens', () => {
     }
   });
 
+  test('plays a step sent with another Role, or with a deploy nobody described, on one screen only', () => {
+    const { engine, recorder } = twoScreens();
+
+    engine.send(tramloEvent({ id: 'e1', kind: 'error.raised', archetype: 'error', step: 'failed' }));
+    engine.send(tramloEvent({ id: 'd1', kind: 'deploy.odd', archetype: 'deploy', recognised: false, step: 'failed' }));
+
+    expect(recorder.on('builtin').events.length + recorder.on('external').events.length).toBe(2);
+    expect(recorder.on('builtin').host.gauges().build).toBe('idle');
+  });
+
   test('shares Gauges and today’s counts between the screens', () => {
     const { engine, recorder } = twoScreens();
 

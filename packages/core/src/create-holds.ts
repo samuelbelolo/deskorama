@@ -19,17 +19,21 @@ export interface Holds {
  */
 export function createHolds(clock: Clock): Holds {
   let held: { readonly block: TileBlock; readonly until: number }[] = [];
+
   return {
     add(block, until) {
       const entry = { block, until };
       held.push(entry);
+
       return () => {
         held = held.filter((other) => other !== entry);
       };
     },
+
     markInto(mask, grid) {
       const now = clock.now();
       held = held.filter((entry) => entry.until > now);
+
       for (const { block } of held) markBlock(mask, grid, block);
     },
   };

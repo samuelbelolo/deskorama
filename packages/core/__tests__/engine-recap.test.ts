@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { createEngine, type EngineOptions } from '../src/create-engine.ts';
-import { RECAP_HOLD_MS } from '../src/create-router.ts';
+import { RECAP_HOLD_MS } from '../src/create-deploy-replay.ts';
 import type { Rect } from '../src/rect.ts';
 import { BUILTIN, createManualHost, EXTERNAL, START } from './manual-host.ts';
 import { screenRecorder } from './screen-recorder.ts';
@@ -78,7 +78,7 @@ describe('coming back to a hidden wallpaper', () => {
     expect(recorder.on('external').events.map((event) => event.id)).toEqual(['d1']);
   });
 
-  test('drops the failed-deploy replay when the wallpaper hides again before it plays', () => {
+  test('keeps the failed-deploy replay owed when the wallpaper hides again before it plays', () => {
     const { engine, platform, recorder } = twoScreens();
 
     platform.setWindowFrames([EVERYTHING]);
@@ -89,6 +89,76 @@ describe('coming back to a hidden wallpaper', () => {
     platform.advance(RECAP_HOLD_MS);
 
     expect(played(recorder)).toEqual({ builtin: 0, external: 0 });
+
+    platform.setWindowFrames([]);
+
+    expect(recorder.on('builtin').events.map((event) => event.id)).toEqual(['d1']);
+    expect(recorder.on('external').events.map((event) => event.id)).toEqual(['d1']);
+  });
+
+  test('replays the owed failed deploy after the next recap, without counting it again', () => {
+    const { engine, platform, recorder } = twoScreens();
+
+    platform.setWindowFrames([EVERYTHING]);
+    engine.send(tramloEvent({ id: 'd1', kind: 'deploy.failed', archetype: 'deploy', step: 'failed' }));
+    platform.advance(TWO_HOURS);
+    platform.setWindowFrames([]);
+    platform.setWindowFrames([EVERYTHING]);
+    engine.send(tramloEvent({ id: 'pr-1' }));
+    platform.advance(TWO_HOURS);
+    platform.setWindowFrames([]);
+
+    const second = recorder.on('external').recaps[1];
+    expect(second?.groups.map((group) => [group.archetype, group.count])).toEqual([['approval', 1]]);
+    expect(second?.total).toBe(1);
+
+    platform.advance(RECAP_HOLD_MS);
+
+    expect(recorder.on('builtin').events.map((event) => event.id)).toEqual(['d1']);
+  });
+
+  test('shows a deploy started after a missed failure once the recap has been read, not the failure', () => {
+    const { engine, platform, recorder } = twoScreens();
+
+    platform.setWindowFrames([EVERYTHING]);
+    engine.send(tramloEvent({ id: 'd1', kind: 'deploy.failed', archetype: 'deploy', step: 'failed' }));
+    engine.send(tramloEvent({ id: 'd2', kind: 'deploy.started', archetype: 'deploy', step: 'started' }));
+    platform.advance(TWO_HOURS);
+    platform.setWindowFrames([]);
+    platform.advance(RECAP_HOLD_MS);
+
+    expect(recorder.on('builtin').events.map((event) => event.id)).toEqual(['d2']);
+    expect(recorder.on('external').events.map((event) => event.id)).toEqual(['d2']);
+    expect(recorder.on('builtin').host.gauges().build).toBe('building');
+  });
+
+  test('replays nothing after the recap when the latest missed deploy succeeded', () => {
+    const { engine, platform, recorder } = twoScreens();
+
+    platform.setWindowFrames([EVERYTHING]);
+    engine.send(tramloEvent({ id: 'd1', kind: 'deploy.failed', archetype: 'deploy', step: 'failed' }));
+    engine.send(tramloEvent({ id: 'd2', kind: 'deploy.succeeded', archetype: 'deploy', step: 'succeeded' }));
+    platform.advance(TWO_HOURS);
+    platform.setWindowFrames([]);
+    platform.advance(RECAP_HOLD_MS);
+
+    expect(played(recorder)).toEqual({ builtin: 0, external: 0 });
+  });
+
+  test('drops the owed failed deploy when a newer deploy step arrives while the wallpaper is hidden again', () => {
+    const { engine, platform, recorder } = twoScreens();
+
+    platform.setWindowFrames([EVERYTHING]);
+    engine.send(tramloEvent({ id: 'd1', kind: 'deploy.failed', archetype: 'deploy', step: 'failed' }));
+    platform.advance(TWO_HOURS);
+    platform.setWindowFrames([]);
+    platform.setWindowFrames([EVERYTHING]);
+    engine.send(tramloEvent({ id: 'd2', kind: 'deploy.succeeded', archetype: 'deploy', step: 'succeeded' }));
+    platform.advance(30_000);
+    platform.setWindowFrames([]);
+    platform.advance(RECAP_HOLD_MS);
+
+    expect(recorder.on('builtin').events.map((event) => event.id)).toEqual(['d2']);
   });
 
   test('plays what a short hide kept as it arrived, without a recap', () => {

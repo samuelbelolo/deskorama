@@ -22,8 +22,10 @@ export function createScreenClock(clock: Clock): ScreenClock {
   const timers = new Set<Cancel>();
   let hidden = false;
   let stopFrames: Cancel | null = null;
+
   const sync = (): void => {
     const wanted = !hidden && frameListeners.size > 0;
+
     if (wanted && stopFrames === null) {
       stopFrames = clock.onFrame((now) => {
         for (const listener of Array.from(frameListeners)) listener(now);
@@ -33,32 +35,39 @@ export function createScreenClock(clock: Clock): ScreenClock {
       stopFrames = null;
     }
   };
+
   return {
     now: () => clock.now(),
+
     after(ms, task) {
       const cancel = clock.after(ms, () => {
         timers.delete(cancel);
         task();
       });
       timers.add(cancel);
+
       return () => {
         timers.delete(cancel);
         cancel();
       };
     },
+
     onFrame(listener) {
       const entry = (now: number): void => listener(now);
       frameListeners.add(entry);
       sync();
+
       return () => {
         frameListeners.delete(entry);
         sync();
       };
     },
+
     setHidden(next) {
       hidden = next;
       sync();
     },
+
     dispose() {
       for (const cancel of timers) cancel();
       timers.clear();

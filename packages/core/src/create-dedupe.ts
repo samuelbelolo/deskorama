@@ -15,17 +15,22 @@ export interface Dedupe {
  */
 export function createDedupe(capacity: number): Dedupe {
   const seen = new Set<string>();
+
   return {
     firstTime(source, id) {
       // A separator no Source name contains, so "a" + "b:c" never meets "a:b" + "c".
       const key = `${source}\u0000${id}`;
+
       if (seen.has(key)) return false;
+
       seen.add(key);
+
       // A Set iterates in insertion order: the first key is the oldest.
       for (const oldest of seen) {
         if (seen.size <= capacity) break;
         seen.delete(oldest);
       }
+
       return true;
     },
   };

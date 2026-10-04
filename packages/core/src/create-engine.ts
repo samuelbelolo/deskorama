@@ -1,6 +1,7 @@
 import type { Cancel } from './clock.ts';
 import { createRouter } from './create-router.ts';
-import { createScreenInstances, type ScreenInstances } from './create-screen-instances.ts';
+import { createScreenInstances } from './create-screen-instances.ts';
+import { createScreenMounts } from './create-screen-mounts.ts';
 import { createScreenView, type ScreenView } from './create-screen-view.ts';
 import { createSharedState } from './create-shared-state.ts';
 import type { GaugeValues } from './gauge-values.ts';
@@ -76,14 +77,11 @@ export function createEngine(host: Host, options: EngineOptions): Engine {
     recapAfter: options.recapAfter ?? RECAP_AFTER_MS,
   });
 
-  const mounts = new Set<ScreenInstances>();
-  let stopFrames: Cancel | null = null;
-  let stopScreens: Cancel | null = null;
-
   const lifecycle = {
     open(screen: Screen): ScreenView {
       const view = createScreenView({ platform: host, screen, lang: options.lang, random, source, shared });
       router.add(view);
+
       return view;
     },
     close(view: ScreenView): void {
@@ -92,65 +90,24 @@ export function createEngine(host: Host, options: EngineOptions): Engine {
     },
   };
 
-  /** Follows a new screen arrangement: instances mounted or unmounted, then every Theme told. */
-  const rearrange = (screens: readonly Screen[]): void => {
-    for (const instances of mounts) instances.sync(screens);
-    router.arrange(screens);
-    settle();
-  };
-
-  /** Follows the platform only while something listens, so an engine left with no Theme holds no subscription. */
-  const settle = (): void => {
-    router.refresh();
-
-    if (router.hasViews() && stopFrames === null) stopFrames = host.onWindowFrames((frames) => router.follow(frames));
-    if (!router.hasViews() && stopFrames !== null) {
-      stopFrames();
-      stopFrames = null;
-    }
-
-    if (mounts.size > 0 && stopScreens === null) stopScreens = host.onScreens?.(rearrange) ?? null;
-    if (mounts.size === 0 && stopScreens !== null) {
-      stopScreens();
-      stopScreens = null;
-    }
-  };
-
-  /** Mounts a set of instances on the current screens and returns what unmounts them all. */
-  const track = (instances: ScreenInstances): Cancel => {
-    mounts.add(instances);
-
-    try {
-      instances.sync(host.screens());
-    } catch (error) {
-      instances.clear();
-      mounts.delete(instances);
-      settle();
-      throw error;
-    }
-
-    settle();
-
-    return () => {
-      instances.clear();
-      mounts.delete(instances);
-      settle();
-    };
-  };
+  const mounts = createScreenMounts(host, router);
 
   return {
     mount<Layer>(theme: Theme<Layer>, layer: Layer): Cancel {
       const screen = host.screens()[0];
+
       if (screen === undefined) throw new Error('The host reports no screen to mount the Theme on.');
 
       // The first screen as it is now, kept for good: a page that draws one screen never follows the others.
       const fixedLayer: ScreenLayers<Layer> = { open: () => layer, close: () => {} };
       const instances = createScreenInstances(theme, fixedLayer, lifecycle);
-      return track({ sync: () => instances.sync([screen]), clear: () => instances.clear() });
+
+      return mounts.track({ sync: () => instances.sync([screen]), clear: () => instances.clear() });
     },
-    mountScreens: (theme, layers) => track(createScreenInstances(theme, layers, lifecycle)),
+    mountScreens: (theme, layers) => mounts.track(createScreenInstances(theme, layers, lifecycle)),
     send(event: SourceEvent): void {
       const localised = localiseEvent(event, options.lang);
+
       if (shared.accept(localised)) router.send(localised);
     },
     setGauges: shared.setGauges,

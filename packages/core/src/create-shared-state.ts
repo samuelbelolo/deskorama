@@ -5,6 +5,7 @@ import { createDedupe } from './create-dedupe.ts';
 import { createGauges } from './create-gauges.ts';
 import { createTally } from './create-tally.ts';
 import type { GaugeValues } from './gauge-values.ts';
+import { stepOf } from './step-of.ts';
 import type { Today } from './today.ts';
 import type { WallpaperEvent } from './wallpaper-event.ts';
 
@@ -38,16 +39,24 @@ export function createSharedState(clock: Clock, timeZone: string | undefined): S
   const dedupe = createDedupe(DEDUPE_CAPACITY);
   const rollover = (): string => {
     const day = dayOf(clock.now());
+
     if (tally.startDay(day)) gauges.set({ daily: 0 });
+
     return day;
   };
+
   return {
     accept(event) {
       if (!dedupe.firstTime(event.source, event.id)) return false;
+
       const happenedToday = dayOf(event.at.getTime()) === rollover();
       tally.record(event, happenedToday);
+
       if (event.gauge !== undefined && (happenedToday || event.gauge.role !== 'daily')) gauges.move(event.gauge);
-      if (event.meta.step !== undefined) gauges.set({ build: buildStateAfter(event.meta.step) });
+
+      const step = stepOf(event);
+      if (step !== undefined) gauges.set({ build: buildStateAfter(step) });
+
       return true;
     },
     gauges() {

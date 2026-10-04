@@ -1,4 +1,5 @@
 import type { Archetype } from './archetype.ts';
+import { stepOf } from './step-of.ts';
 import type { Today } from './today.ts';
 import type { WallpaperEvent } from './wallpaper-event.ts';
 
@@ -32,21 +33,30 @@ export function createTally(day: string): Tally {
   let roles: Partial<Record<Archetype, number>> = {};
   let lastDeploy: WallpaperEvent | null = null;
   let latest: readonly WallpaperEvent[] = [];
+
   return {
     startDay(next) {
       if (next === counting) return false;
+
       counting = next;
       kinds = {};
       roles = {};
+
       return true;
     },
+
     record(event, happenedToday) {
       latest = [event, ...latest].slice(0, RECENT_SIZE);
-      if (event.meta.step === 'succeeded' || event.meta.step === 'failed') lastDeploy = event;
+
+      const step = stepOf(event);
+      if (step === 'succeeded' || step === 'failed') lastDeploy = event;
+
       if (!happenedToday) return;
+
       kinds[event.kind] = (kinds[event.kind] ?? 0) + 1;
       if (event.archetype !== null) roles[event.archetype] = (roles[event.archetype] ?? 0) + 1;
     },
+
     today: () => ({ kinds: { ...kinds }, roles: { ...roles }, lastDeploy }),
     recent: (count = RECENT_DEFAULT) => latest.slice(0, Math.max(0, count)),
   };

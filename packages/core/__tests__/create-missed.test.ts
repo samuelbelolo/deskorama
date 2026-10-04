@@ -84,21 +84,33 @@ describe('the recap of what was missed', () => {
     expect(missed.recap(FROM, TO).total).toBe(20);
   });
 
-  test('replays a missed failed deploy, unless a later deploy succeeded', () => {
+  test('owes the latest missed deploy step when it failed or started, nothing when it succeeded', () => {
     const failed = missedEvent({ id: 'd1', archetype: 'deploy', rarity: 'jackpot', step: 'failed' });
     const fixed = missedEvent({ id: 'd2', archetype: 'deploy', rarity: 'common', step: 'succeeded' });
     const started = missedEvent({ id: 'd3', archetype: 'deploy', rarity: 'common', step: 'started' });
 
-    const stillBroken = createMissed();
-    stillBroken.add(failed);
-    stillBroken.add(started);
+    const broken = createMissed();
+    broken.add(failed);
+
+    const retried = createMissed();
+    retried.add(failed);
+    retried.add(started);
 
     const repaired = createMissed();
     repaired.add(failed);
     repaired.add(fixed);
 
-    expect(stillBroken.failedDeploy()).toBe(failed);
-    expect(repaired.failedDeploy()).toBeNull();
-    expect(createMissed().failedDeploy()).toBeNull();
+    expect(broken.owedDeploy()).toBe(failed);
+    expect(retried.owedDeploy()).toBe(started);
+    expect(repaired.owedDeploy()).toBeNull();
+    expect(createMissed().owedDeploy()).toBeNull();
+  });
+
+  test('owes no deploy for a step sent with another Role, or with a kind nobody described', () => {
+    const missed = createMissed();
+    missed.add(missedEvent({ id: 'e1', archetype: 'error', step: 'failed' }));
+    missed.add(missedEvent({ id: 'd1', archetype: 'deploy', recognised: false, step: 'failed' }));
+
+    expect(missed.owedDeploy()).toBeNull();
   });
 });
