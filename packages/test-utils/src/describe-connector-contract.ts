@@ -1,6 +1,8 @@
 import { ConnectorError, LANGUAGES, type Connector, type ConnectorFailure, type SourceSettings } from '@deskorama/core';
 import { describe, expect, test } from 'vitest';
 import { createFakeFetch, type Responder } from './create-fake-fetch.ts';
+import { describeReportedEvents } from './describe-reported-events.ts';
+import { describeReportedGauges } from './describe-reported-gauges.ts';
 
 /** What the shared suite needs to drive one Connector. */
 export interface ConnectorContractCase {
@@ -8,21 +10,25 @@ export interface ConnectorContractCase {
   /** Settings of a fictional Source, with `.example` addresses and a made-up token. */
   readonly settings: SourceSettings;
   /**
+   * What a first poll brings: Events, the default, or Gauge values only, for a service whose terms forbid
+   * streaming its events.
+   */
+  readonly reports?: 'events' | 'gauges';
+  /**
    * Returns a fresh responder that answers every request of a first poll from recorded responses, with at least
-   * one Event. Called once per poll, so a responder that plays recordings in order starts over each time.
+   * one Event, or one Gauge value when the Connector reports Gauges only. Called once per poll, so a responder that
+   * plays recordings in order starts over each time.
    */
   readonly recorded: () => Responder;
   /** The time of the polls. */
   readonly now: number;
 }
 
-/** The longest tag a Theme can paint on a prop. */
-const MAX_TAG_LENGTH = 16;
-
 /**
  * Registers the tests every Connector passes: the Events of a recorded poll are complete in every language and keep
- * their ids when the page is replayed, the cursor is something to resume from, and each failure a service can
- * answer becomes the {@link ConnectorError} the platform acts on, never anything else.
+ * their ids when the page is replayed, and the cursor is something to resume from, or, for a Connector that reports
+ * Gauges only, its counts are sound and it never returns an Event; and each failure a service can answer becomes
+ * the {@link ConnectorError} the platform acts on, never anything else.
  * @example
  * describeConnectorContract({ connector: createFeed(), settings, recorded: () => inOrder([page]), now: FIXTURE_TIME });
  */
@@ -75,30 +81,10 @@ export function describeConnectorContract(contract: ConnectorContractCase): void
       }
     });
 
-    test('returns Events with unique ids, a time and their words in every language', async () => {
-      const result = await poll(contract.recorded());
+    const firstPoll = () => poll(contract.recorded());
 
-      expect(result.events.length).toBeGreaterThan(0);
-      expect(new Set(result.events.map((event) => event.id)).size).toBe(result.events.length);
-      expect(typeof result.cursor).toBe('string');
-
-      for (const event of result.events) {
-        expect(Number.isFinite(event.at.getTime())).toBe(true);
-        expect(event.source).not.toBe('');
-
-        for (const lang of LANGUAGES) {
-          expect(event.text[lang].label).not.toBe('');
-          expect(event.text[lang].tag.length).toBeLessThanOrEqual(MAX_TAG_LENGTH);
-        }
-      }
-    });
-
-    test('keeps the ids of a replayed page, so the platform drops the replay', async () => {
-      const first = await poll(contract.recorded());
-      const replay = await poll(contract.recorded());
-
-      expect(replay.events.map((event) => event.id)).toEqual(first.events.map((event) => event.id));
-    });
+    if (contract.reports === 'gauges') describeReportedGauges(firstPoll);
+    else describeReportedEvents(firstPoll);
 
     test('reports a refused token, naming nothing else', async () => {
       expect(await failureOf(() => ({ status: 401, body: { message: 'Bad credentials' } }))).toEqual({ kind: 'auth' });
