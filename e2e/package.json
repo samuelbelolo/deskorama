@@ -1,0 +1,17 @@
+{
+  "name": "@deskorama/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "End-to-end tests: Playwright drives the packaged desktop app.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "e2e": "playwright test",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

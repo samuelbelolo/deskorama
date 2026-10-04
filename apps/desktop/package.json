@@ -1,0 +1,38 @@
+{
+  "name": "@deskorama/desktop",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The macOS app: one Theme window per screen between the system wallpaper and the desktop icons, a menu-bar icon and the Local webhook.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/main/main.cjs",
+  "scripts": {
+    "build": "vite build && vite build -c vite.main.config.ts && vite build -c vite.preload.config.ts",
+    "start": "env -u ELECTRON_RUN_AS_NODE electron .",
+    "package": "electron-builder --mac --arm64 --publish never",
+    "package:e2e": "pnpm run build && electron-builder --mac dir --arm64 --publish never -c.electronFuses.enableNodeCliInspectArguments=true",
+    "typecheck": "tsc --noEmit -p . && tsc --noEmit -p tsconfig.node.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@napi-rs/keyring": "catalog:"
+  },
+  "devDependencies": {
+    "@deskorama/connector-feed": "workspace:*",
+    "@deskorama/connector-local-webhook": "workspace:*",
+    "@deskorama/core": "workspace:*",
+    "@deskorama/test-utils": "workspace:*",
+    "@deskorama/theme-aeroport": "workspace:*",
+    "@fontsource/barlow-condensed": "catalog:",
+    "@fontsource/jost": "catalog:",
+    "@types/node": "catalog:",
+    "electron": "catalog:",
+    "electron-builder": "catalog:",
+    "get-windows": "catalog:",
+    "typescript": "catalog:",
+    "valibot": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "productName": "Deskorama"
+}

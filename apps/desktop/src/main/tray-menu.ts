@@ -1,0 +1,62 @@
+import type { ConnectorFailure } from '@deskorama/core';
+import type { MenuItemConstructorOptions } from 'electron';
+import type { LatestRelease } from './fetch-latest-release.ts';
+import type { TrayText } from './tray-text.ts';
+
+/** A Source whose last poll failed, as the menu bar names it. */
+interface FailingSource {
+  readonly name: string;
+  readonly failure: ConnectorFailure;
+}
+
+/** What the menu-bar menu shows. */
+export interface TrayState {
+  readonly port: number;
+  /** False when the Local webhook could not listen on its port. */
+  readonly listening: boolean;
+  /** A published release newer than the running app, or null. */
+  readonly newRelease: LatestRelease | null;
+  /** The Sources whose last poll failed, in the settings' order. */
+  readonly failing: readonly FailingSource[];
+}
+
+/** What the menu's items do. */
+export interface TrayActions {
+  readonly copyTestCommand: () => void;
+  readonly openSettings: () => void;
+  /** Opens the new release's page, where the dmg is downloaded. */
+  readonly openNewRelease: (release: LatestRelease) => void;
+  readonly quit: () => void;
+}
+
+/**
+ * Returns the items of the menu-bar menu: one line per failing Source saying what to fix (it opens the settings),
+ * the Local webhook's address, a test command to copy, the settings, the new version once one is published, and
+ * quit. Quitting closes the wallpaper windows, which gives the system wallpaper back.
+ * @example
+ * const state = { port: 47213, listening: true, newRelease: null, failing: [] };
+ * Menu.buildFromTemplate(trayMenu(state, TRAY_TEXT.en, actions));
+ */
+export function trayMenu(state: TrayState, text: TrayText, actions: TrayActions): MenuItemConstructorOptions[] {
+  const webhook = state.listening ? text.listening(state.port) : text.webhookOff(state.port);
+
+  const release = state.newRelease;
+
+  const failing: MenuItemConstructorOptions[] = state.failing.map((source) => ({
+    label: text.failing(source.name, source.failure),
+    click: actions.openSettings,
+  }));
+
+  return [
+    ...failing,
+    ...(failing.length === 0 ? [] : [{ type: 'separator' } as const]),
+    { label: webhook, enabled: false },
+    { label: text.copyTestCommand, enabled: state.listening, click: actions.copyTestCommand },
+    { label: text.settings, accelerator: 'Command+,', click: actions.openSettings },
+    ...(release === null
+      ? []
+      : [{ label: text.newRelease(release.tag), click: () => actions.openNewRelease(release) }]),
+    { type: 'separator' },
+    { label: text.quit, accelerator: 'Command+Q', click: actions.quit },
+  ];
+}

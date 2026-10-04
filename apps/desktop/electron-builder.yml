@@ -1,0 +1,44 @@
+# Packages the macOS app (docs/releasing.md). The main process, preloads and renderer pages are bundled by Vite
+# into dist/. The only node_modules shipped are the production dependencies: the Keychain binding and its
+# prebuilt native module, which electron-builder unpacks from the ASAR archive so it can load.
+appId: io.github.samuelbelolo.deskorama
+productName: Deskorama
+directories:
+  # Not build/ nor dist/: both are gitignored, and dist/ holds Vite's bundles.
+  buildResources: resources
+  output: release
+files:
+  - dist/**
+  - package.json
+asar: true
+# get-windows' macOS executable lists other windows' frames; outside the ASAR archive so it can run.
+extraResources:
+  - from: node_modules/get-windows/main
+    to: get-windows
+mac:
+  category: public.app-category.entertainment
+  # Apple silicon only: macOS 27 announces that Intel apps stop running in macOS 28.
+  target:
+    - target: dmg
+      arch: arm64
+    - target: zip
+      arch: arm64
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+  # Signed ad hoc, not with an Apple Developer ID: free, and the whole bundle carries a valid signature, so
+  # macOS offers "Open Anyway" instead of calling the download damaged. Hardened runtime only matters to notarization.
+  identity: '-'
+  hardenedRuntime: false
+  extendInfo:
+    # A menu-bar app: no Dock icon and no app menu.
+    LSUIElement: true
+dmg:
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+# Electron fuses, flipped at package time, before the app is signed.
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  # Release builds refuse --inspect. The end-to-end build turns it back on: Playwright drives Electron through it.
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true

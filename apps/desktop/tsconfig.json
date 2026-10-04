@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "lib": ["es2024", "dom", "dom.iterable"],
+    "types": ["vite/client"]
+  },
+  "include": ["src/renderer", "src/shared"]
+}

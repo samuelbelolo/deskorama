@@ -1,0 +1,50 @@
+import type { Connector } from '@deskorama/core';
+import { MAX_NAME_LENGTH } from '../../shared/max-name-length.ts';
+import type { DraftProblems, SourceDraft } from '../../shared/settings-bridge.ts';
+
+/** The longest token accepted: real ones are a few hundred characters. */
+const MAX_TOKEN_LENGTH = 4096;
+
+/**
+ * Returns the fields of a draft that need fixing: a name, every field of its Connector, an `https://` address for
+ * a URL field, and a token unless an edited Source keeps the one in the Keychain.
+ * @example
+ * checkDraft({ id: null, connector: 'feed', name: 'Tramlo', values: { url: 'http://x.example' }, token: '' }, feed);
+ * // ['url', 'token']
+ */
+export function checkDraft(draft: SourceDraft, connector: Connector): DraftProblems {
+  const problems: string[] = [];
+
+  const name = draft.name.trim();
+
+  if (name === '' || name.length > MAX_NAME_LENGTH) problems.push('name');
+
+  for (const field of connector.config.fields) {
+    const value = (draft.values[field.key] ?? '').trim();
+
+    if (value === '' || (field.kind === 'url' && !isHttpsAddress(value))) problems.push(field.key);
+  }
+
+  const token = draft.token.trim();
+
+  if ((draft.id === null && token === '') || token.length > MAX_TOKEN_LENGTH || /\s/.test(token))
+    problems.push('token');
+
+  return problems;
+}
+
+/**
+ * Returns true for a well-formed `https://` address with a host.
+ * @example
+ * isHttpsAddress('https://api.tramlo.example/events'); // true
+ * isHttpsAddress('http://api.tramlo.example/events'); // false
+ */
+function isHttpsAddress(value: string): boolean {
+  try {
+    const url = new URL(value);
+
+    return url.protocol === 'https:' && url.hostname !== '';
+  } catch {
+    return false;
+  }
+}
