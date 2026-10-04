@@ -5,10 +5,11 @@ import { drawCaption } from './draw-caption.ts';
 /** Shows the Captions of one screen. */
 export interface Captions {
   /**
-   * Shows the Caption of `event` above `anchor`, kept across inside `bounds`, until the Clock reaches `until`. A
-   * Caption still held for a late glance stays: each one lives in its Gag's own held room, so they never overlap.
+   * Shows the Caption of `event` above `anchor`, kept across inside `bounds`, until the Clock reaches `until`, and
+   * returns what takes it down early. A Caption still held for a late glance stays: each one lives in its Gag's own
+   * held room, so they never overlap.
    */
-  show(event: WallpaperEvent, anchor: Point, until: number, bounds: Rect): void;
+  show(event: WallpaperEvent, anchor: Point, until: number, bounds: Rect): Cancel;
   /** Removes every Caption and cancels their timers. */
   dispose(): void;
 }
@@ -41,6 +42,8 @@ export function createCaptions(root: HTMLElement, host: ScreenHost): Captions {
         node,
         host.clock.after(until - host.clock.now(), () => remove(node)),
       );
+
+      return () => remove(node);
     },
     dispose() {
       for (const node of Array.from(shown.keys())) remove(node);

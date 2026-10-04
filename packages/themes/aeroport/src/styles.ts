@@ -1,6 +1,8 @@
 import { ACTOR_STYLES } from './actor-styles.ts';
 import { BOARD_STYLES } from './board-styles.ts';
 import { PALETTE } from './palette.ts';
+import { RARE_STYLES } from './rare-styles.ts';
+import { RECAP_STYLES } from './recap-styles.ts';
 import { SCENE_STYLES } from './scene-styles.ts';
 import { SIGN_GAP, SIGN_HEIGHT, SIGN_WIDTH } from './sign-size.ts';
 
@@ -64,4 +66,6 @@ export const STYLES: string = `
 ${SCENE_STYLES}
 ${BOARD_STYLES}
 ${ACTOR_STYLES}
+${RARE_STYLES}
+${RECAP_STYLES}
 `;

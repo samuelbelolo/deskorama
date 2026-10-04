@@ -17,6 +17,9 @@ const DURATION = 4600;
 /** How high the balloon rises above the passenger's hand. */
 const RISE = 90;
 
+/** How high it rises when room is short: it drifts up out of sight sooner. */
+const LOW_RISE = 30;
+
 /**
  * like: someone gives a thumbs-up. A passenger on the apron holds a big orange thumbs-up balloon with the tag on its
  * cuff ("+1", "LGTM"), then lets it go and it drifts up. A thumb, so it never reads as an approval's stamp.
@@ -27,12 +30,13 @@ const RISE = 90;
 export const playLike: Gag = scriptedGag({
   duration: DURATION,
   keyPose: 1200,
-  room: (stage) => ({
-    w: 160,
-    h: THUMB_HEIGHT + RISE + 30,
-    bands: ['ground'],
-    near: { x: stage.layout.width * 0.62, y: stage.layout.queue.feetY },
-  }),
+  room: (stage) =>
+    [RISE, LOW_RISE].map((rise) => ({
+      w: 160,
+      h: THUMB_HEIGHT + rise + 30,
+      bands: ['ground'],
+      near: { x: stage.layout.width * 0.62, y: stage.layout.queue.feetY },
+    })),
   build({ host, text }, event, room, layer) {
     const { spot, top, floor } = room;
     const word = tagWord(event, text.board.roles.like);

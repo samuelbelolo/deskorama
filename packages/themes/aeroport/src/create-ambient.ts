@@ -1,13 +1,9 @@
 import type { Cancel, GaugeValues, ScreenHost, WallpaperEvent } from '@deskorama/core';
-import { createBoard } from './create-board.ts';
-import { createLounge, LOUNGE_PLACES } from './create-lounge.ts';
-import { createPile } from './create-pile.ts';
-import { createStand } from './create-stand.ts';
+import { createAirfieldFixtures } from './create-airfield-fixtures.ts';
+import { createBoard, type Board } from './create-board.ts';
+import { createTerminalFixtures } from './create-terminal-fixtures.ts';
 import { createTimeOfDay } from './create-time-of-day.ts';
-import { createTower } from './create-tower.ts';
 import { createWindsock } from './create-windsock.ts';
-import { crowdFit } from './crowd-fit.ts';
-import { isDescribed } from './is-described.ts';
 import type { Layout } from './layout.ts';
 import type { Strings } from './strings.ts';
 
@@ -15,13 +11,16 @@ import type { Strings } from './strings.ts';
 export interface Ambient {
   /** Takes note of an Event as it arrives, before its Gag plays: the board lists it, today's rejections grow the pile. */
   readonly note: (event: WallpaperEvent) => void;
+  /** The board, which the failed deploy's signature line may take over. */
+  readonly board: Board;
   readonly dispose: Cancel;
 }
 
 /**
- * Sets up everything that stands on the poster between Gags: the hour on the sky, the tower, the windsock, the
- * parked plane with its queue, the lounge, the rejected-baggage pile and the Departures board. The crowd fills the
- * queue and the lounge and lifts the windsock; the build state moves the tower, the runway's state and its lights.
+ * Sets up everything that stands on the poster between Gags: the hour on the sky, the windsock, the board, and the
+ * fixtures of this side of the airport (the tower, the parked plane with its queue, the lounge and the pile by the
+ * terminal; the cargo plane on the airfield). The crowd fills the queue and the lounge and lifts the windsock; the
+ * build state moves the tower, the runway's state and its lights; on the airfield the board shows the Gauges.
  * @example
  * const ambient = createAmbient(root, poster, host, { layout, text });
  * host.onEvent(ambient.note);
@@ -33,29 +32,27 @@ export function createAmbient(
   scene: { readonly layout: Layout; readonly text: Strings },
 ): Ambient {
   const { layout } = scene;
-  const tower = createTower(root, poster, host);
   const sock = createWindsock(root, host, layout);
-  const stand = createStand(root, host, { layout, airline: scene.text.paint.airline });
-  const setLounge = createLounge(poster, layout);
-  const pile = createPile(root, host, scene);
+  const fixtures =
+    layout.side === 'terminal'
+      ? createTerminalFixtures(root, poster, host, scene)
+      : createAirfieldFixtures(root, host, scene);
   const board = createBoard(root, host, scene);
 
   let day = new Date(host.clock.now()).toDateString();
-  pile.setCount(host.today().roles.rejection ?? 0);
 
   const stopTime = createTimeOfDay(root, poster, { clock: host.clock, layout }, (phase) => {
-    tower.setPhase(phase);
+    fixtures.setPhase(phase);
+
     const today = new Date(host.clock.now()).toDateString();
-    if (today !== day) pile.setCount(host.today().roles.rejection ?? 0);
+    if (today !== day) fixtures.newDay();
     day = today;
   });
 
   const show = (gauges: GaugeValues): void => {
-    const max = host.source.gauges.crowd.max;
-    stand.setQueue(crowdFit(gauges.crowd, max, layout.queue.max));
-    setLounge(crowdFit(gauges.crowd, max, LOUNGE_PLACES));
-    sock.set(gauges.crowd / Math.max(1, max));
-    tower.setBuild(gauges.build);
+    fixtures.show(gauges);
+    sock.set(gauges.crowd / Math.max(1, host.source.gauges.crowd.max));
+    board.setNumbers(gauges);
     board.setRunway(gauges.build === 'building' ? 'busy' : gauges.build === 'error' ? 'closed' : 'free');
     root.classList.toggle('is-closed', gauges.build === 'error');
   };
@@ -66,17 +63,15 @@ export function createAmbient(
   return {
     note(event) {
       board.push(event);
-      const today = new Date(event.at).toDateString() === new Date(host.clock.now()).toDateString();
-      if (isDescribed(event) && event.archetype === 'rejection' && today) pile.setCount(pile.count() + 1);
+      fixtures.note(event);
     },
+    board,
     dispose() {
       stopGauges();
       stopTime();
-      tower.dispose();
       sock.dispose();
       board.dispose();
-      pile.dispose();
-      stand.dispose();
+      fixtures.dispose();
     },
   };
 }

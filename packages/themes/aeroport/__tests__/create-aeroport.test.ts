@@ -48,7 +48,7 @@ describe("L'Aéroport", () => {
     expect(mountAirport({ lang: 'en' }).layer.textContent).toContain('PROD-ON-SEA');
   });
 
-  const generic: (Archetype | null)[] = ['celebration', 'deploy', null];
+  const generic: (Archetype | null)[] = [null];
   test.each(generic)('plays the freight Gag with its Caption, fact then detail, for the Role %s', (archetype) => {
     const { layer, host } = mountAirport({ lang: 'en' });
     host.send(wallpaperEventFixture('en', { archetype }));

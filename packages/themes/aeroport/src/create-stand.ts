@@ -36,7 +36,11 @@ export function createStand(
   const planeTop = parked.wheelsY - CARAVELLE.wheels * parked.scale;
   const door = { x: parked.x + 46 * parked.scale, y: parked.wheelsY - 46 };
 
-  const plane = fixture(root, 'parked-plane', svgMarkup(caravelleMarkup(scene.airline, parked.scale)));
+  const plane = fixture(
+    root,
+    'parked-plane',
+    svgMarkup(caravelleMarkup({ title: scene.airline, scale: parked.scale, facing: 'left', parked: true })),
+  );
   plane.style.transform = `translate(${parked.x}px, ${planeTop}px)`;
   const stairs = fixture(root, 'stairs', svgMarkup(stairsMarkup(queue, door)));
 

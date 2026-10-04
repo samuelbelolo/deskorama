@@ -18,8 +18,9 @@ const DURATION = 5400;
 const PLANE_HEIGHT = 34;
 const BOB = 3;
 
-/** How far the plane flies across its room, at least. */
+/** How far the plane flies across its room, at least, and the shorter lane it makes do with when room is short. */
 const LANE = 300;
+const SHORT_LANE = 160;
 
 /**
  * usage: the product gets used. A Cub tows a banner painted with the tag ("+3", "CSV") slowly across a lane of
@@ -30,12 +31,13 @@ const LANE = 300;
 export const playUsage: Gag = scriptedGag({
   duration: DURATION,
   keyPose: 2700,
-  room: (stage, event) => ({
-    w: bannerPlaneMarkup(bannerWord(event, stage.text).length).width + LANE,
-    h: PLANE_HEIGHT + BOB * 2,
-    bands: [stage.layout.skyBand, 'ground'],
-    near: { x: stage.layout.width * 0.3, y: stage.layout.horizon * 0.45 },
-  }),
+  room: (stage, event) =>
+    [LANE, SHORT_LANE].map((lane) => ({
+      w: bannerPlaneMarkup(bannerWord(event, stage.text).length).width + lane,
+      h: PLANE_HEIGHT + BOB * 2,
+      bands: [stage.layout.skyBand, 'ground'],
+      near: { x: stage.layout.width * 0.3, y: stage.layout.horizon * 0.45 },
+    })),
   build({ text }, event, room, layer) {
     const { spot, top } = room;
     const word = bannerWord(event, text);

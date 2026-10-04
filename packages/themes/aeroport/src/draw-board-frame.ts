@@ -1,24 +1,30 @@
 import type { Layout } from './layout.ts';
 import type { Strings } from './strings.ts';
 import { svgMarkup } from './svg-markup.ts';
+import { element } from './element.ts';
 
 /** The board's frame and where its flaps go. */
 export interface BoardFrame {
   readonly node: HTMLElement;
   /** Where the runway state's flaps go, in the title band. */
   readonly runway: HTMLElement;
+  /** Where the Gauges' numbers go, under the title band: on the airfield's Arrivals board only. */
+  readonly numbers: HTMLElement | null;
   /** Where the rows go, under the column heads. */
   readonly rows: HTMLElement;
 }
 
 /**
- * Draws the Departures board's frame: the lattice pylons down to the hangar, the ink panel with its cobalt title
- * band painted with the title and the runway's name, and the column heads. The flaps are added by the caller.
+ * Draws the board's frame: the lattice pylons down to the hangar, the ink panel with its cobalt title band painted
+ * with the title and the runway's name, and the column heads. The terminal's Departures board shows runway 09; the
+ * airfield's Arrivals board shows runway 27 and keeps a band for the Gauges' numbers. The flaps are added by the
+ * caller.
  * @example
  * const frame = drawBoardFrame(root, layoutFor(host.screen), textFor('fr'));
  * frame.runway.append(runwayField.node);
  */
 export function drawBoardFrame(root: HTMLElement, layout: Layout, text: Strings): BoardFrame {
+  const terminal = layout.side === 'terminal';
   const { x, y, w, h } = layout.board;
   const legTop = y + h;
   const legBottom = layout.hangar.y + 6;
@@ -40,10 +46,13 @@ export function drawBoardFrame(root: HTMLElement, layout: Layout, text: Strings)
   node.style.height = `${h}px`;
 
   const band = element('div', 'aeroport-board-band', node);
-  element('span', 'aeroport-board-title', band).textContent = text.board.title;
+  element('span', 'aeroport-board-title', band).textContent = terminal ? text.board.title : text.board.arrivals;
   const runwayLine = element('span', 'aeroport-board-runway', band);
-  element('span', 'aeroport-board-runway-name', runwayLine).textContent = text.board.runway;
+  element('span', 'aeroport-board-runway-name', runwayLine).textContent = terminal
+    ? text.board.runway
+    : text.board.runwayFar;
   const runway = element('span', '', runwayLine);
+  const numbers = terminal ? null : element('div', 'aeroport-board-numbers', node);
 
   const heads = element('div', 'aeroport-board-heads', node);
   for (const column of text.board.columns) element('span', '', heads).textContent = column;
@@ -55,7 +64,7 @@ export function drawBoardFrame(root: HTMLElement, layout: Layout, text: Strings)
   both.append(pylons, node);
   root.append(both);
 
-  return { node: both, runway, rows };
+  return { node: both, runway, numbers, rows };
 }
 
 /**
@@ -71,17 +80,4 @@ function lattice(x: number, top: number, bottom: number): string {
   return `<rect class="pylon" x="${x - 1}" y="${top}" width="3" height="${bottom - top}"/>
     <rect class="pylon" x="${x + 13}" y="${top}" width="3" height="${bottom - top}"/>
     <path class="pylon-brace" d="${braces}"/>`;
-}
-
-/**
- * Returns a new element with a class, appended to `parent`.
- * @example
- * element('span', 'aeroport-board-title', band).textContent = 'Départs';
- */
-function element(tag: string, className: string, parent: HTMLElement): HTMLElement {
-  const node = document.createElement(tag);
-  if (className !== '') node.className = className;
-  parent.append(node);
-
-  return node;
 }

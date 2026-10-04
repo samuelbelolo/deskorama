@@ -15,7 +15,9 @@ import { tagWord } from './tag-word.ts';
 
 const DURATION = 4000;
 const SCALE = 1.6;
+/** How high the suitcase flies, and how low it may fly when room is short. */
 const ARC = 60;
+const LOW_ARC = 16;
 
 /**
  * rejection: something is sent back. A handler throws a suitcase with a luggage tag painted with the tag
@@ -27,14 +29,15 @@ const ARC = 60;
 export const playRejection: Gag = scriptedGag({
   duration: DURATION,
   keyPose: 2400,
-  room: (stage, event) => ({
-    w: suitcaseMarkup(tagWord(event, stage.text.board.roles.rejection).length).width * SCALE + 180,
-    h: 54 * SCALE + ARC + 40,
-    bands: ['ground'],
-    near: { x: stage.layout.pile.x + 160, y: stage.layout.pile.feetY },
-  }),
+  room: (stage, event) =>
+    [ARC, LOW_ARC].map((arc) => ({
+      w: suitcaseMarkup(tagWord(event, stage.text.board.roles.rejection).length).width * SCALE + 180,
+      h: 54 * SCALE + arc + 40,
+      bands: ['ground'],
+      near: { x: stage.layout.pile.x + 160, y: stage.layout.pile.feetY },
+    })),
   build({ text }, event, room, layer) {
-    const { spot, floor } = room;
+    const { spot, top, floor } = room;
     const word = tagWord(event, text.board.roles.rejection);
     const art = suitcaseMarkup(word.length);
     const caseW = art.width * SCALE;
@@ -47,6 +50,8 @@ export const playRejection: Gag = scriptedGag({
 
     const from = { x: handlerX - 30 - caseW, y: floor - caseH - 30 };
     const to = { x: spot.x + 10, y: floor - caseH };
+    // The arc never rises out of the room: a lower room gets a flatter throw.
+    const arc = Math.min(ARC, Math.max(0, Math.min(from.y, to.y) - top));
 
     return {
       captionX: to.x + caseW / 2,
@@ -67,7 +72,7 @@ export const playRejection: Gag = scriptedGag({
         handler.place(handlerX, floor, life);
         poseSprite(suitcase, {
           x: lerp(from.x, to.x, flight),
-          y: lerp(from.y, to.y, flight) - Math.sin(flight * Math.PI) * ARC - hop,
+          y: lerp(from.y, to.y, flight) - Math.sin(flight * Math.PI) * arc - hop,
           opacity: life,
         });
       },

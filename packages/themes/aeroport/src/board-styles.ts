@@ -1,6 +1,7 @@
 /**
- * The Departures board's stylesheet: an ink panel, a cobalt title band, and split-flap cells in Barlow Condensed,
- * the closest face to Solari's lettering. A row in orange is live news; older rows are dimmed.
+ * The boards' stylesheet: an ink panel, a cobalt title band, and split-flap cells in Barlow Condensed, the closest
+ * face to Solari's lettering. A row in orange is live news; older rows are dimmed. The Arrivals board adds its band of
+ * Gauge numbers; a failed deploy may lay two full-width lines over the first rows.
  */
 export const BOARD_STYLES = `
 .aeroport-root .pylon { fill: var(--ink); }
@@ -24,4 +25,12 @@ export const BOARD_STYLES = `
 .aeroport-flaps[data-tone='dim'] { color: #7f8995; }
 .aeroport-board-runway .aeroport-flaps { width: 92px; }
 .aeroport-board-runway .aeroport-flap { height: 22px; font-size: 15px; line-height: 22px; box-shadow: none; }
+.aeroport-board-rows { position: relative; }
+.aeroport-board-takeover { position: absolute; left: 0; right: 0; top: 0; display: grid; gap: 4px; background: var(--ink); }
+.aeroport-board-numbers { display: grid; grid-template-columns: 4fr 5fr 6fr; gap: 12px; padding: 6px 0 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--chalk) 30%, transparent); }
+.aeroport-board-number { display: grid; gap: 1px; min-width: 0; }
+.aeroport-board-number-label { overflow: hidden; font: 600 9px/1.15 'Jost', sans-serif; letter-spacing: 0.08em;
+  text-transform: uppercase; white-space: nowrap; text-overflow: ellipsis; opacity: 0.8; }
+.aeroport-board-number .aeroport-flap { height: 30px; font-size: 24px; line-height: 30px; }
 `;

@@ -35,7 +35,12 @@ describe("L'Aéroport's words", () => {
   test('every word the board flips is on the split-flap drum, in both languages', () => {
     for (const lang of ['fr', 'en'] as const) {
       const { board } = TEXT[lang];
-      const flipped = [board.unknown, ...Object.values(board.runwayState), ...Object.values(board.roles)];
+      const flipped = [
+        board.unknown,
+        ...Object.values(board.runwayState),
+        ...Object.values(board.roles),
+        ...TEXT[lang].jackpot.panel,
+      ];
       const missing = flipped.filter((word) => onDrum(word) !== word);
       expect({ lang, missing }).toEqual({ lang, missing: [] });
     }

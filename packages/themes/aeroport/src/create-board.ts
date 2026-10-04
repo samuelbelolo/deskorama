@@ -1,11 +1,13 @@
-import type { Cancel, Clock, Language, ScreenHost, WallpaperEvent } from '@deskorama/core';
+import type { Cancel, Clock, GaugeValues, Language, Rect, ScreenHost, WallpaperEvent } from '@deskorama/core';
 import { boardRow, FLIGHT_CELLS, STATUS_CELLS, type BoardRow } from './board-row.ts';
+import { createBoardNumbers } from './create-board-numbers.ts';
 import { createFlapField, type FlapField, type FlapTone } from './create-flap-field.ts';
 import { drawBoardFrame } from './draw-board-frame.ts';
 import { freshTone } from './fresh-tone.ts';
 import type { Layout } from './layout.ts';
 import { localeFor } from './locale-for.ts';
 import type { RunwayState, Strings } from './strings.ts';
+import { takeOverRows } from './take-over-rows.ts';
 
 /** How many Events the board lists, newest on top. */
 const BOARD_ROWS = 5;
@@ -20,7 +22,7 @@ const TIME_FORMAT: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-di
 const TIME_CELLS = 5;
 const RUNWAY_CELLS = 8;
 
-/** The Departures board: a log of what happened, and the runway's state. */
+/** The board: a log of what happened, the runway's state, and on the airfield the Gauges' numbers. */
 export interface Board {
   /**
    * Puts an Event on the top row, bright (orange for bad news); the older rows move down, dimmed. Deploys are not
@@ -28,6 +30,12 @@ export interface Board {
    */
   readonly push: (event: WallpaperEvent) => void;
   readonly setRunway: (state: RunwayState) => void;
+  /** Flips the Gauges' numbers on the Arrivals board; the Departures board has none. */
+  readonly setNumbers: (values: GaugeValues) => void;
+  /** Where the first row stands, in screen pixels, so a Gag can tell whether the board shows. */
+  readonly firstRow: () => Rect;
+  /** Lays two full-width lines over the first two rows until the returned function hands them back. */
+  readonly takeOver: (lines: readonly [string, string]) => Cancel;
   readonly dispose: Cancel;
 }
 
@@ -38,8 +46,9 @@ interface Listed extends BoardRow {
 }
 
 /**
- * Returns the split-flap Departures board on its pylons over the hangar. It starts with the latest Events already
- * listed, dimmed, and is reserved so no Gag covers it.
+ * Returns the split-flap board on its pylons over the hangar: Departures on the terminal side, Arrivals with the
+ * Gauges' numbers on the airfield. It starts with the latest Events already listed, dimmed, and is reserved so no
+ * Gag covers it.
  * @example
  * const board = createBoard(root, host, { layout, text });
  * board.push(event); // 14:02  PULL REQUEST  MERGED, bright for 7 s
@@ -56,6 +65,7 @@ export function createBoard(
 
   const runway = createFlapField(RUNWAY_CELLS, clock, 'board-runway');
   frame.runway.append(runway.node);
+  const numbers = frame.numbers === null ? null : createBoardNumbers(frame.numbers, host, text);
 
   const rows = Array.from({ length: BOARD_ROWS }, (_, i) => createRow(frame.rows, clock, i));
 
@@ -67,16 +77,9 @@ export function createBoard(
     .filter((entry) => entry !== null)
     .slice(0, BOARD_ROWS);
   let fresh: Cancel | null = null;
+  let counted = false;
 
-  const render = (newest: boolean, animate: boolean): void => {
-    rows.forEach((fields, i) => {
-      const entry = entries[i];
-      const tone = i === 0 && newest && entry !== undefined ? entry.tone : 'dim';
-      fields[0].flip(entry?.time ?? '', tone, !animate);
-      fields[1].flip(entry?.flight ?? '', tone, !animate);
-      fields[2].flip(entry?.status ?? '', tone, !animate);
-    });
-  };
+  const render = (newest: boolean, animate: boolean): void => renderRows(rows, entries, { newest, animate });
 
   render(false, false);
   runway.flip(text.board.runwayState.free, 'plain', true);
@@ -95,14 +98,52 @@ export function createBoard(
     setRunway(state) {
       runway.flip(text.board.runwayState[state], state === 'closed' ? 'news' : 'plain', instant);
     },
+    setNumbers(values) {
+      // The first numbers land at once, like the rows; later ones flip.
+      numbers?.show(values, instant || !counted);
+      counted = true;
+    },
+    firstRow: () => firstRowOf(layout.board, frame.rows),
+    takeOver: (lines) => takeOverRows(frame.rows, clock, lines, instant || host.isHidden()),
     dispose() {
       fresh?.();
       release();
       runway.dispose();
+      numbers?.dispose();
       for (const fields of rows) for (const field of fields) field.dispose();
       frame.node.remove();
     },
   };
+}
+
+/**
+ * Flips every row to its listed Event, or blank: the newest bright in its tone when `newest`, the others dimmed;
+ * at once unless `animate`.
+ * @example
+ * renderRows(rows, entries, { newest: true, animate: true });
+ */
+function renderRows(
+  rows: readonly (readonly [FlapField, FlapField, FlapField])[],
+  entries: readonly Listed[],
+  how: { readonly newest: boolean; readonly animate: boolean },
+): void {
+  rows.forEach((fields, i) => {
+    const entry = entries[i];
+    const tone = i === 0 && how.newest && entry !== undefined ? entry.tone : 'dim';
+
+    fields[0].flip(entry?.time ?? '', tone, !how.animate);
+    fields[1].flip(entry?.flight ?? '', tone, !how.animate);
+    fields[2].flip(entry?.status ?? '', tone, !how.animate);
+  });
+}
+
+/**
+ * Returns where the board's first row stands, in screen pixels, so a scene can tell whether it shows.
+ * @example
+ * firstRowOf(layout.board, frame.rows); // { x: 878, y: 90, w: 432, h: 30 }
+ */
+function firstRowOf(board: Rect, rows: HTMLElement): Rect {
+  return { x: board.x + rows.offsetLeft, y: board.y + rows.offsetTop, w: board.w - 2 * rows.offsetLeft, h: 30 };
 }
 
 /**

@@ -11,23 +11,28 @@ export interface Bubble {
 }
 
 /**
- * Returns a speech bubble saying `line`, its tail on the speaker's head, kept across inside `room`. The text is
- * set as plain text: a radio bubble may carry an Event's detail. Speech bubbles are the poster's only round shape.
+ * Returns a speech bubble saying `line`, its tail on the speaker's head, kept across inside `room`; `below` hangs
+ * it under the speaker instead, its tail pointing up (the tower speaks from its cab). The text is set as plain text:
+ * a radio bubble may carry an Event's detail. Speech bubbles are the poster's only round shape.
  * @example
  * const { node } = createBubble(stage.root, 'Bien reçu.', { head: { x: 400, y: 690 }, room, radio: true });
  */
 export function createBubble(
   parent: HTMLElement,
   line: string,
-  place: { readonly head: Point; readonly room: Rect; readonly radio?: boolean },
+  place: { readonly head: Point; readonly room: Rect; readonly radio?: boolean; readonly below?: boolean },
 ): Bubble {
   const { head, room } = place;
   const size = bubbleSize(line, Math.min(280, room.w));
   const x = Math.min(Math.max(head.x - size.w / 2, room.x), room.x + room.w - size.w);
-  const y = head.y - TAIL_GAP - size.h;
+  const y = place.below === true ? head.y + TAIL_GAP : head.y - TAIL_GAP - size.h;
 
   const node = document.createElement('div');
-  node.className = place.radio === true ? 'aeroport-bubble aeroport-bubble--radio' : 'aeroport-bubble';
+  node.className = [
+    'aeroport-bubble',
+    ...(place.radio === true ? ['aeroport-bubble--radio'] : []),
+    ...(place.below === true ? ['aeroport-bubble--below'] : []),
+  ].join(' ');
   node.dataset['part'] = 'bubble';
   node.dataset['gag'] = '';
   node.textContent = line;

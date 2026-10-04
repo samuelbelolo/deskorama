@@ -1,6 +1,6 @@
 /**
  * The poster's stylesheet: tints that follow the hour (custom properties written on the root), the night lights,
- * the tower's poses, and the closed runway. Every rule is scoped to the Theme's root.
+ * the tower's poses, the airfield's fire station, and the closed runway. Every rule is scoped to the Theme's root.
  */
 export const SCENE_STYLES = `
 .aeroport-root .t-sky1 { fill: var(--sky1); } .aeroport-root .t-sky2 { fill: var(--sky2); }
@@ -61,4 +61,11 @@ export const SCENE_STYLES = `
 .aeroport-root.is-closed .light { fill: var(--accent); opacity: 1; }
 .aeroport-root.is-closed .light-halo { fill: var(--accent); opacity: 0.32; }
 .aeroport-root .silhouette { fill: var(--ink); }
+.aeroport-root .station-band { fill: var(--accent); }
+.aeroport-root .station-name { fill: var(--ink); font: 600 15px 'Jost', sans-serif; letter-spacing: 0.08em; }
+.aeroport-root .bay-dark { fill: var(--ink); opacity: 0.85; }
+.aeroport-root .bay-door { fill: color-mix(in srgb, var(--facade) 70%, var(--ink)); }
+.aeroport-root .bay-seams { fill: none; stroke: var(--ink); stroke-opacity: 0.25; stroke-width: 1.5; }
+.aeroport-root .bay-number { fill: var(--ink); opacity: 0.6; font: 600 10px 'Jost', sans-serif; }
+.aeroport-root .hose-window { fill: var(--glass); }
 `;
