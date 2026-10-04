@@ -1,0 +1,53 @@
+packages:
+  - apps/*
+  - e2e
+  - packages/*
+  - packages/connectors/*
+  - packages/themes/*
+
+# One version per tool, referenced as "catalog:" in each package.json.
+catalog:
+  '@fontsource/barlow-condensed': 5.3.0
+  '@fontsource/jost': 5.3.0
+  # The macOS Keychain, through prebuilt N-API binaries: no rebuild for Electron's ABI.
+  '@napi-rs/keyring': 2.1.0
+  '@playwright/test': 1.63.0
+  # Electron 44 runs Node 24, hence @types/node 24.
+  '@types/node': 24.19.1
+  '@vitest/browser-playwright': 5.0.3
+  ajv: 8.20.0
+  dependency-cruiser: 18.5.0
+  electron: 44.5.1
+  # 26.17.0 is the newest stable 26.x (dist-tag "v26"); the "latest" tag still points at 26.15.3.
+  electron-builder: 26.17.0
+  # On macOS, a prebuilt Swift executable that lists other windows' frames; its native addon is for Windows only.
+  get-windows: 9.3.0
+  knip: 6.39.0
+  oxfmt: 0.71.0
+  oxlint: 1.86.0
+  oxlint-tsgolint: 7.0.2003
+  playwright: 1.63.0
+  turbo: 2.11.7
+  typescript: 7.0.2
+  valibot: 1.5.0
+  vite: 8.3.2
+  vitest: 5.0.3
+
+# Packages younger than this many minutes are not installed. Zero for the first install, because several pinned
+# tools were published on the day the workspace was created; raise it once Renovate manages updates.
+minimumReleaseAge: 0
+
+# dependency-cruiser reads TypeScript through its compiler API, which TypeScript 7 does not expose yet.
+# It gets the TypeScript 6 API under the name "typescript" for itself only; everything else uses TypeScript 7.
+packageExtensions:
+  dependency-cruiser:
+    dependencies:
+      typescript: npm:@typescript/typescript6@6.0.2
+
+# pnpm runs no dependency install script unless allowed here. Electron's downloads the Electron binary;
+# electron-winstaller (pulled in by electron-builder) prepares Windows installers, which this macOS app never builds.
+allowBuilds:
+  electron: true
+  electron-winstaller: false
+  # get-windows builds a native addon used on Windows only; on macOS it runs its prebuilt executable.
+  get-windows: false

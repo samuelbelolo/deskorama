@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.env
+.env.*
+
+# Packaged desktop app (electron-builder's output)
+release/
+
+# Turborepo cache, Vitest browser-mode failure screenshots, Playwright reports
+.turbo/
+__screenshots__/
+test-results/
+playwright-report/

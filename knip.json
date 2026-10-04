@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "project": []
+    },
+    "packages/*": {},
+    "packages/connectors/*": {},
+    "packages/themes/*": {},
+    "apps/demo": {},
+    "apps/desktop": {
+      "entry": ["src/main/main.ts", "src/renderer/index.html", "src/renderer/settings/index.html", "vite.*.config.ts"],
+      "ignoreDependencies": ["get-windows"]
+    },
+    "e2e": {}
+  }
+}

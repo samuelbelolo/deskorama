@@ -1,0 +1,30 @@
+{
+  "name": "deskorama",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Animated macOS desktop wallpapers that react to events from the systems you plug in.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "check": "turbo run lint format:check deps knip typecheck test --continue",
+    "lint": "oxlint apps packages e2e .dependency-cruiser.cjs",
+    "format": "oxfmt apps packages e2e docs .github *.json *.md *.yaml .*.json .*.cjs",
+    "format:check": "pnpm format --check",
+    "deps": "depcruise apps packages e2e",
+    "knip": "knip",
+    "e2e": "pnpm --filter @deskorama/desktop package:e2e && pnpm --filter @deskorama/e2e e2e"
+  },
+  "devDependencies": {
+    "dependency-cruiser": "catalog:",
+    "knip": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@12.9.1"
+}
