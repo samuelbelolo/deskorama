@@ -265,6 +265,9 @@ importers:
         specifier: workspace:*
         version: link:../../packages/themes/aeroport
     devDependencies:
+      '@playwright/test':
+        specifier: 'catalog:'
+        version: 1.63.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -560,6 +563,28 @@ importers:
         version: 5.0.3(@types/node@24.19.1)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/themes/aeroport:
+    dependencies:
+      '@deskorama/core':
+        specifier: workspace:*
+        version: link:../../core
+    devDependencies:
+      '@deskorama/test-utils':
+        specifier: workspace:*
+        version: link:../../test-utils
+      '@vitest/browser-playwright':
+        specifier: 'catalog:'
+        version: 5.0.3(playwright@1.63.0)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.3)
+      playwright:
+        specifier: 'catalog:'
+        version: 1.63.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.3(@types/node@24.19.1)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1))
+
+  packages/themes/immeuble:
     dependencies:
       '@deskorama/core':
         specifier: workspace:*
