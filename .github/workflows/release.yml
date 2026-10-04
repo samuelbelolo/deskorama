@@ -1,0 +1,65 @@
+# Releases the macOS app (docs/releasing.md). Release Please keeps a release pull request up to date from
+# the Conventional Commits on main. Merging it tags a draft GitHub release; the mac job then builds the app, attaches
+# the dmg and the zip, and publishes the release. Installed apps only see published releases, so nobody is told about
+# a release whose downloads are still missing.
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      created: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@v5
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  mac:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    runs-on: macos-26
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ needs.release-please.outputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build, watching this repository for new releases
+        run: pnpm --filter @deskorama/desktop build
+        env:
+          RELEASE_REPOSITORY: ${{ github.repository }}
+      - name: Package and sign ad hoc (no Apple Developer ID)
+        run: pnpm --filter @deskorama/desktop package
+      - name: Check the signature survives the zip
+        run: |
+          ditto -x -k apps/desktop/release/*.zip "$RUNNER_TEMP/unzipped"
+          codesign --verify --deep --strict --verbose=2 "$RUNNER_TEMP/unzipped/Deskorama.app"
+      - name: Attach the dmg and the zip to the draft release
+        run: gh release upload "$TAG" apps/desktop/release/*.dmg apps/desktop/release/*.zip --clobber
+      - name: Publish the release
+        run: gh release edit "$TAG" --draft=false --latest

@@ -1,0 +1,49 @@
+# Lint, format, layering rules, dead code, type-check and tests on every pull request and on main, then the
+# end-to-end test of the packaged macOS app.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Reads the pnpm version from "packageManager" in package.json.
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Themes are tested in Vitest browser mode, in headless Chromium.
+      - run: pnpm --filter @deskorama/theme-aeroport exec playwright install --with-deps chromium
+      - run: pnpm check
+
+  desktop-e2e:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # An unsigned app, with the --inspect fuse left on for Playwright; release builds turn it off.
+      - run: pnpm e2e
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-e2e-results
+          path: e2e/test-results
