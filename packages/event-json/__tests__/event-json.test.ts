@@ -71,6 +71,17 @@ describe('an Event in its JSON form', () => {
     expect((await validatePostedEvent({ ...base, at: '2026-10-04 13:52:10Z' })).ok).toBe(false);
   });
 
+  test('refuses a day its month lacks, which Date.parse would carry into the next month', async () => {
+    const base = { kind: 'signup.created', source: 'Tramlo', text: { en: { label: 'New sign-up' } } };
+
+    expect((await validatePostedEvent({ ...base, at: '2026-02-31T10:00:00Z' })).ok).toBe(false);
+    expect((await validatePostedEvent({ ...base, at: '2026-04-31T10:00:00Z' })).ok).toBe(false);
+    expect((await validatePostedEvent({ ...base, at: '2026-02-29T10:00:00Z' })).ok).toBe(false);
+    expect((await validatePostedEvent({ ...base, at: '2028-02-29T10:00:00Z' })).ok).toBe(true);
+    expect((await validatePostedEvent({ ...base, at: '2100-02-29T10:00:00Z' })).ok).toBe(false);
+    expect((await validatePostedEvent({ ...base, at: '2000-02-29T10:00:00Z' })).ok).toBe(true);
+  });
+
   test('counts lengths in characters, before trimming, as the published JSON Schema does', async () => {
     expect((await validatePostedEvent(withTag('🚀 DEPLOY SUCCESS'))).ok).toBe(true);
     expect((await validatePostedEvent(withTag(' 🚀 DEPLOY SUCCESS'))).ok).toBe(false);

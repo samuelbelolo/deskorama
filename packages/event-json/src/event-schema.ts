@@ -1,10 +1,12 @@
 import { ARCHETYPES, DEPLOY_STEPS, GAUGE_ROLES, RARITIES } from '@deskorama/core';
 import * as v from 'valibot';
+import { isCalendarDate } from './is-calendar-date.ts';
 import type { PostedEvent } from './posted-event.ts';
 
 /**
  * A time with its zone, as `docs/feed/feed-page.schema.json` publishes it: `T` between date and time, then `Z` or
- * an offset with a colon. Narrower than ISO 8601, so every accepted value is one `Date.parse` reads.
+ * an offset with a colon. Narrower than ISO 8601, so every value it accepts is one `Date.parse` reads; the calendar
+ * check that follows it refuses a day the month lacks, which `Date.parse` would carry into the next month.
  */
 const TIMESTAMP =
   /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,9})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/u;
@@ -48,7 +50,13 @@ const ENTRIES = {
   recognised: v.optional(v.boolean(), true),
   rarity: v.optional(v.picklist(RARITIES), 'common'),
   source: v.pipe(text(40), v.nonEmpty()),
-  at: v.optional(v.pipe(v.string(), v.regex(TIMESTAMP, 'a time with its zone, e.g. 2026-10-04T13:58:00Z'))),
+  at: v.optional(
+    v.pipe(
+      v.string(),
+      v.regex(TIMESTAMP, 'a time with its zone, e.g. 2026-10-04T13:58:00Z'),
+      v.check(isCalendarDate, 'a day its month has'),
+    ),
+  ),
   text: v.pipe(
     v.strictObject({ fr: v.optional(WORDS), en: v.optional(WORDS) }),
     v.check((words) => words.fr !== undefined || words.en !== undefined, 'text needs French, English or both'),
