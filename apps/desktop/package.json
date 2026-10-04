@@ -19,7 +19,13 @@
   },
   "devDependencies": {
     "@deskorama/connector-feed": "workspace:*",
+    "@deskorama/connector-github": "workspace:*",
+    "@deskorama/connector-linear": "workspace:*",
     "@deskorama/connector-local-webhook": "workspace:*",
+    "@deskorama/connector-posthog": "workspace:*",
+    "@deskorama/connector-sentry": "workspace:*",
+    "@deskorama/connector-stripe": "workspace:*",
+    "@deskorama/connector-vercel": "workspace:*",
     "@deskorama/core": "workspace:*",
     "@deskorama/test-utils": "workspace:*",
     "@deskorama/theme-aeroport": "workspace:*",

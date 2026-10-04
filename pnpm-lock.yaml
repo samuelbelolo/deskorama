@@ -290,9 +290,27 @@ importers:
       '@deskorama/connector-feed':
         specifier: workspace:*
         version: link:../../packages/connectors/feed
+      '@deskorama/connector-github':
+        specifier: workspace:*
+        version: link:../../packages/connectors/github
+      '@deskorama/connector-linear':
+        specifier: workspace:*
+        version: link:../../packages/connectors/linear
       '@deskorama/connector-local-webhook':
         specifier: workspace:*
         version: link:../../packages/connectors/local-webhook
+      '@deskorama/connector-posthog':
+        specifier: workspace:*
+        version: link:../../packages/connectors/posthog
+      '@deskorama/connector-sentry':
+        specifier: workspace:*
+        version: link:../../packages/connectors/sentry
+      '@deskorama/connector-stripe':
+        specifier: workspace:*
+        version: link:../../packages/connectors/stripe
+      '@deskorama/connector-vercel':
+        specifier: workspace:*
+        version: link:../../packages/connectors/vercel
       '@deskorama/core':
         specifier: workspace:*
         version: link:../../packages/core
