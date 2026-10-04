@@ -21,8 +21,9 @@ export interface CaravelleLook {
 
 /**
  * Returns a Sud Aviation Caravelle in the Air Prod livery: rear engines, triangular windows (or a cargo door), the
- * relief wings, and, when parked, a flat shadow on the apron. A plane ready for its christening carries a hidden
- * `name` slot that a Gag fills with the Event's tag as plain text.
+ * relief wings, and, when parked, a flat shadow on the apron. Seen slightly from above, the near wing hides the
+ * main gear's strut, so the main gear is drawn before it; the nose gear stands clear of the wing. A plane ready for
+ * its christening carries a hidden `name` slot that a Gag fills with the Event's tag as plain text.
  * @example
  * caravelleMarkup({ title: 'AIR PROD', scale: 1.5, facing: 'left', parked: true }).includes('wing-top'); // true
  * caravelleMarkup({ title: 'VOL PROD', scale: 1.5, facing: 'right', christening: true }).includes('data-slot="name"'); // true
@@ -53,9 +54,11 @@ export function caravelleMarkup(look: CaravelleLook): string {
       <rect class="engine" x="42" y="27" width="46" height="13" rx="6.5"/>
       <rect class="engine-intake" x="84" y="27" width="5" height="13" rx="2.5"/>
       <rect class="engine-exhaust" x="39" y="29.5" width="5" height="8"/>
+      <rect class="strut" x="149" y="58" width="3" height="13"/>
+      <circle class="wheel" cx="145" cy="75.5" r="5.2"/><circle class="wheel" cx="156" cy="75.5" r="5.2"/>
       ${CARAVELLE_WINGS.near}
-      <rect class="strut" x="149" y="58" width="3" height="13"/><rect class="strut" x="260" y="57" width="2.6" height="15"/>
-      <circle class="wheel" cx="145" cy="75.5" r="5.2"/><circle class="wheel" cx="156" cy="75.5" r="5.2"/><circle class="wheel" cx="261" cy="76.8" r="4.2"/>
+      <rect class="strut" x="260" y="57" width="2.6" height="15"/>
+      <circle class="wheel" cx="261" cy="76.8" r="4.2"/>
     </g>
     ${wordsMarkup(look)}
     <text class="plane-tail" x="${left ? 281 : 19}" y="16.6" text-anchor="middle">P</text>
