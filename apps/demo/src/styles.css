@@ -32,70 +32,231 @@ h1 {
 }
 
 .intro {
-  max-width: 60ch;
+  max-width: 64ch;
   margin: 0 0 24px;
   font-size: 17px;
   line-height: 1.5;
 }
 
-.controls {
+/* The fake desktop and its control panel, side by side when the page is wide enough. */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.scene-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-weight: 600;
+}
+
+.field legend {
+  margin-bottom: 6px;
+  padding: 0;
+}
+
+.field select {
+  padding: 6px 8px;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  background: var(--chalk);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 400;
+}
+
+.pitch,
+.hint {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.language {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.language legend {
+  float: left;
+  margin: 0 12px 0 0;
+}
+
+.language label {
+  font-weight: 400;
+}
+
+.button-group,
+.toggles,
+.triggers {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 16px 32px;
-  margin-bottom: 20px;
+  gap: 6px;
 }
 
-.send {
-  padding: 10px 18px;
-  border: 0;
-  border-radius: 3px;
-  background: var(--cobalt);
-  color: var(--chalk);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.send:hover {
-  background: var(--ink);
-}
-
-.cover {
-  padding: 8px 16px;
+.group-button,
+.toggle,
+.trigger {
+  padding: 6px 12px;
   border: 2px solid var(--ink);
   border-radius: 3px;
   background: transparent;
   color: var(--ink);
   font: inherit;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.cover[aria-pressed='true'] {
+.group-button[aria-pressed='true'],
+.toggle[aria-pressed='true'] {
   background: var(--ink);
   color: var(--chalk);
 }
 
-.send:focus-visible,
-.cover:focus-visible,
-.language input:focus-visible {
+.trigger {
+  border-width: 1px;
+  font-weight: 400;
+  text-align: left;
+}
+
+.trigger:hover {
+  background: var(--cobalt);
+  color: var(--chalk);
+}
+
+.trigger[data-rarity='notable'] {
+  border-color: var(--cobalt);
+}
+
+.trigger[data-rarity='rare'],
+.trigger[data-rarity='jackpot'] {
+  border-color: var(--orange);
+  font-weight: 600;
+}
+
+.trigger[data-rarity='foreign'] {
+  border-style: dashed;
+}
+
+.group-button:focus-visible,
+.toggle:focus-visible,
+.trigger:focus-visible,
+.field select:focus-visible,
+.language input:focus-visible,
+.link:focus-visible,
+.download-link:focus-visible {
   outline: 3px solid var(--orange);
   outline-offset: 2px;
 }
 
-.language {
-  display: flex;
-  gap: 16px;
-  margin: 0;
-  padding: 0;
-  border: 0;
+/* How Sources, Roles, Gauges, Themes and the Feed fit together. */
+.explainer {
+  max-width: 900px;
+  margin-top: 48px;
+  line-height: 1.5;
 }
 
-.language legend {
-  float: left;
-  margin-right: 12px;
+.explainer h2 {
+  margin: 0 0 16px;
+  font-size: 26px;
   font-weight: 600;
+}
+
+.explainer h3 {
+  margin: 24px 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.concepts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 32px;
+}
+
+@media (max-width: 640px) {
+  .concepts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.concepts p {
+  margin: 0;
+}
+
+.feed-example {
+  overflow-x: auto;
+  padding: 16px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--chalk);
+  font:
+    13px/1.5 ui-monospace,
+    Menlo,
+    monospace;
+}
+
+.link {
+  color: var(--cobalt);
+  font-weight: 600;
+}
+
+.download {
+  margin-top: 32px;
+}
+
+.download-link {
+  display: inline-block;
+  padding: 12px 20px;
+  border-radius: 3px;
+  background: var(--cobalt);
+  color: var(--chalk);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.download-link:hover {
+  background: var(--ink);
+}
+
+.download .hint {
+  margin-top: 8px;
 }
 
 .frame {

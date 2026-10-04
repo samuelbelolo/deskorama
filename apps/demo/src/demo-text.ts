@@ -1,15 +1,22 @@
 import type { Language } from '@deskorama/core';
 
-/** The words of the demo page around the scene, and of its fake desktop. */
+/** The words of the demo page around the scene, of its control panel and of its fake desktop. */
 export interface DemoText {
   readonly title: string;
   readonly intro: string;
-  readonly send: string;
+  readonly panelTitle: string;
+  readonly source: string;
+  readonly theme: string;
+  readonly comingSoon: string;
+  readonly language: string;
+  readonly speed: string;
+  readonly speedHint: string;
+  readonly hour: string;
   readonly addScreen: string;
   readonly removeScreen: string;
   readonly cover: string;
   readonly uncover: string;
-  readonly language: string;
+  readonly trigger: string;
   readonly sceneLabel: string;
   readonly menu: string;
   readonly meeting: string;
@@ -21,13 +28,20 @@ export const DEMO_TEXT: Readonly<Record<Language, DemoText>> = {
   fr: {
     title: 'Deskorama',
     intro:
-      'Un fond d’écran animé qui réagit à vos systèmes. Envoyez un événement de Tramlo, un dépôt GitHub privé inventé : il traverse le moteur jusqu’à L’Aéroport. Déplacez les fenêtres : les gags ne jouent que là où le fond d’écran se voit. Avec deux écrans, chaque événement va sur l’un des deux, plus souvent sur le moins couvert ; les mises en ligne vont sur les deux.',
-    send: 'Envoyer un événement',
+      'Un fond d’écran animé pour macOS qui réagit à vos systèmes. Choisissez une source inventée, déclenchez ses événements : chacun traverse le vrai moteur jusqu’à la scène, qui joue un gag avec sa légende. Déplacez les fenêtres : les gags ne jouent que là où le fond d’écran se voit.',
+    panelTitle: 'Commandes',
+    source: 'Source branchée',
+    theme: 'Thème',
+    comingSoon: 'bientôt',
+    language: 'Langue',
+    speed: 'Activité',
+    speedHint: '×60 : une heure d’activité par minute. Le ciel garde son heure.',
+    hour: 'Heure',
     addScreen: 'Ajouter un écran 16:9',
     removeScreen: 'Revenir à un écran',
     cover: 'Cacher le fond d’écran',
     uncover: 'Revenir au bureau',
-    language: 'Langue',
+    trigger: 'Déclencher un événement',
     sceneLabel: 'Bureau de démonstration',
     menu: 'Fichier   Édition   Présentation   Fenêtre',
     meeting: 'Réunion',
@@ -36,13 +50,20 @@ export const DEMO_TEXT: Readonly<Record<Language, DemoText>> = {
   en: {
     title: 'Deskorama',
     intro:
-      'An animated wallpaper that reacts to your systems. Send an event from Tramlo, a made-up private GitHub repository: it travels through the engine to L’Aéroport. Drag the windows around: gags only play where the wallpaper shows. With two screens, each event lands on one of them, more often on the less covered one; deploys land on both.',
-    send: 'Send an event',
+      'An animated macOS wallpaper that reacts to your systems. Pick a made-up Source and trigger its events: each one travels through the real engine to the scene, which plays a gag with its caption. Drag the windows around: gags only play where the wallpaper shows.',
+    panelTitle: 'Controls',
+    source: 'Connected Source',
+    theme: 'Theme',
+    comingSoon: 'coming soon',
+    language: 'Language',
+    speed: 'Activity',
+    speedHint: '×60: an hour of activity a minute. The sky keeps its hour.',
+    hour: 'Time of day',
     addScreen: 'Add a 16:9 screen',
     removeScreen: 'Back to one screen',
     cover: 'Hide the wallpaper',
     uncover: 'Back to the desktop',
-    language: 'Language',
+    trigger: 'Trigger an event',
     sceneLabel: 'Demo desktop',
     menu: 'File   Edit   View   Window',
     meeting: 'Meeting',

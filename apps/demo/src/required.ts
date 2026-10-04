@@ -1,7 +1,7 @@
 /**
  * Returns the element matching `selector`, checked against the expected class; throws when the page lacks it.
  * @example
- * const send = required(document, '#send', HTMLButtonElement);
+ * const picker = required(document, '#source', HTMLSelectElement); // the Source picker, typed as a <select>
  */
 export function required<Kind extends Element>(
   page: ParentNode,

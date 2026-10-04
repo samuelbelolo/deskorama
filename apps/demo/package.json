@@ -10,13 +10,15 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "smoke": "playwright test"
   },
   "dependencies": {
     "@deskorama/core": "workspace:*",
     "@deskorama/theme-aeroport": "workspace:*"
   },
   "devDependencies": {
+    "@playwright/test": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

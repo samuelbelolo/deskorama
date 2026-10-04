@@ -5,5 +5,5 @@
     "lib": ["es2024", "dom", "dom.iterable"],
     "types": ["vite/client"]
   },
-  "include": ["src", "__tests__", "vite.config.ts"]
+  "include": ["src", "__tests__", "smoke", "vite.config.ts", "playwright.config.ts"]
 }
