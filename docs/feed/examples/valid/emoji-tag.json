@@ -1,0 +1,19 @@
+{
+  "events": [
+    {
+      "id": "deploy_312",
+      "kind": "deploy.finished",
+      "archetype": "deploy",
+      "step": "succeeded",
+      "source": "Tramlo",
+      "text": {
+        "en": {
+          "label": "Deploy succeeded",
+          "tag": "🚀 DEPLOY SUCCESS"
+        }
+      }
+    }
+  ],
+  "next_cursor": "c_1044",
+  "has_more": false
+}

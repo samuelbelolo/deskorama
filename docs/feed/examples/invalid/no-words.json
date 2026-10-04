@@ -1,0 +1,12 @@
+{
+  "events": [
+    {
+      "id": "evt_1",
+      "kind": "signup.created",
+      "source": "Tramlo",
+      "text": {}
+    }
+  ],
+  "next_cursor": "c_1",
+  "has_more": false
+}

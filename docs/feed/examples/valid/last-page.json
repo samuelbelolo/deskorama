@@ -1,0 +1,27 @@
+{
+  "events": [
+    {
+      "id": "deploy_311",
+      "kind": "deploy.finished",
+      "archetype": "deploy",
+      "step": "succeeded",
+      "rarity": "notable",
+      "source": "Tramlo",
+      "text": {
+        "en": {
+          "label": "Deploy succeeded",
+          "detail": "v2.5.0 in production",
+          "tag": "v2.5.0"
+        }
+      }
+    }
+  ],
+  "next_cursor": "c_1043",
+  "has_more": false,
+  "poll_interval": 120,
+  "gauges": {
+    "crowd": 12,
+    "daily": 37,
+    "build": "ready"
+  }
+}

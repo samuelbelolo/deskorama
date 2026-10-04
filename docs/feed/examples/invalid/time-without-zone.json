@@ -1,0 +1,17 @@
+{
+  "events": [
+    {
+      "id": "evt_1",
+      "kind": "signup.created",
+      "source": "Tramlo",
+      "at": "2026-10-04T13:52:10",
+      "text": {
+        "en": {
+          "label": "New sign-up"
+        }
+      }
+    }
+  ],
+  "next_cursor": "c_1",
+  "has_more": false
+}

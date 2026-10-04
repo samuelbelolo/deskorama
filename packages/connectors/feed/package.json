@@ -1,0 +1,28 @@
+{
+  "name": "@deskorama/connector-feed",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Feed: polls an HTTPS address of the person's own backend for Events in the documented JSON format.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@deskorama/core": "workspace:*",
+    "@deskorama/event-json": "workspace:*",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@deskorama/test-utils": "workspace:*",
+    "@types/node": "catalog:",
+    "ajv": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

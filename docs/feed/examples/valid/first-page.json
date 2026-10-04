@@ -1,0 +1,50 @@
+{
+  "events": [
+    {
+      "id": "evt_1041",
+      "kind": "signup.created",
+      "archetype": "arrival",
+      "rarity": "common",
+      "source": "Tramlo",
+      "at": "2026-10-04T13:52:10Z",
+      "gauge": {
+        "role": "daily",
+        "by": 1
+      },
+      "text": {
+        "fr": {
+          "label": "Nouvelle inscription",
+          "detail": "Formule Pro, depuis la page tarifs",
+          "tag": "PRO"
+        },
+        "en": {
+          "label": "New sign-up",
+          "detail": "Pro plan, from the pricing page",
+          "tag": "PRO"
+        }
+      }
+    },
+    {
+      "id": "evt_1042",
+      "kind": "invoice.paid",
+      "archetype": "money",
+      "rarity": "notable",
+      "source": "Tramlo",
+      "at": "2026-10-04T13:55:02+02:00",
+      "text": {
+        "fr": {
+          "label": "Paiement reçu",
+          "detail": "Abonnement annuel",
+          "tag": "+49 €"
+        },
+        "en": {
+          "label": "Payment received",
+          "detail": "Yearly subscription",
+          "tag": "+€49"
+        }
+      }
+    }
+  ],
+  "next_cursor": "c_1042",
+  "has_more": true
+}

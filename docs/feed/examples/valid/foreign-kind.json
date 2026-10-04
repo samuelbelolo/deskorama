@@ -1,0 +1,19 @@
+{
+  "events": [
+    {
+      "id": "evt_1050",
+      "kind": "webinar.booked",
+      "archetype": null,
+      "recognised": false,
+      "source": "Tramlo",
+      "text": {
+        "fr": {
+          "label": "Webinaire réservé"
+        }
+      }
+    }
+  ],
+  "next_cursor": "c_1050",
+  "has_more": false,
+  "x_backend_version": "3.1"
+}

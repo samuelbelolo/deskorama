@@ -1,0 +1,18 @@
+{
+  "events": [
+    {
+      "id": "evt_1",
+      "kind": "invoice.paid",
+      "archetype": "money",
+      "source": "Tramlo",
+      "text": {
+        "en": {
+          "label": "Payment received",
+          "tag": "A tag far too long to paint"
+        }
+      }
+    }
+  ],
+  "next_cursor": "c_1",
+  "has_more": false
+}
