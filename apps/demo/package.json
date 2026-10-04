@@ -1,0 +1,24 @@
+{
+  "name": "@deskorama/demo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The live demo on GitHub Pages: the real engine and Themes on fictional Sources.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@deskorama/core": "workspace:*",
+    "@deskorama/theme-aeroport": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

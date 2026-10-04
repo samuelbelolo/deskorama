@@ -1,0 +1,270 @@
+:root {
+  --ink: #1b2433;
+  --cobalt: #2d5da8;
+  --chalk: #edf0ea;
+  --concrete: #c3cac6;
+  --orange: #e8561e;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--chalk);
+  color: var(--ink);
+  font-family: 'Jost', 'Futura', 'Avenir Next', sans-serif;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.intro {
+  max-width: 60ch;
+  margin: 0 0 24px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+  margin-bottom: 20px;
+}
+
+.send {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 3px;
+  background: var(--cobalt);
+  color: var(--chalk);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.send:hover {
+  background: var(--ink);
+}
+
+.cover {
+  padding: 8px 16px;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cover[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--chalk);
+}
+
+.send:focus-visible,
+.cover:focus-visible,
+.language input:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 2px;
+}
+
+.language {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.language legend {
+  float: left;
+  margin-right: 12px;
+  font-weight: 600;
+}
+
+.frame {
+  position: relative;
+  overflow: hidden;
+  border: 6px solid var(--ink);
+  border-radius: 10px;
+  background: var(--ink);
+}
+
+.desk {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.screen {
+  position: absolute;
+  top: 0;
+  overflow: hidden;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* The fake macOS desktop over the scene: menu bar, Dock and windows. Not part of any Theme. */
+.desktop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.menubar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 0 16px;
+  background: rgb(240 240 240 / 0.82);
+  color: #1d1d1f;
+  font-size: 13px;
+  line-height: 25px;
+  white-space: pre;
+}
+
+.dock {
+  position: absolute;
+  z-index: 100;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: rgb(240 240 240 / 0.55);
+  box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.25);
+}
+
+.dock i {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: var(--cobalt);
+}
+
+.dock i:nth-child(2n) {
+  background: var(--concrete);
+}
+
+.dock i:nth-child(3n) {
+  background: var(--ink);
+}
+
+.window {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #fbfbfa;
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 0.4),
+    0 0 0 0.5px rgb(0 0 0 / 0.45);
+  pointer-events: auto;
+}
+
+.window-bar {
+  display: flex;
+  flex: 0 0 28px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  background: #ececec;
+  color: #4a4a4a;
+  font-size: 13px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.window-bar:active {
+  cursor: grabbing;
+}
+
+.window-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.window-dots i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #d4d4d4;
+}
+
+.window-body {
+  flex: 1;
+  padding: 18px;
+  overflow: hidden;
+}
+
+.window-body i {
+  display: block;
+  height: 10px;
+  margin-bottom: 14px;
+  border-radius: 5px;
+  background: #e6e6e3;
+}
+
+.window-body i:nth-child(3n) {
+  width: 60%;
+}
+
+.window-body i:nth-child(4n + 1) {
+  width: 82%;
+}
+
+.window--terminal {
+  background: #1e1f24;
+}
+
+.window--terminal .window-body pre {
+  margin: 0;
+  color: #d8dee9;
+  font:
+    13px/1.6 ui-monospace,
+    Menlo,
+    monospace;
+}
+
+.window--meeting {
+  z-index: 50;
+  background: #26292f;
+}
+
+.window--meeting .window-body {
+  display: grid;
+  place-items: center;
+  color: #e8e8e8;
+  font-size: 22px;
+}

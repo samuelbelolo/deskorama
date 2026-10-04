@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskorama demo</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta
+      name="description"
+      content="An animated macOS wallpaper that reacts to events from the systems you plug in. Live demo on fictional data."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&family=Jost:wght@400;600;700&display=swap"
+    />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <main class="page">
+      <h1 data-text="title"></h1>
+      <p class="intro" data-text="intro"></p>
+      <div class="controls">
+        <button type="button" id="send" class="send" data-text="send"></button>
+        <button type="button" id="pair" class="cover" data-text="addScreen" aria-pressed="false"></button>
+        <button type="button" id="cover" class="cover" data-text="cover" aria-pressed="false"></button>
+        <fieldset class="language">
+          <legend data-text="language"></legend>
+          <label><input type="radio" name="lang" value="fr" /> Français</label>
+          <label><input type="radio" name="lang" value="en" /> English</label>
+        </fieldset>
+      </div>
+      <div id="frame" class="frame">
+        <div id="desk" class="desk" role="region"></div>
+      </div>
+    </main>
+  </body>
+</html>
