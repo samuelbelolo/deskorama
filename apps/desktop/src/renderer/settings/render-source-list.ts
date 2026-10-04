@@ -52,6 +52,8 @@ export function renderSourceList(snapshot: SettingsSnapshot, lang: Language, act
   const empty = rows.length === 0 ? [element('p', { className: 'hint', text: text.noSource })] : [];
 
   return element('section', { className: 'panel' }, [
+    element('h2', { text: text.sources }),
+    element('p', { className: 'hint', text: text.lead }),
     ...empty,
     ...rows,
     element('div', { className: 'buttons' }, adds),

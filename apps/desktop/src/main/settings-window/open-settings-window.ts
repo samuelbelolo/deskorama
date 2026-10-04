@@ -1,15 +1,14 @@
-import type { Language } from '@deskorama/core';
 import { BrowserWindow } from 'electron';
 import { join } from 'node:path';
 
 /**
  * Brings the settings window forward when `current` is still open, or opens it, and returns it. Its page runs with
  * context isolation, a sandbox and no Node, reaches the main process only through `window.settings`, and may not
- * navigate nor open windows; it titles itself in the display language.
+ * navigate nor open windows; it titles itself in the display language it reads from the main process.
  * @example
- * settingsWindow = openSettingsWindow('fr', settingsWindow); // a second call brings the same window forward
+ * settingsWindow = openSettingsWindow(settingsWindow); // a second call brings the same window forward
  */
-export function openSettingsWindow(lang: Language, current: BrowserWindow | null): BrowserWindow {
+export function openSettingsWindow(current: BrowserWindow | null): BrowserWindow {
   if (current !== null && !current.isDestroyed()) {
     current.show();
     current.focus();
@@ -36,7 +35,7 @@ export function openSettingsWindow(lang: Language, current: BrowserWindow | null
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.once('ready-to-show', () => window.show());
 
-  void window.loadFile(join(__dirname, '../renderer/settings/index.html'), { query: { lang } });
+  void window.loadFile(join(__dirname, '../renderer/settings/index.html'));
 
   return window;
 }

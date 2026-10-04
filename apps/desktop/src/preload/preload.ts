@@ -1,7 +1,14 @@
 // The preload: exposes the narrow, typed bridge of `WallpaperBridge` to the renderer as `window.wallpaper`, and
 // nothing else. The renderer never sees ipcRenderer, Node or Electron.
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
-import { EVENT_CHANNEL, FRAMES_CHANNEL, type WallpaperBridge } from '../shared/wallpaper-bridge.ts';
+import {
+  EVENT_CHANNEL,
+  FRAMES_CHANNEL,
+  GAUGES_CHANNEL,
+  PAUSED_CHANNEL,
+  SCENE_CHANNEL,
+  type WallpaperBridge,
+} from '../shared/wallpaper-bridge.ts';
 
 /**
  * Calls `listener` with the payload of each message on one channel, until the returned function is called. The
@@ -21,6 +28,9 @@ function subscribe<Payload>(channel: string, listener: (payload: Payload) => voi
 const bridge: WallpaperBridge = {
   onEvent: (listener) => subscribe(EVENT_CHANNEL, listener),
   onWindowFrames: (listener) => subscribe(FRAMES_CHANNEL, listener),
+  onScene: (listener) => subscribe(SCENE_CHANNEL, listener),
+  onGauges: (listener) => subscribe(GAUGES_CHANNEL, listener),
+  onPaused: (listener) => subscribe(PAUSED_CHANNEL, listener),
 };
 
 contextBridge.exposeInMainWorld('wallpaper', bridge);

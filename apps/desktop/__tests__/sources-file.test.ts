@@ -16,6 +16,18 @@ describe('the Sources in settings.json', () => {
     expect(readSources(JSON.stringify({ sources: [{ id: 'broken' }, TRAMLO] }))).toEqual([TRAMLO]);
   });
 
+  test('keep a chosen interval, and keep a Source whose interval is not a number on its Connector’s default', () => {
+    const sources = [
+      { ...TRAMLO, interval: 120_000 },
+      { ...TRAMLO, id: 'src-2', interval: '60' },
+    ];
+
+    expect(readSources(JSON.stringify({ sources }))).toEqual([
+      { ...TRAMLO, interval: 120_000 },
+      { ...TRAMLO, id: 'src-2' },
+    ]);
+  });
+
   test('are none when the file is missing or unreadable', () => {
     expect(readSources(null)).toEqual([]);
     expect(readSources('not json')).toEqual([]);

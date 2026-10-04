@@ -1,18 +1,11 @@
-import type { Clock, Language } from '@deskorama/core';
-import type { BrowserWindow } from 'electron';
+import type { Clock, GaugeValues, Language, SourceEvent } from '@deskorama/core';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
-import { SETTINGS_CHANNELS } from '../shared/settings-bridge.ts';
-import { toWireEvent } from '../shared/to-wire-event.ts';
-import { EVENT_CHANNEL } from '../shared/wallpaper-bridge.ts';
 import { connectorFetch } from './connector-fetch.ts';
 import { CONNECTORS } from './connectors.ts';
 import { readSettingsFile } from './read-settings-file.ts';
-import { sendToWindows } from './send-to-windows.ts';
 import { settingsPath } from './settings-path.ts';
-import { createSettingsService } from './settings-window/create-settings-service.ts';
-import { openSettingsWindow } from './settings-window/open-settings-window.ts';
-import { registerSettingsIpc } from './settings-window/register-settings-ipc.ts';
+import { createSettingsService, type SettingsService } from './settings-window/create-settings-service.ts';
 import { createCursorFile } from './sources/create-cursor-file.ts';
 import { createKeychain } from './sources/create-keychain.ts';
 import { createSourceRuntime, type SourceState } from './sources/create-source-runtime.ts';
@@ -20,34 +13,42 @@ import { readSources } from './sources/read-sources.ts';
 import { withSources } from './sources/with-sources.ts';
 import { writeFileAtomically } from './write-file-atomically.ts';
 
-/** The connected Sources, running, and the settings window that manages them. */
+/** The connected Sources, running, and what the settings window does with them. */
 export interface RunningSources {
   /** Polls every Source at once, after the Mac wakes. */
   readonly pollAll: () => void;
-  readonly openSettings: () => void;
+  /** Adds, tests, edits and removes Sources for the settings window. */
+  readonly service: SettingsService;
   readonly stop: () => void;
 }
 
+/** What the running Sources report to, and the display language their tests answer in. */
+export interface SourcesOptions {
+  readonly clock: Clock;
+  readonly userData: string;
+  readonly lang: () => Language;
+  /** Receives each new Event once, whatever its Source replays, with the id of its Source. */
+  readonly onEvent: (event: SourceEvent, sourceId: string) => void;
+  /** Receives the Gauge values a Source reported, with the id of that Source. */
+  readonly onGauges: (sourceId: string, gauges: Partial<GaugeValues>) => void;
+  /** Receives every Source's state whenever one changes, for the menu bar and the settings window. */
+  readonly onStates: (states: readonly SourceState[]) => void;
+}
+
 /**
- * Starts polling the Sources saved in `settings.json` with their tokens from the Keychain, sends their Events and
- * Gauges to every wallpaper window, and answers the settings window. `onStates` hears every Source's state, for
- * the menu bar.
+ * Starts polling the Sources saved in `settings.json` with their tokens from the Keychain, and returns the service
+ * the settings window uses to change them. Events, Gauge values and states go to the callbacks.
  * @example
- * const sources = startSources({ windows, clock, lang, userData, onStates: (states) => tray.update(…) });
+ * const sources = startSources({ clock, userData, lang: scene.lang, onEvent: send, onGauges: scene.setGauges,
+ *   onStates: (states) => tray.update(…) });
+ * sources.service.snapshot().sources.length; // the Sources saved in settings.json
  * powerMonitor.on('resume', sources.pollAll);
  */
-export function startSources(options: {
-  readonly windows: readonly BrowserWindow[];
-  readonly clock: Clock;
-  readonly lang: Language;
-  readonly userData: string;
-  readonly onStates: (states: readonly SourceState[]) => void;
-}): RunningSources {
-  const { windows, clock, lang, userData } = options;
+export function startSources(options: SourcesOptions): RunningSources {
+  const { clock, userData } = options;
 
   const tokens = createKeychain('source:');
   const cursors = createCursorFile(join(userData, 'cursors.json'));
-  let settingsWindow: BrowserWindow | null = null;
 
   const runtime = createSourceRuntime({
     connectors: CONNECTORS,
@@ -55,22 +56,13 @@ export function startSources(options: {
     fetch: connectorFetch,
     tokens,
     cursors,
-    // Every screen plays every Event for now; routing to the most visible screen comes later.
-    onEvent: (event) => sendToWindows(windows, EVENT_CHANNEL, toWireEvent(event)),
-    // The scene's Gauges keep the words of the Source that names it; which Source feeds them is chosen in the
-    // settings, which comes later, so the values a Source reports are not shown under another Source's words.
-    onGauges: () => {},
-    onStates: (states) => {
-      options.onStates(states);
-
-      if (settingsWindow !== null && !settingsWindow.isDestroyed()) {
-        settingsWindow.webContents.send(SETTINGS_CHANNELS.changed, service.snapshot());
-      }
-    },
+    onEvent: options.onEvent,
+    onGauges: options.onGauges,
+    onStates: options.onStates,
   });
 
   const service = createSettingsService({
-    lang,
+    lang: options.lang,
     connectors: CONNECTORS,
     runtime,
     tokens,
@@ -83,23 +75,11 @@ export function startSources(options: {
     newId: () => randomUUID(),
   });
 
-  const unregister = registerSettingsIpc(service, () => settingsWindow);
-
   runtime.load(readSources(readSettingsFile(userData)));
 
   return {
     pollAll: () => runtime.pollAll(),
-    openSettings() {
-      const opened = openSettingsWindow(lang, settingsWindow);
-
-      if (opened === settingsWindow) return;
-
-      settingsWindow = opened;
-      opened.once('closed', () => (settingsWindow = null));
-    },
-    stop() {
-      runtime.stop();
-      unregister();
-    },
+    service,
+    stop: () => runtime.stop(),
   };
 }

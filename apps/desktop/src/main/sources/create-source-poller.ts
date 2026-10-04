@@ -7,6 +7,7 @@ import {
   type GaugeValues,
   type SourceEvent,
 } from '@deskorama/core';
+import { chosenIntervalBounds } from './chosen-interval-bounds.ts';
 import type { CursorStore } from './cursor-store.ts';
 import { failureOf } from './failure-of.ts';
 import { nextPollDelay, type PollOutcome } from './next-poll-delay.ts';
@@ -39,8 +40,8 @@ export interface SourcePoller {
 }
 
 /**
- * Polls one Source from its persisted cursor, now and then again after the delay {@link nextPollDelay} gives, and
- * saves each new cursor. A failure is reported, never thrown: a refused token or a missing permission stops
+ * Polls one Source from its persisted cursor, now and then again after the delay {@link nextPollDelay} gives within
+ * the interval the person chose, and saves each new cursor. A failure is reported, never thrown: a refused token or a missing permission stops
  * the poller, anything else retries later.
  * @example
  * const poller = createSourcePoller({ entry, connector: createFeed(), clock, fetch, tokens, cursors,
@@ -49,6 +50,8 @@ export interface SourcePoller {
  */
 export function createSourcePoller(options: SourcePollerOptions): SourcePoller {
   const { entry, connector, clock } = options;
+
+  const bounds = chosenIntervalBounds(connector.config.interval, entry.interval);
 
   let timer: Cancel | undefined;
   let running = false;
@@ -60,7 +63,7 @@ export function createSourcePoller(options: SourcePollerOptions): SourcePoller {
   let notBefore = 0;
 
   const schedule = (outcome: PollOutcome): void => {
-    const delay = nextPollDelay(outcome, connector.config.interval, clock.now());
+    const delay = nextPollDelay(outcome, bounds, clock.now());
 
     if (delay === null) halted = true;
     else if (!stopped) timer = clock.after(delay, () => void poll());

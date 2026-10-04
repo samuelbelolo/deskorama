@@ -2,7 +2,7 @@ import type { Language } from '@deskorama/core';
 
 /**
  * Returns the display language for the person's preferred system languages, most preferred first: French when
- * the first one that the app speaks is French, English otherwise. A setting to override it comes later.
+ * the first one that the app speaks is French, English otherwise. The settings window can pick one instead.
  * @example
  * displayLanguage(['fr-FR', 'en-GB']); // "fr"
  * displayLanguage(['de-DE', 'fr-FR']); // "fr"

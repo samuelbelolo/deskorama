@@ -8,4 +8,6 @@ export interface SourceEntry {
   readonly name: string;
   /** The values of the Connector's fields, by key. */
   readonly values: Readonly<Record<string, string>>;
+  /** The polling interval the person chose, in milliseconds; the Connector's default when left out. */
+  readonly interval?: number | undefined;
 }

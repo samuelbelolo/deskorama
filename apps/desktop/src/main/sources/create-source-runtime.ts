@@ -28,9 +28,10 @@ export interface SourceRuntimeOptions {
   readonly fetch: ConnectorFetch;
   readonly tokens: TokenStore;
   readonly cursors: CursorStore;
-  /** Receives each Event once, whatever the Source replays. */
-  readonly onEvent: (event: SourceEvent) => void;
-  readonly onGauges: (gauges: Partial<GaugeValues>) => void;
+  /** Receives each Event once, whatever the Source replays, with the id of its Source. */
+  readonly onEvent: (event: SourceEvent, sourceId: string) => void;
+  /** Receives the Gauge values a Source reported, with the id of that Source. */
+  readonly onGauges: (sourceId: string, gauges: Partial<GaugeValues>) => void;
   /** Receives every Source's state whenever one changes. */
   readonly onStates: (states: readonly SourceState[]) => void;
 }
@@ -58,7 +59,8 @@ export interface SourceRuntime {
  * memory of Event ids so a replayed page never plays twice, and the state of each Source for the menu bar.
  * @example
  * const runtime = createSourceRuntime({ connectors: [createFeed()], clock, fetch, tokens, cursors,
- *   onEvent: (event) => sendToWindows(windows, EVENT_CHANNEL, toWireEvent(event)), onGauges: () => {},
+ *   onEvent: (event) => sendToWindows(windows, EVENT_CHANNEL, toWireEvent(event)),
+ *   onGauges: (sourceId, gauges) => scene.setGauges(sourceId, gauges),
  *   onStates: (states) => void (latest = states) });
  * runtime.load(readSources(readSettingsFile(userData)));
  */
@@ -80,17 +82,22 @@ export function createSourceRuntime(options: SourceRuntimeOptions): SourceRuntim
     running.clear();
   };
 
-  const start = (entry: SourceEntry, connector: Connector, key: string): SourcePoller =>
-    createSourcePoller({
+  const start = (entry: SourceEntry, connector: Connector): SourcePoller => {
+    // Ids are remembered per Source and address: another address may reuse an id for another Event, while a new
+    // name or interval polls the same Events again.
+    const address = JSON.stringify([entry.id, entry.connector, entry.values]);
+
+    return createSourcePoller({
       ...options,
       entry,
       connector,
       onEvents: (events) => {
-        // Ids are remembered per Source and address: another address may reuse an id for another Event.
-        for (const event of events) if (dedupe.firstTime(key, event.id)) options.onEvent(event);
+        for (const event of events) if (dedupe.firstTime(address, event.id)) options.onEvent(event, entry.id);
       },
+      onGauges: (gauges) => options.onGauges(entry.id, gauges),
       onStatus: (status) => setStatus(entry.id, status),
     });
+  };
 
   const load = (entries: readonly SourceEntry[]): void => {
     const known = entries.flatMap((entry) => {
@@ -115,7 +122,7 @@ export function createSourceRuntime(options: SourceRuntimeOptions): SourceRuntim
     options.onStates(states);
 
     for (const { entry, connector, key } of known) {
-      if (!running.has(entry.id)) running.set(entry.id, { poller: start(entry, connector, key), key });
+      if (!running.has(entry.id)) running.set(entry.id, { poller: start(entry, connector), key });
     }
   };
 

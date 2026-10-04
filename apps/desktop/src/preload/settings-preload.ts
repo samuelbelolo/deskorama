@@ -8,6 +8,9 @@ const bridge: SettingsBridge = {
   save: (draft) => ipcRenderer.invoke(SETTINGS_CHANNELS.save, draft),
   remove: (id) => ipcRenderer.invoke(SETTINGS_CHANNELS.remove, id),
   test: (draft) => ipcRenderer.invoke(SETTINGS_CHANNELS.test, draft),
+  setPreferences: (change) => ipcRenderer.invoke(SETTINGS_CHANNELS.preferences, change),
+  setOpenAtLogin: (on) => ipcRenderer.invoke(SETTINGS_CHANNELS.openAtLogin, on),
+  playTest: (choice) => ipcRenderer.invoke(SETTINGS_CHANNELS.playTest, choice),
   onChanged(listener) {
     const forward = (_event: IpcRendererEvent, snapshot: SettingsSnapshot): void => listener(snapshot);
 

@@ -2,6 +2,7 @@ import type { Language } from '@deskorama/core';
 import { MAX_NAME_LENGTH } from '../../shared/max-name-length.ts';
 import type { ConnectorView, DraftProblems, SourceDraft, TestAnswer } from '../../shared/settings-bridge.ts';
 import { element } from './element.ts';
+import { intervalField } from './interval-field.ts';
 import { labelledInput } from './labelled-input.ts';
 import { renderTestResult } from './render-test-result.ts';
 import { SETTINGS_TEXT } from './settings-text.ts';
@@ -18,14 +19,18 @@ export interface FormStart {
   readonly id: string | null;
   readonly name: string;
   readonly values: Readonly<Record<string, string>>;
+  /** The chosen polling interval in milliseconds, or null for the Connector's default. */
+  readonly interval: number | null;
 }
 
 /**
- * Returns the form that adds or edits a Source of one Connector: its name, the Connector's fields, the token (a
- * password field, left empty to keep the current one when editing) with the permissions it needs, and test, save
- * and cancel buttons. A test shows the latest Events or what to fix, without saving.
+ * Returns the form that adds or edits a Source of one Connector: its name, the Connector's fields, its polling
+ * interval in seconds within the Connector's bounds (empty for its default), the token (a password field, left empty
+ * to keep the current one when editing) with the permissions it needs, and test, save and cancel buttons. A test
+ * shows the latest Events or what to fix, without saving.
  * @example
- * root.append(renderSourceForm(feedView, { id: null, name: '', values: {} }, 'fr', { save, test, cancel }));
+ * const start = { id: null, name: '', values: {}, interval: null };
+ * root.append(renderSourceForm(feedView, start, 'fr', { save, test, cancel }));
  */
 export function renderSourceForm(
   connector: ConnectorView,
@@ -47,6 +52,8 @@ export function renderSourceForm(
     }),
   );
 
+  const interval = intervalField(connector.interval, start.interval, text.interval);
+
   const token = labelledInput('token', text.token, '', {
     type: 'password',
     autocomplete: 'off',
@@ -61,7 +68,7 @@ export function renderSourceForm(
 
   const result = element('div', { className: 'result', attributes: { 'aria-live': 'polite' } });
 
-  const all = [name, ...fields, token];
+  const all = [name, ...fields, interval, token];
 
   const draft = (): SourceDraft => ({
     id: start.id,
@@ -69,6 +76,7 @@ export function renderSourceForm(
     name: name.field.value,
     values: Object.fromEntries(fields.map(({ key, field }) => [key, field.value])),
     token: token.field.value,
+    interval: interval.value(),
   });
 
   const mark = (problems: DraftProblems): void => {
@@ -96,6 +104,8 @@ export function renderSourceForm(
 
   testButton.addEventListener('click', () =>
     busy(async () => {
+      if (interval.unreadable()) return mark(['interval']);
+
       result.replaceChildren(element('p', { className: 'hint', text: text.testing }));
 
       const answer = await actions.test(draft());
@@ -106,13 +116,16 @@ export function renderSourceForm(
     }),
   );
 
-  saveButton.addEventListener('click', () => busy(async () => mark(await actions.save(draft()))));
+  saveButton.addEventListener('click', () =>
+    busy(async () => mark(interval.unreadable() ? ['interval'] : await actions.save(draft()))),
+  );
   cancelButton.addEventListener('click', actions.cancel);
 
   return element('section', { className: 'panel' }, [
     element('h2', { text: connector.title[lang] }),
     ...name.nodes,
     ...fields.flatMap(({ nodes }) => nodes),
+    ...interval.nodes,
     ...token.nodes,
     element('p', { className: 'hint', text: text.permissions }),
     permissions,

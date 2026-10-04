@@ -113,7 +113,8 @@ label {
   margin: 12px 0 4px;
 }
 
-input {
+input,
+select {
   box-sizing: border-box;
   width: 100%;
   padding: 6px 8px;
@@ -122,6 +123,34 @@ input {
   background: var(--page);
   border: 1px solid var(--line);
   border-radius: 6px;
+}
+
+select:disabled,
+option:disabled {
+  color: var(--muted);
+}
+
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.check input {
+  width: auto;
+  margin: 0;
+}
+
+.check label {
+  margin: 0;
+  font-weight: normal;
+}
+
+.tests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 input[aria-invalid='true'] {

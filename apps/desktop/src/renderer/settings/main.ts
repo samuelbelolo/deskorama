@@ -1,40 +1,47 @@
-// The settings window: lists the connected Sources, and adds, tests, edits and removes them through
-// `window.settings`, the only way this sandboxed page reaches the main process.
+// The settings window: sets up the wallpaper, lists the connected Sources (added, tested, edited and removed here)
+// and plays test Events, through `window.settings`, the only way this sandboxed page reaches the main process.
 import './settings.css';
-import type { Language } from '@deskorama/core';
 import type { SettingsSnapshot, SourceView } from '../../shared/settings-bridge.ts';
 import { element } from './element.ts';
 import { renderSourceForm, type FormStart } from './render-source-form.ts';
 import { renderSourceList } from './render-source-list.ts';
+import { renderTestPanel } from './render-test-panel.ts';
+import { renderWallpaperPanel } from './render-wallpaper-panel.ts';
 import { SETTINGS_TEXT } from './settings-text.ts';
-
-const lang: Language = new URLSearchParams(window.location.search).get('lang') === 'fr' ? 'fr' : 'en';
-const text = SETTINGS_TEXT[lang];
 
 const root = document.querySelector<HTMLElement>('#settings');
 
 if (root === null) throw new Error('The settings page lacks #settings.');
 
-document.documentElement.lang = lang;
-document.title = text.windowTitle;
-
 let snapshot: SettingsSnapshot = await window.settings.load();
 let editing: { readonly connector: string; readonly start: FormStart } | null = null;
 
 /**
- * Draws the window: the title, then the form while a Source is added or edited, else the list.
+ * Draws the window in the display language: the title, then the form while a Source is added or edited, else the
+ * wallpaper's setup, the Sources and the test Events.
  * @example
  * render();
  */
 function render(): void {
-  const header = [element('h1', { text: text.title }), element('p', { className: 'lead', text: text.lead })];
+  const { lang } = snapshot;
+  const text = SETTINGS_TEXT[lang];
+
+  document.documentElement.lang = lang;
+  document.title = text.windowTitle;
+
+  const header = element('h1', { text: text.title });
 
   const connector = snapshot.connectors.find((candidate) => candidate.id === editing?.connector);
 
   if (editing === null || connector === undefined) {
     root?.replaceChildren(
-      ...header,
+      header,
+      renderWallpaperPanel(snapshot, {
+        setPreferences: (change) => void window.settings.setPreferences(change).catch(render),
+        setOpenAtLogin: (on) => void openAtLogin(on).catch(render),
+      }),
       renderSourceList(snapshot, lang, { add, edit, remove: (source) => void remove(source).catch(render) }),
+      renderTestPanel(lang, (choice) => void window.settings.playTest(choice)),
     );
 
     return;
@@ -55,7 +62,20 @@ function render(): void {
     cancel: close,
   });
 
-  root?.replaceChildren(...header, form);
+  root?.replaceChildren(header, form);
+}
+
+/**
+ * Asks macOS to open the app at login, or not, and shows what macOS answers.
+ * @example
+ * await openAtLogin(true); // the box stays ticked, with a hint if macOS waits for approval
+ */
+async function openAtLogin(on: boolean): Promise<void> {
+  const login = await window.settings.setOpenAtLogin(on);
+
+  snapshot = { ...snapshot, wallpaper: { ...snapshot.wallpaper, login } };
+
+  if (editing === null) render();
 }
 
 /**
@@ -64,7 +84,7 @@ function render(): void {
  * add('feed');
  */
 function add(connector: string): void {
-  editing = { connector, start: { id: null, name: '', values: {} } };
+  editing = { connector, start: { id: null, name: '', values: {}, interval: null } };
   render();
 }
 
@@ -74,7 +94,9 @@ function add(connector: string): void {
  * edit(tramlo);
  */
 function edit(source: SourceView): void {
-  editing = { connector: source.connector, start: { id: source.id, name: source.name, values: source.values } };
+  const { id, name, values, interval } = source;
+
+  editing = { connector: source.connector, start: { id, name, values, interval } };
   render();
 }
 
@@ -112,7 +134,7 @@ async function reload(): Promise<void> {
 window.settings.onChanged((next) => {
   snapshot = next;
 
-  // The form is left alone while the person types; the list shows each Source's state as it changes.
+  // The form is left alone while the person types; the rest follows each change as it happens.
   if (editing === null) render();
 });
 

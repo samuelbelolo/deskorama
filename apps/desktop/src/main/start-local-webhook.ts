@@ -1,12 +1,8 @@
 import { createLocalWebhook } from '@deskorama/connector-local-webhook';
-import type { Clock } from '@deskorama/core';
-import type { BrowserWindow } from 'electron';
+import type { Clock, SourceEvent } from '@deskorama/core';
 import { randomBytes } from 'node:crypto';
-import { toWireEvent } from '../shared/to-wire-event.ts';
-import { EVENT_CHANNEL } from '../shared/wallpaper-bridge.ts';
 import { keptSecret } from './kept-secret.ts';
 import { readSettingsFile } from './read-settings-file.ts';
-import { sendToWindows } from './send-to-windows.ts';
 import type { TokenStore } from './sources/token-store.ts';
 import { webhookSettings, type WebhookSettings } from './webhook-settings.ts';
 import { writeLog } from './write-log.ts';
@@ -20,15 +16,15 @@ export interface RunningWebhook {
 }
 
 /**
- * Starts the Local webhook on the loopback interface with its settings, and sends every Event it accepts to every
- * wallpaper window. Its secret is drawn once and kept in `secrets`, the Keychain, so scripts keep working across
+ * Starts the Local webhook on the loopback interface with its settings, and hands every Event it accepts to
+ * `onEvent`. Its secret is drawn once and kept in `secrets`, the Keychain, so scripts keep working across
  * launches. A port already taken is logged and reported, never fatal.
  * @example
- * const webhook = await startLocalWebhook(windows, clock, app.getPath('userData'), createKeychain(''));
+ * const webhook = await startLocalWebhook(sendEvent, clock, app.getPath('userData'), createKeychain(''));
  * webhook.listening; // true
  */
 export async function startLocalWebhook(
-  windows: readonly BrowserWindow[],
+  onEvent: (event: SourceEvent) => void,
   clock: Clock,
   userData: string,
   secrets: TokenStore,
@@ -40,8 +36,7 @@ export async function startLocalWebhook(
   const webhook = createLocalWebhook({
     ...settings,
     clock,
-    // Every screen plays every Event for now; routing to the most visible screen comes later.
-    onEvent: (event) => sendToWindows(windows, EVENT_CHANNEL, toWireEvent(event)),
+    onEvent,
   });
 
   try {

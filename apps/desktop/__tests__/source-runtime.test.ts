@@ -21,6 +21,7 @@ async function startRuntime(scripts: readonly Script[], tokens: Record<string, s
   const stores = memoryStores(tokens);
   const { connector, inputs } = scriptedConnector(scripts);
   const played: SourceEvent[] = [];
+  const from: string[] = [];
   const states: (readonly SourceState[])[] = [];
 
   const runtime = createSourceRuntime({
@@ -30,7 +31,10 @@ async function startRuntime(scripts: readonly Script[], tokens: Record<string, s
       throw new Error('a scripted Connector never fetches');
     },
     ...stores,
-    onEvent: (event) => played.push(event),
+    onEvent: (event, sourceId) => {
+      played.push(event);
+      from.push(sourceId);
+    },
     onGauges: () => {},
     onStates: (next) => states.push(next),
   });
@@ -43,7 +47,7 @@ async function startRuntime(scripts: readonly Script[], tokens: Record<string, s
     await settle();
   };
 
-  return { runtime, played, states, inputs, stores, step, lastStatus: () => states.at(-1)?.[0]?.status };
+  return { runtime, played, from, states, inputs, stores, step, lastStatus: () => states.at(-1)?.[0]?.status };
 }
 
 describe('the connected Sources', () => {
@@ -201,5 +205,17 @@ describe('the connected Sources', () => {
     await settle();
 
     expect(played.map((event) => event.id)).toEqual(['kept']);
+  });
+
+  test('never replay an Event after the person renames the Source or changes its interval', async () => {
+    const replayed = { events: [sourceEventFixture({ id: 'a' })], cursor: 'c1' };
+    const run = await startRuntime([replayed, replayed]);
+
+    run.runtime.load([{ ...TRAMLO, name: 'Tramlo prod', interval: 2 * MINUTE }]);
+    await run.step(0);
+
+    expect(run.inputs).toHaveLength(2);
+    expect(run.played.map((event) => event.id)).toEqual(['a']);
+    expect(run.from).toEqual(['src-1']);
   });
 });

@@ -10,7 +10,14 @@ import { settle } from './settle.ts';
 
 const URL = 'https://api.tramlo.example/deskorama/events';
 
-const DRAFT: SourceDraft = { id: null, connector: 'feed', name: 'Tramlo', values: { url: URL }, token: 'feed-token-1' };
+const DRAFT: SourceDraft = {
+  id: null,
+  connector: 'feed',
+  name: 'Tramlo',
+  values: { url: URL },
+  token: 'feed-token-1',
+  interval: null,
+};
 
 /** A page of the Tramlo Feed with two Events, oldest first. */
 const PAGE: RecordedResponse = {
@@ -54,7 +61,7 @@ function setUp(respond: () => RecordedResponse) {
   });
 
   const service = createSettingsService({
-    lang: 'fr',
+    lang: () => 'fr',
     connectors: [createFeed()],
     runtime,
     ...stores,
@@ -65,7 +72,7 @@ function setUp(respond: () => RecordedResponse) {
     newId: () => `src-${++ids}`,
   });
 
-  return { service, stores, fake, saved: () => saved };
+  return { service, stores, fake, clock, saved: () => saved };
 }
 
 describe('the settings window', () => {
@@ -105,6 +112,26 @@ describe('the settings window', () => {
 
     service.save({ ...DRAFT, id: 'src-1', values: { url: `${URL}/v2` }, token: '' });
     expect(stores.cursors.read('src-1')).toBeNull();
+  });
+
+  test('keeps a polling interval within the Connector’s bounds, and polls the Source at that interval', async () => {
+    const { service, saved, fake, clock } = setUp(() => PAGE);
+
+    expect(service.save({ ...DRAFT, interval: 5000 })).toEqual({ ok: false, problems: ['interval'] });
+    expect(service.save({ ...DRAFT, interval: 120_000 })).toEqual({ ok: true });
+    await settle();
+
+    expect(saved()[0]?.interval).toBe(120_000);
+    expect(service.snapshot().sources[0]?.interval).toBe(120_000);
+    expect(service.snapshot().connectors[0]?.interval).toEqual({ min: 30_000, default: 60_000, max: 900_000 });
+
+    clock.advance(60_000);
+    await settle();
+    expect(fake.sent).toHaveLength(1);
+
+    clock.advance(60_000);
+    await settle();
+    expect(fake.sent).toHaveLength(2);
   });
 
   test('removes a Source with its token and its cursor', () => {

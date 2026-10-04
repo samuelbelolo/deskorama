@@ -1,6 +1,6 @@
-import type { Language } from '@deskorama/core';
 import { BrowserWindow, type Display } from 'electron';
 import { join } from 'node:path';
+import type { Scene } from '../shared/scene.ts';
 import { screenSetupQuery } from '../shared/screen-setup-query.ts';
 import { screenOfDisplay } from './screen-of-display.ts';
 
@@ -14,12 +14,12 @@ export interface WallpaperWindow {
  * Opens the wallpaper window of one display: at the desktop level, between the system wallpaper and the icons
  * (`type: 'desktop'`, checked on macOS 27), on every Space but not over full-screen apps, transparent
  * to the mouse so the icons stay clickable. Its renderer runs the Theme with context isolation, a sandbox and no
- * Node; it may not navigate nor open windows. `seed` seeds the Theme's random generator.
+ * Node; it may not navigate nor open windows. It opens on `scene`, and `seed` seeds the Theme's random generator.
  * @example
- * const { window, loaded } = openWallpaperWindow(screen.getPrimaryDisplay(), 'fr', 7);
+ * const { window, loaded } = openWallpaperWindow(screen.getPrimaryDisplay(), scene.scene(), 7);
  * await loaded; // the page listens: Events sent from now on reach it
  */
-export function openWallpaperWindow(display: Display, lang: Language, seed: number): WallpaperWindow {
+export function openWallpaperWindow(display: Display, scene: Scene, seed: number): WallpaperWindow {
   const window = new BrowserWindow({
     type: 'desktop',
     ...display.bounds,
@@ -44,7 +44,7 @@ export function openWallpaperWindow(display: Display, lang: Language, seed: numb
 
   const loaded = window
     .loadFile(join(__dirname, '../renderer/index.html'), {
-      query: screenSetupQuery({ screen: screenOfDisplay(display), lang, seed }),
+      query: screenSetupQuery({ screen: screenOfDisplay(display), scene, seed }),
     })
     // A page that fails to load is waited for no longer: the app runs on without it.
     .catch(() => undefined);

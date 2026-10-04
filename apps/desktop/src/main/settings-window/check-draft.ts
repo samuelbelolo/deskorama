@@ -7,10 +7,11 @@ const MAX_TOKEN_LENGTH = 4096;
 
 /**
  * Returns the fields of a draft that need fixing: a name, every field of its Connector, an `https://` address for
- * a URL field, and a token unless an edited Source keeps the one in the Keychain.
+ * a URL field, an interval within the Connector's bounds when one is chosen, and a token unless an edited Source
+ * keeps the one in the Keychain.
  * @example
- * checkDraft({ id: null, connector: 'feed', name: 'Tramlo', values: { url: 'http://x.example' }, token: '' }, feed);
- * // ['url', 'token']
+ * const draft = { id: null, connector: 'feed', name: 'Tramlo', values: { url: 'http://x.example' }, token: '' };
+ * checkDraft({ ...draft, interval: 1000 }, feed); // ['url', 'interval', 'token']
  */
 export function checkDraft(draft: SourceDraft, connector: Connector): DraftProblems {
   const problems: string[] = [];
@@ -23,6 +24,13 @@ export function checkDraft(draft: SourceDraft, connector: Connector): DraftProbl
     const value = (draft.values[field.key] ?? '').trim();
 
     if (value === '' || (field.kind === 'url' && !isHttpsAddress(value))) problems.push(field.key);
+  }
+
+  const { interval } = draft;
+  const bounds = connector.config.interval;
+
+  if (interval !== null && (!Number.isInteger(interval) || interval < bounds.min || interval > bounds.max)) {
+    problems.push('interval');
   }
 
   const token = draft.token.trim();

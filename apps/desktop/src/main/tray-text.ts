@@ -7,6 +7,10 @@ export interface TrayText {
   readonly listening: (port: number) => string;
   readonly webhookOff: (port: number) => string;
   readonly copyTestCommand: string;
+  readonly pause: string;
+  readonly theme: string;
+  /** A Theme the app does not ship yet. */
+  readonly comingSoon: (theme: string) => string;
   readonly settings: string;
   readonly failing: (name: string, failure: ConnectorFailure) => string;
   readonly newRelease: (tag: string) => string;
@@ -20,6 +24,9 @@ export const TRAY_TEXT: Readonly<Record<Language, TrayText>> = {
     listening: (port) => `Webhook local sur 127.0.0.1:${port}`,
     webhookOff: (port) => `Webhook local arrêté : port ${port} déjà pris`,
     copyTestCommand: 'Copier une commande de test',
+    pause: 'Mettre en pause',
+    theme: 'Thème',
+    comingSoon: (theme) => `${theme} (bientôt)`,
     settings: 'Réglages…',
     failing: (name, failure) => `⚠ ${name} : ${failureText(failure, 'fr')}`,
     newRelease: (tag) => `Télécharger la version ${tag.replace(/^v/, '')}…`,
@@ -30,6 +37,9 @@ export const TRAY_TEXT: Readonly<Record<Language, TrayText>> = {
     listening: (port) => `Local webhook on 127.0.0.1:${port}`,
     webhookOff: (port) => `Local webhook off: port ${port} is taken`,
     copyTestCommand: 'Copy a test command',
+    pause: 'Pause',
+    theme: 'Theme',
+    comingSoon: (theme) => `${theme} (coming soon)`,
     settings: 'Settings…',
     failing: (name, failure) => `⚠ ${name}: ${failureText(failure, 'en')}`,
     newRelease: (tag) => `Download version ${tag.replace(/^v/, '')}…`,

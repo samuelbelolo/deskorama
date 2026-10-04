@@ -2,8 +2,8 @@ import type { Clock, Connector, ConnectorFetch, Language } from '@deskorama/core
 import type {
   DraftProblems,
   SaveAnswer,
-  SettingsSnapshot,
   SourceDraft,
+  SourcesSnapshot,
   TestAnswer,
 } from '../../shared/settings-bridge.ts';
 import type { SourceRuntime } from '../sources/create-source-runtime.ts';
@@ -16,7 +16,8 @@ import { testDraft } from './test-draft.ts';
 
 /** What the settings window acts on. */
 export interface SettingsServiceOptions {
-  readonly lang: Language;
+  /** The display language now, in which a test shows the Events it read. */
+  readonly lang: () => Language;
   readonly connectors: readonly Connector[];
   readonly runtime: SourceRuntime;
   readonly tokens: TokenStore;
@@ -29,9 +30,9 @@ export interface SettingsServiceOptions {
   readonly newId: () => string;
 }
 
-/** What the settings window may do. */
+/** What the settings window may do with the Sources. */
 export interface SettingsService {
-  snapshot(): SettingsSnapshot;
+  snapshot(): SourcesSnapshot;
   save(draft: SourceDraft): SaveAnswer;
   remove(id: string): void;
   test(draft: SourceDraft): Promise<TestAnswer>;
@@ -42,9 +43,9 @@ export interface SettingsService {
  * draft (its token to the Keychain, the rest to `settings.json`), removes a Source with its token and cursor, and
  * tests a draft. Every change reloads the running Sources.
  * @example
- * const service = createSettingsService({ lang: 'en', connectors: [createFeed()], runtime, tokens, cursors, clock,
+ * const service = createSettingsService({ lang: () => 'en', connectors: [createFeed()], runtime, tokens, cursors, clock,
  *   fetch, readSources, writeSources, newId: () => randomUUID() });
- * service.save({ id: null, connector: 'feed', name: 'Tramlo', values: { url }, token });
+ * service.save({ id: null, connector: 'feed', name: 'Tramlo', values: { url }, token, interval: null });
  */
 export function createSettingsService(options: SettingsServiceOptions): SettingsService {
   /** Returns the draft's Connector, or the fields to fix: an unknown Connector or the draft's own problems. */
@@ -65,6 +66,7 @@ export function createSettingsService(options: SettingsServiceOptions): Settings
         title,
         fields: config.fields,
         permissions: config.permissions,
+        interval: config.interval,
       }));
 
       const sources = options.runtime.states().map(({ entry, status }) => ({
@@ -72,6 +74,7 @@ export function createSettingsService(options: SettingsServiceOptions): Settings
         connector: entry.connector,
         name: entry.name,
         values: entry.values,
+        interval: entry.interval ?? null,
         status,
       }));
 
@@ -132,7 +135,9 @@ export function createSettingsService(options: SettingsServiceOptions): Settings
 
       const { connector } = check;
 
-      return testDraft(draft, { connector, token, fetch: options.fetch, now: options.clock.now(), lang: options.lang });
+      const { fetch, clock } = options;
+
+      return testDraft(draft, { connector, token, fetch, now: clock.now(), lang: options.lang() });
     },
   };
 }
