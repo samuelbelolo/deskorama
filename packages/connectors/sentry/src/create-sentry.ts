@@ -1,0 +1,23 @@
+import type { Connector } from '@deskorama/core';
+import { pollSentry } from './poll-sentry.ts';
+import { SENTRY_CONFIG } from './sentry-config.ts';
+import { SENTRY_GAUGES } from './sentry-gauges.ts';
+
+/**
+ * Returns the Sentry Connector: it polls one organization's issues with a read token, and plays each new error and
+ * each error that comes back.
+ * @example
+ * const sentry = createSentry();
+ * await sentry.poll({ settings: { name: 'Tramlo', values: { organization: 'tramlo' }, token }, cursor: null,
+ *   fetch: net.fetch, now: clock.now() });
+ * // { events: [{ kind: 'issue.new', … }], cursor: '{"since":…}' }
+ */
+export function createSentry(): Connector {
+  return {
+    id: 'sentry',
+    title: { fr: 'Sentry', en: 'Sentry' },
+    config: SENTRY_CONFIG,
+    gauges: SENTRY_GAUGES,
+    poll: pollSentry,
+  };
+}

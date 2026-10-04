@@ -1,0 +1,26 @@
+{
+  "name": "@deskorama/connector-sentry",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Sentry Connector: polls an organization's issues for new errors and errors that come back.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@deskorama/core": "workspace:*",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@deskorama/test-utils": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

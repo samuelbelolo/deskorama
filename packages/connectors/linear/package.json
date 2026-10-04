@@ -1,0 +1,26 @@
+{
+  "name": "@deskorama/connector-linear",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Linear Connector: polls a workspace's issues for those created and those completed.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@deskorama/core": "workspace:*",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@deskorama/test-utils": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

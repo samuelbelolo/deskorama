@@ -1,0 +1,17 @@
+{
+  "id": "dpl_3kVq8TzR1mWn6YbH2cXe9LpA",
+  "name": "tramlo-web",
+  "url": "tramlo-web-k3f9x2.tramlo.example",
+  "createdAt": 1791122100000,
+  "buildingAt": 1791122104000,
+  "ready": 1791122280000,
+  "readyState": "ERROR",
+  "errorCode": "BUILD_FAILED",
+  "errorMessage": "Command \"pnpm run build\" exited with 1",
+  "target": "production",
+  "type": "LAMBDAS",
+  "source": "git",
+  "projectId": "prj_T7rLm0Wb3Dq8Kx2Fn5Vc",
+  "inspectorUrl": "https://vercel.tramlo.example/tramlo/tramlo-web/3kVq8TzR1mWn6YbH2cXe9LpA",
+  "meta": { "githubCommitRef": "main", "githubCommitSha": "9c41e07b5f2d8a3e6b1c4d7f0a9e2b5c8d1f4a7e" }
+}

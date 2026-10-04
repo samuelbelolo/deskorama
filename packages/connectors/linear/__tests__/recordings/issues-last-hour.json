@@ -1,0 +1,36 @@
+{
+  "data": {
+    "issues": {
+      "nodes": [
+        {
+          "id": "0b7e3c52-9d41-4f7a-8e26-3a1c5d9f7b04",
+          "identifier": "ENG-120",
+          "title": "Dark mode for the dashboard",
+          "createdAt": "2026-09-21T09:30:00.000Z",
+          "updatedAt": "2026-10-04T13:57:12.004Z",
+          "completedAt": null,
+          "state": { "type": "started" }
+        },
+        {
+          "id": "f3a91d6e-2c87-4b5a-9e13-7d4f0a6c8b21",
+          "identifier": "ENG-139",
+          "title": "Retry failed webhooks",
+          "createdAt": "2026-09-30T08:12:00.000Z",
+          "updatedAt": "2026-10-04T13:53:30.120Z",
+          "completedAt": "2026-10-04T13:53:30.120Z",
+          "state": { "type": "completed" }
+        },
+        {
+          "id": "6f1c84a0-5e29-4d3b-b7f2-1e8a9c0d4e57",
+          "identifier": "ENG-142",
+          "title": "Export invoices as CSV",
+          "createdAt": "2026-10-04T13:41:07.512Z",
+          "updatedAt": "2026-10-04T13:41:07.512Z",
+          "completedAt": null,
+          "state": { "type": "unstarted" }
+        }
+      ],
+      "pageInfo": { "hasNextPage": false, "endCursor": "6f1c84a0-5e29-4d3b-b7f2-1e8a9c0d4e57" }
+    }
+  }
+}

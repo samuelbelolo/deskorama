@@ -1,0 +1,26 @@
+{
+  "name": "@deskorama/connector-vercel",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Vercel Connector: polls a project's deployments and follows each one until it is ready, failed or canceled.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@deskorama/core": "workspace:*",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@deskorama/test-utils": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "deployments": [
+    {
+      "uid": "dpl_3kVq8TzR1mWn6YbH2cXe9LpA",
+      "name": "tramlo-web",
+      "url": "tramlo-web-k3f9x2.tramlo.example",
+      "created": 1791122100000,
+      "createdAt": 1791122100000,
+      "buildingAt": 1791122104000,
+      "state": "BUILDING",
+      "readyState": "BUILDING",
+      "target": "production",
+      "type": "LAMBDAS",
+      "source": "git",
+      "projectId": "prj_T7rLm0Wb3Dq8Kx2Fn5Vc",
+      "inspectorUrl": "https://vercel.tramlo.example/tramlo/tramlo-web/3kVq8TzR1mWn6YbH2cXe9LpA",
+      "meta": { "githubCommitRef": "main", "githubCommitSha": "9c41e07b5f2d8a3e6b1c4d7f0a9e2b5c8d1f4a7e" }
+    },
+    {
+      "uid": "dpl_8NwP2sJd5HfQ7cLr4XtB1mZu",
+      "name": "tramlo-web",
+      "url": "tramlo-web-git-feature-dark-mode.tramlo.example",
+      "created": 1791121200000,
+      "createdAt": 1791121200000,
+      "buildingAt": 1791121203000,
+      "ready": 1791121380000,
+      "state": "READY",
+      "readyState": "READY",
+      "readySubstate": "STAGED",
+      "target": null,
+      "type": "LAMBDAS",
+      "source": "git",
+      "projectId": "prj_T7rLm0Wb3Dq8Kx2Fn5Vc",
+      "inspectorUrl": "https://vercel.tramlo.example/tramlo/tramlo-web/8NwP2sJd5HfQ7cLr4XtB1mZu",
+      "meta": { "githubCommitRef": "feature/dark-mode", "githubCommitSha": "2b7d9f1a4c6e8b0d3f5a7c9e1b3d5f7a9c2e4b6d" }
+    },
+    {
+      "uid": "dpl_5RtY9uIo2PaS4dFg6HjK8lZx",
+      "name": "tramlo-web",
+      "url": "tramlo-web-p8d2m4.tramlo.example",
+      "created": 1791119400000,
+      "createdAt": 1791119400000,
+      "buildingAt": 1791119405000,
+      "ready": 1791119700000,
+      "state": "READY",
+      "readyState": "READY",
+      "readySubstate": "PROMOTED",
+      "target": "production",
+      "type": "LAMBDAS",
+      "source": "git",
+      "projectId": "prj_T7rLm0Wb3Dq8Kx2Fn5Vc",
+      "inspectorUrl": "https://vercel.tramlo.example/tramlo/tramlo-web/5RtY9uIo2PaS4dFg6HjK8lZx",
+      "meta": { "githubCommitRef": "main", "githubCommitSha": "7e3a1c5b9d2f4e6a8c0b1d3f5e7a9c2b4d6f8e0a" }
+    }
+  ],
+  "pagination": { "count": 3, "next": null, "prev": 1791119400000 }
+}
