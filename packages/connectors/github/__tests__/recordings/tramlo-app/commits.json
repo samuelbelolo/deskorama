@@ -1,0 +1,26 @@
+[
+  {
+    "sha": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+    "author": { "login": "contributor-a", "id": 5001 },
+    "commit": {
+      "message": "Speed up the Search page",
+      "committer": { "name": "GitHub", "date": "2026-10-04T13:50:00Z" }
+    }
+  },
+  {
+    "sha": "c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2",
+    "author": { "login": "contributor-b", "id": 5002 },
+    "commit": {
+      "message": "Update dependencies",
+      "committer": { "name": "GitHub", "date": "2026-10-04T13:40:00Z" }
+    }
+  },
+  {
+    "sha": "c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1",
+    "author": null,
+    "commit": {
+      "message": "Translate e-mails to French",
+      "committer": { "name": "GitHub", "date": "2026-10-04T09:00:00Z" }
+    }
+  }
+]

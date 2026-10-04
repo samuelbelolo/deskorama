@@ -1,0 +1,26 @@
+[
+  {
+    "sha": "c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5",
+    "author": { "login": "contributor-c", "id": 5003 },
+    "commit": {
+      "message": "Dark mode on the dashboard",
+      "committer": { "name": "GitHub", "date": "2026-10-04T14:00:30Z" }
+    }
+  },
+  {
+    "sha": "c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4",
+    "author": { "login": "contributor-c", "id": 5003 },
+    "commit": {
+      "message": "Dark mode tokens",
+      "committer": { "name": "GitHub", "date": "2026-10-04T14:00:20Z" }
+    }
+  },
+  {
+    "sha": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+    "author": { "login": "contributor-a", "id": 5001 },
+    "commit": {
+      "message": "Speed up the Search page",
+      "committer": { "name": "GitHub", "date": "2026-10-04T13:50:00Z" }
+    }
+  }
+]

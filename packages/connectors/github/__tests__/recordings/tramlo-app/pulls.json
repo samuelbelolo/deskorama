@@ -1,0 +1,50 @@
+[
+  {
+    "number": 418,
+    "state": "open",
+    "title": "Fix Google sign-in",
+    "user": { "login": "contributor-c", "id": 5003 },
+    "author_association": "MEMBER",
+    "draft": false,
+    "created_at": "2026-10-04T13:30:00Z",
+    "updated_at": "2026-10-04T13:45:00Z",
+    "closed_at": null,
+    "merged_at": null
+  },
+  {
+    "number": 412,
+    "state": "closed",
+    "title": "Add PDF export for invoices",
+    "user": { "login": "contributor-a", "id": 5001 },
+    "author_association": "MEMBER",
+    "draft": false,
+    "created_at": "2026-10-03T10:00:00Z",
+    "updated_at": "2026-10-04T13:20:00Z",
+    "closed_at": "2026-10-04T13:20:00Z",
+    "merged_at": "2026-10-04T13:20:00Z"
+  },
+  {
+    "number": 409,
+    "state": "closed",
+    "title": "Try another chart library",
+    "user": { "login": "contributor-b", "id": 5002 },
+    "author_association": "MEMBER",
+    "draft": true,
+    "created_at": "2026-10-02T08:00:00Z",
+    "updated_at": "2026-10-04T12:00:00Z",
+    "closed_at": "2026-10-04T12:00:00Z",
+    "merged_at": null
+  },
+  {
+    "number": 401,
+    "state": "closed",
+    "title": "Speed up the Search page",
+    "user": { "login": "contributor-a", "id": 5001 },
+    "author_association": "MEMBER",
+    "draft": false,
+    "created_at": "2026-09-20T08:00:00Z",
+    "updated_at": "2026-09-25T08:00:00Z",
+    "closed_at": "2026-09-25T08:00:00Z",
+    "merged_at": "2026-09-25T08:00:00Z"
+  }
+]

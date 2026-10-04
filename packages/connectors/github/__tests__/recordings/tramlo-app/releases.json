@@ -1,0 +1,18 @@
+[
+  {
+    "id": 78,
+    "tag_name": "v2.6.0",
+    "name": "Next",
+    "draft": true,
+    "prerelease": false,
+    "published_at": null
+  },
+  {
+    "id": 77,
+    "tag_name": "v2.5.0",
+    "name": "PDF export",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2026-10-04T12:30:00Z"
+  }
+]

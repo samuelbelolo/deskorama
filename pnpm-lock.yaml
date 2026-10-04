@@ -367,6 +367,50 @@ importers:
         specifier: 'catalog:'
         version: 5.0.3(@types/node@24.19.1)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1))
 
+  packages/connectors/github:
+    dependencies:
+      '@deskorama/core':
+        specifier: workspace:*
+        version: link:../../core
+      valibot:
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@7.0.2)
+    devDependencies:
+      '@deskorama/test-utils':
+        specifier: workspace:*
+        version: link:../../test-utils
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.3(@types/node@24.19.1)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1))
+
+  packages/connectors/linear:
+    dependencies:
+      '@deskorama/core':
+        specifier: workspace:*
+        version: link:../../core
+      valibot:
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@7.0.2)
+    devDependencies:
+      '@deskorama/test-utils':
+        specifier: workspace:*
+        version: link:../../test-utils
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.3(@types/node@24.19.1)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1))
+
   packages/connectors/local-webhook:
     dependencies:
       '@deskorama/core':
@@ -375,6 +419,94 @@ importers:
       '@deskorama/event-json':
         specifier: workspace:*
         version: link:../../event-json
+    devDependencies:
+      '@deskorama/test-utils':
+        specifier: workspace:*
+        version: link:../../test-utils
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.3(@types/node@24.19.1)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1))
+
+  packages/connectors/posthog:
+    dependencies:
+      '@deskorama/core':
+        specifier: workspace:*
+        version: link:../../core
+      valibot:
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@7.0.2)
+    devDependencies:
+      '@deskorama/test-utils':
+        specifier: workspace:*
+        version: link:../../test-utils
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.3(@types/node@24.19.1)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1))
+
+  packages/connectors/sentry:
+    dependencies:
+      '@deskorama/core':
+        specifier: workspace:*
+        version: link:../../core
+      valibot:
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@7.0.2)
+    devDependencies:
+      '@deskorama/test-utils':
+        specifier: workspace:*
+        version: link:../../test-utils
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.3(@types/node@24.19.1)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1))
+
+  packages/connectors/stripe:
+    dependencies:
+      '@deskorama/core':
+        specifier: workspace:*
+        version: link:../../core
+      valibot:
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@7.0.2)
+    devDependencies:
+      '@deskorama/test-utils':
+        specifier: workspace:*
+        version: link:../../test-utils
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.3(@types/node@24.19.1)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1))
+
+  packages/connectors/vercel:
+    dependencies:
+      '@deskorama/core':
+        specifier: workspace:*
+        version: link:../../core
+      valibot:
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@7.0.2)
     devDependencies:
       '@deskorama/test-utils':
         specifier: workspace:*

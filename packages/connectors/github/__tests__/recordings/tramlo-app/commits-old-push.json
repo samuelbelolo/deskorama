@@ -1,0 +1,30 @@
+[
+  {
+    "sha": "c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6",
+    "author": {
+      "login": "contributor-b",
+      "id": 5002
+    },
+    "commit": {
+      "message": "Tidy the invoice template",
+      "committer": {
+        "name": "contributor-b",
+        "date": "2026-10-03T18:00:00Z"
+      }
+    }
+  },
+  {
+    "sha": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+    "author": {
+      "login": "contributor-a",
+      "id": 5001
+    },
+    "commit": {
+      "message": "Speed up the Search page",
+      "committer": {
+        "name": "GitHub",
+        "date": "2026-10-04T13:50:00Z"
+      }
+    }
+  }
+]

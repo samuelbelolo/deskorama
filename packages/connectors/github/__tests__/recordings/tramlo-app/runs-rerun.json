@@ -1,0 +1,38 @@
+{
+  "total_count": 3,
+  "workflow_runs": [
+    {
+      "id": 5103,
+      "run_attempt": 1,
+      "name": "CI",
+      "head_branch": "main",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-04T13:51:00Z",
+      "updated_at": "2026-10-04T13:58:00Z"
+    },
+    {
+      "id": 5102,
+      "run_attempt": 2,
+      "name": "CI",
+      "head_branch": "feature/export-pdf",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-10-04T13:28:00Z",
+      "updated_at": "2026-10-04T14:00:45Z"
+    },
+    {
+      "id": 5101,
+      "run_attempt": 1,
+      "name": "CI",
+      "head_branch": "main",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-04T12:50:00Z",
+      "updated_at": "2026-10-04T13:00:00Z"
+    }
+  ]
+}

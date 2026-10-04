@@ -1,0 +1,14 @@
+[
+  {
+    "id": 9001,
+    "user": { "login": "reviewer-d", "id": 5004 },
+    "state": "APPROVED",
+    "submitted_at": "2026-10-04T13:45:00Z"
+  },
+  {
+    "id": 9003,
+    "user": { "login": "reviewer-e", "id": 5005 },
+    "state": "COMMENTED",
+    "submitted_at": "2026-10-04T13:44:00Z"
+  }
+]
