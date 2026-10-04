@@ -1,0 +1,19 @@
+{
+  "name": "@deskorama/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Event shape, the Theme and Host contracts, the Clock, the seeded random generator and the engine. No runtime dependency.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

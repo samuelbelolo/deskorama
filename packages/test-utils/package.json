@@ -1,0 +1,22 @@
+{
+  "name": "@deskorama/test-utils",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A fake host, a fake Clock and Event fixtures, to build and test Themes and the engine without the app.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@deskorama/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
