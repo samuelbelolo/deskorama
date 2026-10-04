@@ -1,0 +1,142 @@
+{
+  "object": "list",
+  "url": "/v1/events",
+  "has_more": false,
+  "data": [
+    {
+      "id": "evt_1KvKaveloSubRenew01",
+      "object": "event",
+      "api_version": "2025-09-30.clover",
+      "created": 1791122100,
+      "livemode": true,
+      "type": "customer.subscription.updated",
+      "data": {
+        "object": {
+          "id": "sub_1KvKaveloPro0001",
+          "object": "subscription",
+          "status": "active",
+          "items": {
+            "object": "list",
+            "data": [
+              {
+                "id": "si_KaveloPro0001",
+                "object": "subscription_item",
+                "quantity": 1,
+                "price": {
+                  "id": "price_KaveloPro",
+                  "object": "price",
+                  "currency": "eur",
+                  "unit_amount": 4900,
+                  "recurring": { "interval": "month", "interval_count": 1 }
+                }
+              }
+            ]
+          }
+        },
+        "previous_attributes": { "latest_invoice": "in_1KvKaveloOld0001" }
+      }
+    },
+    {
+      "id": "evt_1KvKaveloTrial001",
+      "object": "event",
+      "api_version": "2025-09-30.clover",
+      "created": 1791121500,
+      "livemode": true,
+      "type": "customer.subscription.created",
+      "data": {
+        "object": {
+          "id": "sub_1KvKaveloSolo0001",
+          "object": "subscription",
+          "status": "trialing",
+          "items": {
+            "object": "list",
+            "data": [
+              {
+                "id": "si_KaveloSolo0001",
+                "object": "subscription_item",
+                "quantity": 1,
+                "price": {
+                  "id": "price_KaveloSolo",
+                  "object": "price",
+                  "currency": "eur",
+                  "unit_amount": 1900,
+                  "recurring": { "interval": "month", "interval_count": 1 }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "evt_1KvKaveloDeclined01",
+      "object": "event",
+      "api_version": "2025-09-30.clover",
+      "created": 1791120900,
+      "livemode": true,
+      "type": "payment_intent.payment_failed",
+      "data": {
+        "object": {
+          "id": "pi_1KvKaveloTeam0001",
+          "object": "payment_intent",
+          "amount": 12900,
+          "amount_received": 0,
+          "currency": "eur",
+          "status": "requires_payment_method",
+          "last_payment_error": { "type": "card_error", "code": "card_declined", "decline_code": "insufficient_funds" }
+        }
+      }
+    },
+    {
+      "id": "evt_1KvKaveloSubNew001",
+      "object": "event",
+      "api_version": "2025-09-30.clover",
+      "created": 1791120300,
+      "livemode": true,
+      "type": "customer.subscription.created",
+      "data": {
+        "object": {
+          "id": "sub_1KvKaveloPro0002",
+          "object": "subscription",
+          "status": "active",
+          "items": {
+            "object": "list",
+            "data": [
+              {
+                "id": "si_KaveloPro0002",
+                "object": "subscription_item",
+                "quantity": 1,
+                "price": {
+                  "id": "price_KaveloPro",
+                  "object": "price",
+                  "currency": "eur",
+                  "unit_amount": 4900,
+                  "recurring": { "interval": "month", "interval_count": 1 }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "evt_1KvKaveloPaid0001",
+      "object": "event",
+      "api_version": "2025-09-30.clover",
+      "created": 1791120290,
+      "livemode": true,
+      "type": "payment_intent.succeeded",
+      "data": {
+        "object": {
+          "id": "pi_1KvKaveloPro0002",
+          "object": "payment_intent",
+          "amount": 4900,
+          "amount_received": 4900,
+          "currency": "eur",
+          "status": "succeeded",
+          "last_payment_error": null
+        }
+      }
+    }
+  ]
+}

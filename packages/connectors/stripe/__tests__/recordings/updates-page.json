@@ -1,0 +1,105 @@
+{
+  "object": "list",
+  "url": "/v1/events",
+  "has_more": false,
+  "data": [
+    {
+      "id": "evt_1KvKaveloConvert01",
+      "object": "event",
+      "api_version": "2025-09-30.clover",
+      "created": 1791122300,
+      "livemode": true,
+      "type": "customer.subscription.updated",
+      "data": {
+        "object": {
+          "id": "sub_1KvKaveloSolo0002",
+          "object": "subscription",
+          "status": "active",
+          "items": {
+            "object": "list",
+            "data": [
+              {
+                "id": "si_KaveloSolo0002",
+                "object": "subscription_item",
+                "quantity": 1,
+                "price": {
+                  "id": "price_KaveloSoloYear",
+                  "object": "price",
+                  "currency": "eur",
+                  "unit_amount": 19000,
+                  "recurring": { "interval": "year", "interval_count": 1 }
+                }
+              }
+            ]
+          }
+        },
+        "previous_attributes": { "status": "trialing" }
+      }
+    },
+    {
+      "id": "evt_1KvKaveloStarted01",
+      "object": "event",
+      "api_version": "2025-09-30.clover",
+      "created": 1791122200,
+      "livemode": true,
+      "type": "customer.subscription.updated",
+      "data": {
+        "object": {
+          "id": "sub_1KvKaveloTeam0003",
+          "object": "subscription",
+          "status": "active",
+          "items": {
+            "object": "list",
+            "data": [
+              {
+                "id": "si_KaveloTeam0003",
+                "object": "subscription_item",
+                "quantity": 3,
+                "price": {
+                  "id": "price_KaveloSeat",
+                  "object": "price",
+                  "currency": "eur",
+                  "unit_amount": 4300,
+                  "recurring": { "interval": "month", "interval_count": 1 }
+                }
+              }
+            ]
+          }
+        },
+        "previous_attributes": { "status": "incomplete" }
+      }
+    },
+    {
+      "id": "evt_1KvKaveloPending01",
+      "object": "event",
+      "api_version": "2025-09-30.clover",
+      "created": 1791122150,
+      "livemode": true,
+      "type": "customer.subscription.created",
+      "data": {
+        "object": {
+          "id": "sub_1KvKaveloTeam0003",
+          "object": "subscription",
+          "status": "incomplete",
+          "items": {
+            "object": "list",
+            "data": [
+              {
+                "id": "si_KaveloTeam0003",
+                "object": "subscription_item",
+                "quantity": 3,
+                "price": {
+                  "id": "price_KaveloSeat",
+                  "object": "price",
+                  "currency": "eur",
+                  "unit_amount": 4300,
+                  "recurring": { "interval": "month", "interval_count": 1 }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

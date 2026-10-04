@@ -1,0 +1,8 @@
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "resource_missing",
+    "param": "ending_before",
+    "message": "No such event: 'evt_1KvKaveloGone0001'"
+  }
+}

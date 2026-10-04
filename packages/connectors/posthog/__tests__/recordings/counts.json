@@ -1,0 +1,11 @@
+{
+  "query": "SELECT uniqIf(person_id, timestamp >= now() - INTERVAL 5 MINUTE) AS active_now, countIf(event = {signup} AND timestamp >= toStartOfDay(now())) AS signups_today FROM events WHERE timestamp >= toStartOfDay(now() - INTERVAL 5 MINUTE)",
+  "results": [[14, 37]],
+  "columns": ["active_now", "signups_today"],
+  "types": [
+    ["active_now", "UInt64"],
+    ["signups_today", "UInt64"]
+  ],
+  "is_cached": false,
+  "timezone": "Europe/Paris"
+}
