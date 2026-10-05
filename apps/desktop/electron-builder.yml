@@ -23,6 +23,8 @@ extraResources:
     to: get-windows
 mac:
   category: public.app-category.entertainment
+  # Built from the drawings beside it by resources/build-icon.sh. The dmg's volume takes the same icon.
+  icon: resources/icon.icns
   # Apple silicon only: macOS 27 announces that Intel apps stop running in macOS 28.
   target:
     - target: dmg

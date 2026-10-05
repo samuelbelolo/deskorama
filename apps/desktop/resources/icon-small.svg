@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- The app icon as drawn at 16 and 32 pixels: the same scene without the buildings and the runway marks, the plane larger. -->
+  <defs>
+    <clipPath id="tile"><rect x="100" y="100" width="824" height="824" rx="185"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#tile)">
+    <rect x="100" y="100" width="824" height="824" fill="#2d5da8"/>
+    <circle cx="296" cy="280" r="108" fill="#f2e3b6"/>
+    <rect x="100" y="770" width="824" height="160" fill="#3a424e"/>
+
+    <g transform="translate(320 660) rotate(-22)" fill="#e8561e">
+      <path d="M0 -56 L470 -56 Q560 -56 560 0 Q560 56 470 56 L0 56 Z"/>
+      <path d="M0 -56 L-50 -200 L60 -200 L150 -56 Z"/>
+      <path d="M210 0 L140 170 L250 170 L380 0 Z" fill="#b8400f"/>
+    </g>
+  </g>
+</svg>

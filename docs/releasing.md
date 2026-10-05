@@ -37,3 +37,5 @@ macOS remembers the choice. A new version means downloading the new dmg and repl
 ## Local builds
 
 `pnpm e2e` builds the app in `apps/desktop/release/mac-arm64/` and drives it with Playwright. That build keeps the `--inspect` fuse on for Playwright and never looks for new releases; do not distribute it. `pnpm --filter @deskorama/desktop build && pnpm --filter @deskorama/desktop package` makes the same dmg and zip as a release, without the release watch unless `RELEASE_REPOSITORY=owner/repo` is set for the build.
+
+The app's icon is `apps/desktop/resources/icon.icns`, built from the two drawings beside it: `icon.svg`, and `icon-small.svg` for the 16 and 32 pixel sizes. After editing a drawing, run `sh apps/desktop/resources/build-icon.sh` (it needs `rsvg-convert`, from `brew install librsvg`) and commit the new `icon.icns`.
