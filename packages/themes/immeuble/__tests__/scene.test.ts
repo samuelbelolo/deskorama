@@ -5,7 +5,7 @@ import { PAL } from '../src/palette.ts';
 import { boxOf } from './box-of.ts';
 import { canvasPrint } from './canvas-print.ts';
 import { DEFAULT_WINDOWS } from './default-windows.ts';
-import { AFTERNOON, NIGHT } from './instants.ts';
+import { AFTERNOON, DUSK, NIGHT } from './instants.ts';
 import { mountBuilding, type MountedBuilding } from './mount-building.ts';
 import { pixelAt } from './pixel-at.ts';
 import { roleEvent } from './role-event.ts';
@@ -31,8 +31,10 @@ describe("L'Immeuble's scene", () => {
   });
 
   test('moves on with the Clock, into the night', () => {
-    mounted = mountBuilding({ start: AFTERNOON });
-    mounted.host.clock.advance(9 * 3_600_000);
+    mounted = mountBuilding({ start: DUSK });
+    expect(pixelAt(mounted.layer, 2, 2)).toBe(PAL.dusk);
+
+    mounted.host.clock.advance(10 * 60_000);
 
     expect(pixelAt(mounted.layer, 2, 2)).toBe(PAL.night);
   });
