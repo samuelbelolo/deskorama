@@ -13,6 +13,10 @@ files:
   # The licences of the icons and the trademark notice of the service logos the settings window shows.
   - THIRD-PARTY-NOTICES.md
 asar: true
+# electron-builder uploads nothing and writes no update metadata: the release workflow attaches the files, and
+# the app reads the repository's latest release itself. Without this, a GH_TOKEN in the environment makes
+# electron-builder assume a GitHub publisher and fail when it cannot resolve it.
+publish: null
 # get-windows' macOS executable lists other windows' frames; outside the ASAR archive so it can run.
 extraResources:
   - from: node_modules/get-windows/main

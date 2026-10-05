@@ -12,7 +12,7 @@ The app is signed ad hoc, not with an Apple Developer ID, and is not notarized: 
 4. The `mac` job, on a macOS runner, builds the app so that it watches this repository for new releases. It packages the app with an ad-hoc signature, checks that the signature survives the zip, attaches `Deskorama-X.Y.Z-mac-arm64.dmg` and `.zip`, and publishes the release.
 5. Within the hour, installed apps offer "Download version X.Y.Z…" in the menu bar, which opens the release page.
 
-If a step fails, the release stays a draft, so nobody is told about a release without its downloads. Fix the cause, then re-run the failed job.
+If a step fails, the release stays a draft, so nobody is told about a release without its downloads. When the failure was passing, re-run the failed job. When it needed a fix, merge the fix (as `ci:` or `build:`, so it opens no new release), then run the workflow by hand with the draft's tag: `gh workflow run Release -f tag=vX.Y.Z`. It builds the current `main`, and refuses to if the app's version is not the tag's.
 
 ## One-time setup (repository owner)
 

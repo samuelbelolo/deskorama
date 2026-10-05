@@ -7,6 +7,14 @@ name: Release
 on:
   push:
     branches: [main]
+  # Builds and attaches the downloads of a release that is still a draft, from the current main: the way back when
+  # the mac job failed and the fix came in a later commit, which re-running the failed job would not see.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The tag of the draft release to build, such as v0.1.0
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -34,12 +42,12 @@ jobs:
 
   mac:
     needs: release-please
-    if: needs.release-please.outputs.created == 'true'
+    if: needs.release-please.outputs.created == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: macos-26
     permissions:
       contents: write
     env:
-      TAG: ${{ needs.release-please.outputs.tag }}
+      TAG: ${{ inputs.tag || needs.release-please.outputs.tag }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
@@ -49,6 +57,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Check the app's version is the release's
+        run: test "v$(node -p "require('./apps/desktop/package.json').version")" = "$TAG"
       - name: Build, watching this repository for new releases
         run: pnpm --filter @deskorama/desktop build
         env:
