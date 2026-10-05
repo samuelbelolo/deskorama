@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/samuelbelolo/deskorama/compare/v0.1.0...v0.2.0) (2026-10-05)
+
+
+### Features
+
+* **desktop:** give the app its own icon ([a797233](https://github.com/samuelbelolo/deskorama/commit/a797233ef6863966eea679db53a6b137d8c7aaeb))
+
 ## 0.1.0 (2026-10-05)
 
 
