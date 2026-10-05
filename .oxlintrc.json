@@ -22,6 +22,12 @@
     "typescript/switch-exhaustiveness-check": "error",
     "typescript/consistent-type-imports": "error",
     "typescript/no-explicit-any": "error",
+    "vitest/expect-expect": [
+      "error",
+      {
+        "assertFunctionNames": ["expect", "expectTypeOf", "assert", "assertType", "matchReference"]
+      }
+    ],
     "import/no-unassigned-import": [
       "error",
       {

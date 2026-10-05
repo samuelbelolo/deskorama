@@ -11,8 +11,8 @@ build/
 # Packaged desktop app (electron-builder's output)
 release/
 
-# Turborepo cache, Vitest browser-mode failure screenshots, Playwright reports
+# Turborepo cache, what Vitest leaves behind (failure screenshots, screenshot differences), Playwright reports
 .turbo/
-__screenshots__/
+.vitest/
 test-results/
 playwright-report/

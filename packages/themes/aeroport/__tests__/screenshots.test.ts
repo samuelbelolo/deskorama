@@ -1,9 +1,10 @@
 import type { Archetype, Language } from '@deskorama/core';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, test } from 'vitest';
 import { page, server } from 'vitest/browser';
 import { FAKE_SCREEN, wallpaperEventFixture } from '@deskorama/test-utils';
 import { DEFAULT_WINDOWS } from './default-windows.ts';
 import { AFTERNOON, NIGHT } from './instants.ts';
+import { matchReference } from './match-reference.ts';
 import { mountAirport, type MountedAirport } from './mount-airport.ts';
 import { roleEvent } from './role-event.ts';
 import { sendDeploy } from './send-deploy.ts';
@@ -30,7 +31,7 @@ const KEY_POSES: readonly (readonly [Archetype, Language, string])[] = [
 /**
  * Returns the airport's root, the part each screenshot frames.
  * @example
- * await expect.element(airportOf(layer)).toMatchScreenshot('afternoon');
+ * await matchReference(airportOf(layer), 'scene-afternoon');
  */
 function airportOf(layer: HTMLElement): ReturnType<typeof page.elementLocator> {
   const root = layer.querySelector('[data-theme="aeroport"]');
@@ -50,7 +51,7 @@ describe.runIf(server.platform === 'linux')("L'Aéroport's drawing", () => {
     mounted = mountAirport({ lang: 'fr', start });
     mounted.host.setGauges(GAUGES);
 
-    await expect.element(airportOf(mounted.layer)).toMatchScreenshot(`scene-${name}`);
+    await matchReference(airportOf(mounted.layer), `scene-${name}`);
   });
 
   test.each(KEY_POSES)('the %s Gag in %s at its key pose', async (role, lang, tag) => {
@@ -59,7 +60,7 @@ describe.runIf(server.platform === 'linux')("L'Aéroport's drawing", () => {
     mounted.host.setGauges(GAUGES);
     mounted.host.send(roleEvent(lang, role, tag));
 
-    await expect.element(airportOf(mounted.layer)).toMatchScreenshot(`gag-${role}-${lang}`);
+    await matchReference(airportOf(mounted.layer), `gag-${role}-${lang}`);
   });
 
   test('the golden jet at its key pose, behind the default windows', async () => {
@@ -70,7 +71,7 @@ describe.runIf(server.platform === 'linux')("L'Aéroport's drawing", () => {
     mounted.host.clock.advance(200);
     mounted.host.send(wallpaperEventFixture('fr', { id: 'milestone', archetype: 'celebration', rarity: 'rare' }));
 
-    await expect.element(airportOf(mounted.layer)).toMatchScreenshot('celebration-fr');
+    await matchReference(airportOf(mounted.layer), 'celebration-fr');
   });
 
   test('the failed deploy at its key pose', async () => {
@@ -80,7 +81,7 @@ describe.runIf(server.platform === 'linux')("L'Aéroport's drawing", () => {
     sendDeploy(mounted.host, 'en', 'failed');
     mounted.host.clock.advance(2000);
 
-    await expect.element(airportOf(mounted.layer)).toMatchScreenshot('jackpot-en');
+    await matchReference(airportOf(mounted.layer), 'jackpot-en');
   });
 
   test('the airfield on the external screen', async () => {
@@ -89,7 +90,7 @@ describe.runIf(server.platform === 'linux')("L'Aéroport's drawing", () => {
     mounted = mountAirport({ lang: 'fr', start: AFTERNOON, screen: external, screens: [FAKE_SCREEN, external] });
     mounted.host.setGauges(GAUGES);
 
-    await expect.element(airportOf(mounted.layer)).toMatchScreenshot('airfield-fr');
+    await matchReference(airportOf(mounted.layer), 'airfield-fr');
   });
 
   test('the PROD flight christened and lifting its nose', async () => {
@@ -98,7 +99,7 @@ describe.runIf(server.platform === 'linux')("L'Aéroport's drawing", () => {
     mounted.host.setGauges(GAUGES);
     sendDeploy(mounted.host, 'fr', 'succeeded');
 
-    await expect.element(airportOf(mounted.layer)).toMatchScreenshot('take-off-fr');
+    await matchReference(airportOf(mounted.layer), 'take-off-fr');
   });
 
   test('the recap on the baggage belt', async () => {
@@ -114,6 +115,6 @@ describe.runIf(server.platform === 'linux')("L'Aéroport's drawing", () => {
       more: 4,
     });
 
-    await expect.element(airportOf(mounted.layer)).toMatchScreenshot('recap-en');
+    await matchReference(airportOf(mounted.layer), 'recap-en');
   });
 });

@@ -1,11 +1,12 @@
 import type { Archetype, BuildState, Language } from '@deskorama/core';
 import { FAKE_SCREEN } from '@deskorama/test-utils';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, test } from 'vitest';
 import { page, server } from 'vitest/browser';
 import { DEFAULT_WINDOWS } from './default-windows.ts';
 import { group } from './recap-group.ts';
 import { genericEvent } from './generic-event.ts';
 import { AFTERNOON, NIGHT } from './instants.ts';
+import { matchReference } from './match-reference.ts';
 import { milestone } from './milestone.ts';
 import { mountBuilding, type MountedBuilding } from './mount-building.ts';
 import { roleEvent } from './role-event.ts';
@@ -43,7 +44,7 @@ const KEY_POSES: readonly (readonly [Archetype, Language, string])[] = [
 /**
  * Returns the building's root as a locator, the part each screenshot frames.
  * @example
- * await expect.element(locate(layer)).toMatchScreenshot('afternoon');
+ * await matchReference(locate(layer), 'scene-afternoon');
  */
 function locate(layer: HTMLElement): ReturnType<typeof page.elementLocator> {
   return page.elementLocator(rootOf(layer));
@@ -60,7 +61,7 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
     mounted = mountBuilding({ lang: 'fr', start });
     mounted.host.setGauges(GAUGES);
 
-    await expect.element(locate(mounted.layer)).toMatchScreenshot(`scene-${name}`);
+    await matchReference(locate(mounted.layer), `scene-${name}`);
   });
 
   test.each(KEY_POSES)('the %s Gag in %s at its key pose', async (role, lang, tag) => {
@@ -70,7 +71,7 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
     mounted.host.send(roleEvent(lang, role, tag));
     mounted.host.clock.advance(200);
 
-    await expect.element(locate(mounted.layer)).toMatchScreenshot(`gag-${role}-${lang}`);
+    await matchReference(locate(mounted.layer), `gag-${role}-${lang}`);
   });
 
   test.each(['fr', 'en'] as const)('the generic Gag in %s at its key pose', async (lang) => {
@@ -80,7 +81,7 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
     mounted.host.send(genericEvent(lang, 'foreign'));
     mounted.host.clock.advance(200);
 
-    await expect.element(locate(mounted.layer)).toMatchScreenshot(`gag-generic-${lang}`);
+    await matchReference(locate(mounted.layer), `gag-generic-${lang}`);
   });
 
   test('four Gags side by side behind the default windows', async () => {
@@ -91,7 +92,7 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
     for (const role of ['approval', 'blocked', 'money', 'like'] as const) mounted.host.send(roleEvent('fr', role));
     mounted.host.clock.advance(200);
 
-    await expect.element(locate(mounted.layer)).toMatchScreenshot('burst-default-windows');
+    await matchReference(locate(mounted.layer), 'burst-default-windows');
   });
 
   test.each(['building', 'error'] as const)('the crane while the build is %s', async (build: BuildState) => {
@@ -100,7 +101,7 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
     mounted.host.setGauges({ ...GAUGES, build });
     mounted.host.clock.advance(200);
 
-    await expect.element(locate(mounted.layer)).toMatchScreenshot(`crane-${build}`);
+    await matchReference(locate(mounted.layer), `crane-${build}`);
   });
 
   test('a taller, wider screen with the neighbour’s facade', async () => {
@@ -109,7 +110,7 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
     mounted = mountBuilding({ lang: 'en', start: AFTERNOON, screen, screens: [screen] });
     mounted.host.setGauges(GAUGES);
 
-    await expect.element(locate(mounted.layer)).toMatchScreenshot('scene-1728');
+    await matchReference(locate(mounted.layer), 'scene-1728');
   });
 
   test.each(['fr', 'en'] as const)(
@@ -122,7 +123,7 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
       mounted.host.send(milestone(lang));
       mounted.host.clock.advance(200);
 
-      await expect.element(locate(mounted.layer)).toMatchScreenshot(`celebration-${lang}`);
+      await matchReference(locate(mounted.layer), `celebration-${lang}`);
     },
   );
 
@@ -136,7 +137,7 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
       sendDeploy(mounted.host, lang, 'failed');
       mounted.host.clock.advance(600);
 
-      await expect.element(locate(mounted.layer)).toMatchScreenshot(`jackpot-${lang}`);
+      await matchReference(locate(mounted.layer), `jackpot-${lang}`);
     },
   );
 
@@ -147,7 +148,7 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
     sendDeploy(mounted.host, 'fr', 'started');
     mounted.host.clock.advance(200);
 
-    await expect.element(locate(mounted.layer)).toMatchScreenshot('deploy-started');
+    await matchReference(locate(mounted.layer), 'deploy-started');
   });
 
   test('the recap board, its counts all up', async () => {
@@ -164,7 +165,7 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
     });
     mounted.host.clock.advance(200);
 
-    await expect.element(locate(mounted.layer)).toMatchScreenshot('recap');
+    await matchReference(locate(mounted.layer), 'recap');
   });
 
   test('the next building along the street, on the external screen', async () => {
@@ -174,6 +175,6 @@ describe.runIf(server.platform === 'linux')("L'Immeuble's drawing", () => {
     mounted.host.setGauges({ ...GAUGES, build: 'building' });
     mounted.host.clock.advance(200);
 
-    await expect.element(locate(mounted.layer)).toMatchScreenshot('next-building');
+    await matchReference(locate(mounted.layer), 'next-building');
   });
 });

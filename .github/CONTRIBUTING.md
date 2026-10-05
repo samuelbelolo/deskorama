@@ -62,6 +62,24 @@ Tests live in a `__tests__/` folder beside each package's `src/`. A good test dr
 
 A new Connector calls `describeConnectorContract` from `test-utils` with recorded responses, so it passes the same checks as the others without network access.
 
+### Reference screenshots
+
+Each Theme's `screenshots.test.ts` compares what the Theme draws with reference screenshots, committed in its `__tests__/__screenshots__/` folder. A browser does not draw the same pixels on every system, so the references are Linux ones, drawn on the image CI runs on, and the comparison is skipped on other systems: on a Mac, `pnpm check` passes without it.
+
+After a visual change you intended, or for a new drawing:
+
+1. Push your branch and run the **Reference screenshots** workflow on it, from the Actions tab or with `gh workflow run screenshots.yml --ref your-branch`. In a fork, run it in your fork.
+2. Replace the references with the images the run uploaded:
+
+   ```sh
+   rm -rf packages/themes/*/__tests__/__screenshots__
+   gh run download <run-id> --name reference-screenshots --dir packages/themes
+   ```
+
+3. Look at the images Git reports as changed, then commit them with your change.
+
+Do not make references with `vitest --update` on your own machine: CI would compare them with another system's drawing. When a comparison fails in CI, the run's `theme-screenshot-diffs` artifact holds what was drawn and the difference.
+
 ## Proposing a change
 
 1. Open an issue first for anything larger than a fix, so we agree on the approach.

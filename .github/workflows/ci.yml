@@ -16,7 +16,9 @@ concurrency:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # The Themes' reference screenshots are drawn on this image by the "Reference screenshots" workflow: change
+    # both together, then draw them again.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       # Reads the pnpm version from "packageManager" in package.json.
@@ -29,6 +31,13 @@ jobs:
       # Themes are tested in Vitest browser mode, in headless Chromium.
       - run: pnpm --filter @deskorama/theme-aeroport exec playwright install --with-deps chromium
       - run: pnpm check
+      # When a Theme's drawing differs from its reference screenshot: what was drawn, and the difference.
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: theme-screenshot-diffs
+          path: packages/themes/*/.vitest/attachments
+          include-hidden-files: true
 
   desktop-e2e:
     runs-on: macos-26

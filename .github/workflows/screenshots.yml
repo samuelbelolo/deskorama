@@ -1,0 +1,36 @@
+# Draws the Themes' reference screenshots on the image the CI workflow compares them on, and uploads them to be
+# reviewed and committed. Run by hand, on the branch whose drawing changed on purpose.
+name: Reference screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  draw:
+    # The image of the CI workflow's check job: change both together, then run this workflow again.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      # Reads the pnpm version from "packageManager" in package.json.
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @deskorama/theme-aeroport exec playwright install --with-deps chromium
+      # Start from nothing, so a drawing that was renamed or removed leaves no image behind.
+      - run: rm -rf packages/themes/*/__tests__/__screenshots__
+      # One Theme at a time, so two browsers never share the runner's processors while a drawing is captured.
+      - run: >-
+          pnpm --filter "./packages/themes/*" --workspace-concurrency 1
+          exec vitest run __tests__/screenshots.test.ts --update
+      # The artifact holds one folder per Theme: it unpacks over packages/themes.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: reference-screenshots
+          path: packages/themes/*/__tests__/__screenshots__
+          if-no-files-found: error
