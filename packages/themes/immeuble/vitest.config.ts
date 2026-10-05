@@ -9,6 +9,15 @@ const config: ViteUserConfig = defineConfig({
       headless: true,
       provider: playwright(),
       instances: [{ browser: 'chromium' }],
+      expect: {
+        toMatchScreenshot: {
+          comparatorName: 'pixelmatch',
+          // A pixel counts as changed once its colour moves by more than a tenth of the scale, which leaves room for
+          // a one-step difference in antialiasing, and no pixel may change. Measured on 5 October 2026: two CI
+          // runners drew every reference byte for byte alike, and one changed Gauge digit moves 128 pixels or more.
+          comparatorOptions: { threshold: 0.1, allowedMismatchedPixels: 0 },
+        },
+      },
     },
   },
 });

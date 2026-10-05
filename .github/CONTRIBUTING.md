@@ -78,7 +78,7 @@ After a visual change you intended, or for a new drawing:
 
 3. Look at the images Git reports as changed, then commit them with your change.
 
-Do not make references with `vitest --update` on your own machine: CI would compare them with another system's drawing. When a comparison fails in CI, the run's `theme-screenshot-diffs` artifact holds what was drawn and the difference.
+The comparison allows no changed pixel: two CI runners draw the same image byte for byte, and a single changed digit moves a few dozen pixels. Do not make references with `vitest --update` on your own machine: CI would compare them with another system's drawing. When a comparison fails in CI, the run's `theme-screenshot-diffs` artifact holds what was drawn and the difference.
 
 ## Proposing a change
 
