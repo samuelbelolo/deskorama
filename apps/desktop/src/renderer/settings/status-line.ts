@@ -1,24 +1,21 @@
-import type { Language } from '@deskorama/core';
-import { failureText } from '../../shared/failure-text.ts';
-import { shortTime } from '../../shared/short-time.ts';
-import type { SourceStatus } from '../../shared/source-status.ts';
 import { element } from './element.ts';
-import { SETTINGS_TEXT } from './settings-text.ts';
+import { icon, type IconName } from './icon.ts';
+
+/** What a status says: all is fine, the app is waiting on its own, or the person must act. */
+export type StatusKind = 'ok' | 'wait' | 'bad';
+
+/** The glyph of each kind of status; the colour comes with its class and carries the same meaning. */
+const STATUS_ICONS: Readonly<Record<StatusKind, IconName>> = {
+  ok: 'check-circle-fill',
+  wait: 'clock-countdown-fill',
+  bad: 'warning-circle-fill',
+};
 
 /**
- * Returns the line that says where a Source stands: being read, read at a time, or what to fix.
+ * Returns a status: a glyph and a sentence, coloured only for what it means.
  * @example
- * statusLine({ state: 'failing', failure: { kind: 'auth' }, at }, 'en');
- * // <p class="status failing">Token refused: paste a new one.</p>
+ * statusLine('bad', 'Token refused: paste a new one.'); // <p class="status bad">…</p>
  */
-export function statusLine(status: SourceStatus, lang: Language): HTMLElement {
-  const text = SETTINGS_TEXT[lang];
-
-  if (status.state === 'waiting') return element('p', { className: 'status', text: text.waiting });
-
-  if (status.state === 'ok') {
-    return element('p', { className: 'status ok', text: text.ok(shortTime(status.at, lang)) });
-  }
-
-  return element('p', { className: 'status failing', text: failureText(status.failure, lang) });
+export function statusLine(kind: StatusKind, sentence: string): HTMLElement {
+  return element('p', { className: `status ${kind}` }, [icon(STATUS_ICONS[kind]), element('span', { text: sentence })]);
 }

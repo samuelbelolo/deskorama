@@ -8,6 +8,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./about": "./src/local-webhook-about.ts",
     "./profile": "./src/local-webhook-profile.ts"
   },
   "scripts": {

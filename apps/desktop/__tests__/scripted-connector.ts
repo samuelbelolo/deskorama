@@ -5,6 +5,7 @@ import {
   type PollInput,
   type PollResult,
 } from '@deskorama/core';
+import { ABOUT_FIXTURE } from './about-fixture.ts';
 
 /** One scripted answer of a poll: a result, or a failure to throw. */
 export type Script = PollResult | ConnectorFailure;
@@ -27,6 +28,7 @@ export function scriptedConnector(scripts: readonly Script[]): ScriptedConnector
   const connector: Connector = {
     id: 'scripted',
     title: { fr: 'Scripté', en: 'Scripted' },
+    about: ABOUT_FIXTURE,
     config: { fields: [], permissions: [], interval: { min: 30_000, default: 60_000, max: 600_000 } },
     gauges: {
       crowd: { max: 10, text: { fr: { label: 'a', short: 'A' }, en: { label: 'a', short: 'A' } } },

@@ -1,4 +1,5 @@
 import type { Connector } from '@deskorama/core';
+import { FEED_ABOUT } from './feed-about.ts';
 import { FEED_CONFIG } from './feed-config.ts';
 import { FEED_GAUGES } from './feed-gauges.ts';
 import { pollFeed } from './poll-feed.ts';
@@ -15,6 +16,7 @@ export function createFeed(): Connector {
   return {
     id: 'feed',
     title: { fr: 'Flux', en: 'Feed' },
+    about: FEED_ABOUT,
     config: FEED_CONFIG,
     gauges: FEED_GAUGES,
     poll: pollFeed,

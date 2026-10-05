@@ -1,5 +1,5 @@
 import { GAUGE_ROLES, type GaugeRole } from '@deskorama/core';
-import type { LoginItemState, WallpaperView } from '../../shared/settings-bridge.ts';
+import type { LoginItemState, WallpaperView } from '../../shared/settings-snapshot.ts';
 import type { SceneControl } from '../scene/create-scene-control.ts';
 
 /**

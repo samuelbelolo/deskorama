@@ -12,5 +12,6 @@
     "vite.config.ts",
     "vite.*.config.ts",
     "vitest.config.ts"
-  ]
+  ],
+  "exclude": ["__tests__/window"]
 }

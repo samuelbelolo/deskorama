@@ -6,8 +6,10 @@ const kept = (): string => 'secret-kept-in-the-keychain';
 describe('the Local webhook settings', () => {
   test('use the default port and the secret kept in the Keychain', () => {
     expect(webhookSettings({}, null, kept)).toEqual({
+      on: true,
       port: DEFAULT_WEBHOOK_PORT,
       secret: 'secret-kept-in-the-keychain',
+      secretIsFixed: false,
     });
   });
 
@@ -23,8 +25,18 @@ describe('the Local webhook settings', () => {
   test('let the environment override the port and the secret, as the end-to-end test does', () => {
     const env = { DESKORAMA_WEBHOOK_PORT: '47299', DESKORAMA_WEBHOOK_SECRET: 'e2e-local-webhook-secret' };
     expect(webhookSettings(env, '{"localWebhook":{"port":5000}}', kept)).toEqual({
+      on: true,
       port: 47_299,
       secret: 'e2e-local-webhook-secret',
+      secretIsFixed: true,
+    });
+  });
+
+  test('stay off once the person turned the Local webhook off, whatever the port says', () => {
+    expect(webhookSettings({}, '{"localWebhook":{"enabled":false}}', kept).on).toBe(false);
+    expect(webhookSettings({}, '{"localWebhook":{"enabled":false,"port":80}}', kept)).toMatchObject({
+      on: false,
+      port: DEFAULT_WEBHOOK_PORT,
     });
   });
 });

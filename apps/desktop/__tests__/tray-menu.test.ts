@@ -9,6 +9,7 @@ const RELEASE: LatestRelease = { tag: 'v0.3.0', url: 'https://github.com/samuelb
 /** The menu of a fresh launch: the Local webhook listening, nothing failing, L'Aéroport playing. */
 const STATE: TrayState = {
   port: 47_213,
+  webhookOn: true,
   listening: true,
   newRelease: null,
   failing: [],
@@ -99,6 +100,15 @@ describe('the menu-bar menu', () => {
     expect(items[webhook + 1]?.enabled).toBe(false);
   });
 
+  test('says when the person turned the Local webhook off', () => {
+    const items = trayMenu({ ...STATE, webhookOn: false, listening: false }, TRAY_TEXT.fr, NO_ACTIONS);
+
+    const webhook = items.findIndex((item) => item.label === 'Webhook local désactivé');
+
+    expect(webhook).toBeGreaterThan(-1);
+    expect(items[webhook + 1]?.enabled).toBe(false);
+  });
+
   test('names each failing Source and what to fix first, and opens the settings from it', () => {
     const failing = [{ name: 'Tramlo', failure: { kind: 'permission', permission: 'read:events' } } as const];
     const english = menu({ ...STATE, failing });
@@ -109,7 +119,7 @@ describe('the menu-bar menu', () => {
     expect(english.opened).toEqual(['settings']);
 
     expect(menu({ ...STATE, failing }, 'fr').labels[0]).toBe(
-      '⚠ Tramlo : Il manque la permission « read:events » au jeton.',
+      '⚠ Tramlo : Il manque la permission «\u00a0read:events\u00a0» au jeton.',
     );
   });
 

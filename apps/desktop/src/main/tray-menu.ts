@@ -13,7 +13,9 @@ interface FailingSource {
 /** What the menu-bar menu shows. */
 export interface TrayState {
   readonly port: number;
-  /** False when the Local webhook could not listen on its port. */
+  /** False once the person turned the Local webhook off in the settings window. */
+  readonly webhookOn: boolean;
+  /** False while the Local webhook is off, and when it could not listen on its port. */
   readonly listening: boolean;
   /** A published release newer than the running app, or null. */
   readonly newRelease: LatestRelease | null;
@@ -43,11 +45,12 @@ export interface TrayActions {
  * Local webhook's address, a test command to copy, the settings, the new version once one is published, and quit.
  * Quitting closes the wallpaper windows, which gives the system wallpaper back.
  * @example
- * const state = { port: 47213, listening: true, newRelease: null, failing: [], theme: 'aeroport', paused: false };
+ * const state = { port: 47213, webhookOn: true, listening: true, newRelease: null, failing: [], theme: 'aeroport',
+ *   paused: false };
  * Menu.buildFromTemplate(trayMenu(state, TRAY_TEXT.en, actions));
  */
 export function trayMenu(state: TrayState, text: TrayText, actions: TrayActions): MenuItemConstructorOptions[] {
-  const webhook = state.listening ? text.listening(state.port) : text.webhookOff(state.port);
+  const webhook = webhookLine(state, text);
 
   const release = state.newRelease;
 
@@ -82,4 +85,16 @@ export function trayMenu(state: TrayState, text: TrayText, actions: TrayActions)
     { type: 'separator' },
     { label: text.quit, accelerator: 'Command+Q', click: actions.quit },
   ];
+}
+
+/**
+ * Returns the line that says where the Local webhook stands: listening, turned off by the person, or stopped
+ * because its port was taken.
+ * @example
+ * webhookLine({ ...state, webhookOn: false, listening: false }, TRAY_TEXT.en); // 'Local webhook turned off'
+ */
+function webhookLine(state: TrayState, text: TrayText): string {
+  if (!state.webhookOn) return text.webhookDisabled;
+
+  return state.listening ? text.listening(state.port) : text.webhookOff(state.port);
 }

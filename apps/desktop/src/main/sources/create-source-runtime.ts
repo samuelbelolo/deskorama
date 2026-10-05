@@ -15,10 +15,12 @@ import type { TokenStore } from './token-store.ts';
 /** How many Event ids are remembered to drop replays: weeks of Events for a busy Source. */
 const REMEMBERED_EVENTS = 5000;
 
-/** A connected Source and where it stands. */
+/** A connected Source, where it stands and the last Event it sent since the app started. */
 export interface SourceState {
   readonly entry: SourceEntry;
   readonly status: SourceStatus;
+  /** Null until the Source sends an Event; forgotten when its address changes, like its remembered Event ids. */
+  readonly last: SourceEvent | null;
 }
 
 /** What runs the connected Sources. */
@@ -44,8 +46,8 @@ export interface SourceRuntime {
    */
   load(entries: readonly SourceEntry[]): void;
   /**
-   * Starts one Source's poller over, even when its entry did not change: after a new token, a Source stopped on
-   * the old one polls again.
+   * Starts one Source's poller over, even when its entry did not change: after a new token or a permission fixed on
+   * the service's side, a Source stopped until then polls again.
    */
   restart(id: string): void;
   /** Polls every Source at once, e.g. when the Mac wakes, to catch up from their cursors. */
@@ -85,14 +87,22 @@ export function createSourceRuntime(options: SourceRuntimeOptions): SourceRuntim
   const start = (entry: SourceEntry, connector: Connector): SourcePoller => {
     // Ids are remembered per Source and address: another address may reuse an id for another Event, while a new
     // name or interval polls the same Events again.
-    const address = JSON.stringify([entry.id, entry.connector, entry.values]);
+    const address = addressOf(entry);
 
     return createSourcePoller({
       ...options,
       entry,
       connector,
       onEvents: (events) => {
-        for (const event of events) if (dedupe.firstTime(address, event.id)) options.onEvent(event, entry.id);
+        const fresh = events.filter((event) => dedupe.firstTime(address, event.id));
+
+        for (const event of fresh) options.onEvent(event, entry.id);
+
+        // Kept without telling anyone yet: the poller reports its status right after, which carries it along.
+        const last = fresh.at(-1);
+
+        if (last !== undefined)
+          states = states.map((state) => (state.entry.id === entry.id ? { ...state, last } : state));
       },
       onGauges: (gauges) => options.onGauges(entry.id, gauges),
       onStatus: (status) => setStatus(entry.id, status),
@@ -100,13 +110,8 @@ export function createSourceRuntime(options: SourceRuntimeOptions): SourceRuntim
   };
 
   const load = (entries: readonly SourceEntry[]): void => {
-    const known = entries.flatMap((entry) => {
-      const connector = options.connectors.find((candidate) => candidate.id === entry.connector);
-
-      return connector === undefined ? [] : [{ entry, connector, key: JSON.stringify(entry) }];
-    });
-
-    const previous = new Map(states.map((state) => [state.entry.id, state.status]));
+    const known = knownSources(entries, options.connectors);
+    const previous = new Map(states.map((state) => [state.entry.id, state]));
 
     for (const [id, { poller, key }] of running) {
       if (known.some((source) => source.entry.id === id && source.key === key)) continue;
@@ -115,10 +120,7 @@ export function createSourceRuntime(options: SourceRuntimeOptions): SourceRuntim
       running.delete(id);
     }
 
-    states = known.map(({ entry }) => ({
-      entry,
-      status: running.has(entry.id) ? (previous.get(entry.id) ?? { state: 'waiting' }) : { state: 'waiting' },
-    }));
+    states = known.map(({ entry }) => stateAfterLoad(entry, previous.get(entry.id), running.has(entry.id)));
     options.onStates(states);
 
     for (const { entry, connector, key } of known) {
@@ -140,4 +142,49 @@ export function createSourceRuntime(options: SourceRuntimeOptions): SourceRuntim
     states: () => states,
     stop,
   };
+}
+
+/** A Source the app can poll: its entry, its Connector, and the entry as one string, to tell when it changed. */
+interface KnownSource {
+  readonly entry: SourceEntry;
+  readonly connector: Connector;
+  readonly key: string;
+}
+
+/**
+ * Returns the Sources whose Connector the app knows, in the settings' order, each with its Connector.
+ * @example
+ * knownSources([tramlo, { ...tramlo, id: 'src-2', connector: 'gone' }], [createFeed()]).length; // 1
+ */
+function knownSources(entries: readonly SourceEntry[], connectors: readonly Connector[]): KnownSource[] {
+  return entries.flatMap((entry) => {
+    const connector = connectors.find((candidate) => candidate.id === entry.connector);
+
+    return connector === undefined ? [] : [{ entry, connector, key: JSON.stringify(entry) }];
+  });
+}
+
+/**
+ * Returns the state of a Source once the Sources are loaded, from the state it had `before`, if any. Its status is
+ * kept while its poller keeps running. Its last Event is kept while its address holds: a new name or interval
+ * reads the same Events, so what the Source last sent still holds.
+ * @example
+ * stateAfterLoad({ ...tramlo, name: 'Tramlo prod' }, { entry: tramlo, status: read, last: merged }, false);
+ * // { entry: the renamed entry, status: { state: 'waiting' }, last: merged }
+ */
+function stateAfterLoad(entry: SourceEntry, before: SourceState | undefined, keepsItsPoller: boolean): SourceState {
+  const status = keepsItsPoller ? before?.status : undefined;
+  const sameAddress = before !== undefined && addressOf(before.entry) === addressOf(entry);
+
+  return { entry, status: status ?? { state: 'waiting' }, last: sameAddress ? before.last : null };
+}
+
+/**
+ * Returns what a Source reads, as one string: its id, its Connector and the values of its fields, but neither its
+ * name nor its interval.
+ * @example
+ * addressOf(tramlo) === addressOf({ ...tramlo, name: 'Tramlo prod' }); // true
+ */
+function addressOf(entry: SourceEntry): string {
+  return JSON.stringify([entry.id, entry.connector, entry.values]);
 }

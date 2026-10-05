@@ -10,6 +10,8 @@ directories:
 files:
   - dist/**
   - package.json
+  # The licences of the icons and the trademark notice of the service logos the settings window shows.
+  - THIRD-PARTY-NOTICES.md
 asar: true
 # get-windows' macOS executable lists other windows' frames; outside the ASAR archive so it can run.
 extraResources:

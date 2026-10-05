@@ -1,21 +1,28 @@
-/** The attributes and text an element is created with. */
+/** What an element is created with. */
 export interface ElementOptions {
   readonly className?: string;
   readonly text?: string;
   readonly attributes?: Readonly<Record<string, string>>;
+  /**
+   * CSS properties, custom ones included, set through the style object: the page's Content Security Policy refuses
+   * a `style` attribute, and allows this.
+   */
+  readonly style?: Readonly<Record<string, string>>;
+  readonly onClick?: (event: MouseEvent) => void;
 }
 
 /**
- * Returns a new element with a class, text and attributes, and its children appended. Text is always set as text,
- * never as HTML, so a Source's name or an Event's label can never inject markup.
+ * Returns a new element with a class, text, attributes and styles, and its children appended; a null child is
+ * left out. Text is always set as text, never as HTML, so a Source's name or an Event's label can never inject
+ * markup.
  * @example
- * element('button', { className: 'primary', text: 'Save' });
+ * element('button', { className: 'btn primary', text: 'Save', onClick: save });
  * element('ul', {}, items.map((item) => element('li', { text: item })));
  */
 export function element<Tag extends keyof HTMLElementTagNameMap>(
   tag: Tag,
   options: ElementOptions = {},
-  children: readonly Node[] = [],
+  children: readonly (Node | null)[] = [],
 ): HTMLElementTagNameMap[Tag] {
   const node = document.createElement(tag);
 
@@ -25,7 +32,12 @@ export function element<Tag extends keyof HTMLElementTagNameMap>(
 
   for (const [name, value] of Object.entries(options.attributes ?? {})) node.setAttribute(name, value);
 
-  node.append(...children);
+  for (const [name, value] of Object.entries(options.style ?? {})) node.style.setProperty(name, value);
+
+  // Typed through HTMLElement: the tag's own event map is not known for a generic tag.
+  if (options.onClick !== undefined) (node as HTMLElement).addEventListener('click', options.onClick);
+
+  node.append(...children.filter((child) => child !== null));
 
   return node;
 }

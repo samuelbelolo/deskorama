@@ -1,4 +1,5 @@
 import type { Connector } from '@deskorama/core';
+import { githubAbout } from './github-about.ts';
 import { GITHUB_CONFIG } from './github-config.ts';
 import { githubGauges } from './github-gauges.ts';
 import { pollGithub } from './poll-github.ts';
@@ -15,6 +16,7 @@ export function createGithubPublic(): Connector {
   return {
     id: 'github-public',
     title: { fr: 'Dépôt GitHub public', en: 'Public GitHub repository' },
+    about: githubAbout('public'),
     config: GITHUB_CONFIG,
     gauges: githubGauges('public'),
     poll: (input) => pollGithub('public', input),

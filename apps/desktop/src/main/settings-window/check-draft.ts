@@ -1,6 +1,6 @@
 import type { Connector } from '@deskorama/core';
 import { MAX_NAME_LENGTH } from '../../shared/max-name-length.ts';
-import type { DraftProblems, SourceDraft } from '../../shared/settings-bridge.ts';
+import type { DraftProblems, SourceDraft } from '../../shared/source-draft.ts';
 
 /** The longest token accepted: real ones are a few hundred characters. */
 const MAX_TOKEN_LENGTH = 4096;

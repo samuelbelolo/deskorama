@@ -1,4 +1,5 @@
 import type { Connector } from '@deskorama/core';
+import { VERCEL_ABOUT } from './vercel-about.ts';
 import { pollVercel } from './poll-vercel.ts';
 import { VERCEL_CONFIG } from './vercel-config.ts';
 import { VERCEL_GAUGES } from './vercel-gauges.ts';
@@ -15,6 +16,7 @@ export function createVercel(): Connector {
   return {
     id: 'vercel',
     title: { fr: 'Vercel', en: 'Vercel' },
+    about: VERCEL_ABOUT,
     config: VERCEL_CONFIG,
     gauges: VERCEL_GAUGES,
     poll: pollVercel,

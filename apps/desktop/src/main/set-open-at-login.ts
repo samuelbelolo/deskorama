@@ -1,5 +1,5 @@
 import { app } from 'electron';
-import type { LoginItemState } from '../shared/settings-bridge.ts';
+import type { LoginItemState } from '../shared/settings-snapshot.ts';
 import { loginItemState } from './login-item-state.ts';
 
 /**

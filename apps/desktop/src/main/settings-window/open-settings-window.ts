@@ -2,9 +2,11 @@ import { BrowserWindow } from 'electron';
 import { join } from 'node:path';
 
 /**
- * Brings the settings window forward when `current` is still open, or opens it, and returns it. Its page runs with
- * context isolation, a sandbox and no Node, reaches the main process only through `window.settings`, and may not
- * navigate nor open windows; it titles itself in the display language it reads from the main process.
+ * Brings the settings window forward when `current` is still open, or opens it, and returns it: a window the size
+ * of a macOS settings window, its title bar hidden so the page draws under the traffic lights, on the system's
+ * sidebar material, which shows wherever the page leaves its background see-through. Its page runs with context
+ * isolation, a sandbox and no Node, reaches the main process only through `window.settings`, and may not navigate
+ * nor open windows; it titles itself in the display language it reads from the main process.
  * @example
  * settingsWindow = openSettingsWindow(settingsWindow); // a second call brings the same window forward
  */
@@ -17,11 +19,13 @@ export function openSettingsWindow(current: BrowserWindow | null): BrowserWindow
   }
 
   const window = new BrowserWindow({
-    width: 640,
-    height: 720,
-    minWidth: 520,
+    width: 780,
+    height: 568,
+    minWidth: 720,
     minHeight: 480,
     show: false,
+    titleBarStyle: 'hiddenInset',
+    vibrancy: 'sidebar',
     webPreferences: {
       preload: join(__dirname, '../preload/settings-preload.cjs'),
       contextIsolation: true,

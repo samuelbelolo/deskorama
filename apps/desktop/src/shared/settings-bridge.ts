@@ -1,8 +1,7 @@
-import type { ConnectorField, ConnectorPermission, GaugeRole, IntervalBounds, Language } from '@deskorama/core';
-import type { LanguageChoice, PreferencesChange } from './preferences.ts';
-import type { SourceStatus } from './source-status.ts';
+import type { PreferencesChange } from './preferences.ts';
+import type { LoginItemState, SettingsSnapshot } from './settings-snapshot.ts';
+import type { SaveAnswer, SourceDraft, TestAnswer } from './source-draft.ts';
 import type { TestEventChoice } from './test-event-choice.ts';
-import type { ShippedThemeId } from './theme-choice.ts';
 
 /** The IPC channels of the settings window, each answered by the main process. */
 export const SETTINGS_CHANNELS = {
@@ -13,94 +12,24 @@ export const SETTINGS_CHANNELS = {
   preferences: 'settings:preferences',
   openAtLogin: 'settings:open-at-login',
   playTest: 'settings:play-test',
+  openTokenPage: 'settings:open-token-page',
+  copy: 'settings:copy',
+  revealSecret: 'settings:reveal-secret',
+  webhookOn: 'settings:webhook-on',
+  regenerateSecret: 'settings:regenerate-secret',
   changed: 'settings:changed',
 } as const;
 
-/** A Connector as the settings window shows it. */
-export interface ConnectorView {
-  readonly id: string;
-  readonly title: Readonly<Record<Language, string>>;
-  readonly fields: readonly ConnectorField[];
-  readonly permissions: readonly ConnectorPermission[];
-  /** How often its Sources may be polled, in milliseconds. */
-  readonly interval: IntervalBounds;
-}
+/** What the window may ask the main process to put on the clipboard; the page itself has no clipboard access. */
+export const COPY_CHOICES = ['webhook-address', 'webhook-secret', 'webhook-example'] as const;
 
-/** A connected Source as the settings window shows it: never its token. */
-export interface SourceView {
-  readonly id: string;
-  readonly connector: string;
-  readonly name: string;
-  readonly values: Readonly<Record<string, string>>;
-  /** The polling interval the person chose, in milliseconds; null for the Connector's default. */
-  readonly interval: number | null;
-  readonly status: SourceStatus;
-}
-
-/** Whether the app opens at login, as macOS reports it. */
-export interface LoginItemState {
-  readonly on: boolean;
-  /** True when macOS waits for the person to allow it in System Settings › General › Login Items. */
-  readonly needsApproval: boolean;
-}
-
-/** How the wallpaper is set up, as the settings window shows it. */
-export interface WallpaperView {
-  readonly theme: ShippedThemeId;
-  readonly language: LanguageChoice;
-  /** The id of the Source that names the scene now, or null without any Source. */
-  readonly brand: string | null;
-  /** By Gauge role, the id of the connected Source the person picked for it, or null when it follows the brand. */
-  readonly gauges: Readonly<Record<GaugeRole, string | null>>;
-  readonly login: LoginItemState;
-}
-
-/** The Connectors and the connected Sources. */
-export interface SourcesSnapshot {
-  readonly connectors: readonly ConnectorView[];
-  readonly sources: readonly SourceView[];
-}
-
-/** What the settings window shows, in the display language. */
-export interface SettingsSnapshot extends SourcesSnapshot {
-  readonly lang: Language;
-  readonly wallpaper: WallpaperView;
-}
-
-/** A Source being added (no id) or edited, as the form holds it. */
-export interface SourceDraft {
-  readonly id: string | null;
-  readonly connector: string;
-  readonly name: string;
-  readonly values: Readonly<Record<string, string>>;
-  /** Empty when editing keeps the token already in the Keychain. */
-  readonly token: string;
-  /** The polling interval in milliseconds, or null for the Connector's default. */
-  readonly interval: number | null;
-}
-
-/** The fields of a draft that need fixing: "name", "token", "interval", or a Connector field's key. */
-export type DraftProblems = readonly string[];
-
-/** The answer to saving a draft. */
-export type SaveAnswer = { readonly ok: true } | { readonly ok: false; readonly problems: DraftProblems };
-
-/** One Event a test poll returned, in the display language. */
-interface TestedEvent {
-  readonly label: string;
-  readonly detail: string;
-  readonly at: number;
-}
-
-/** The answer to testing a draft: its latest Events, or why it failed. */
-export type TestAnswer =
-  | { readonly ok: true; readonly events: readonly TestedEvent[] }
-  | { readonly ok: false; readonly problems: DraftProblems }
-  | { readonly ok: false; readonly problems: readonly []; readonly status: SourceStatus };
+/** One thing the window may copy. */
+export type CopyChoice = (typeof COPY_CHOICES)[number];
 
 /**
  * Everything the settings window may ask of the main process, exposed by its preload as `window.settings`. Tokens
- * only travel from the window to the main process, which keeps them in the Keychain: none is ever sent back.
+ * only travel from the window to the main process, which keeps them in the Keychain: none is ever sent back. The
+ * Local webhook's secret reaches the page only when the person asks to see it.
  */
 export interface SettingsBridge {
   load(): Promise<SettingsSnapshot>;
@@ -113,6 +42,16 @@ export interface SettingsBridge {
   setOpenAtLogin(on: boolean): Promise<LoginItemState>;
   /** Plays one test Event on the wallpaper. */
   playTest(choice: TestEventChoice): Promise<void>;
-  /** Calls `listener` whenever a Source's state or the wallpaper's setup changes, until cancelled. */
+  /** Opens, in the browser, the page where a Connector's token is created, given what the sheet's fields hold. */
+  openTokenPage(connector: string, values: Readonly<Record<string, string>>): Promise<void>;
+  /** Puts the Local webhook's address, its secret, or a working `curl` with the secret on the clipboard. */
+  copy(choice: CopyChoice): Promise<void>;
+  /** Answers the Local webhook's secret, to show it. */
+  revealSecret(): Promise<string>;
+  /** Turns the Local webhook on or off, and keeps that choice. */
+  setWebhookOn(on: boolean): Promise<void>;
+  /** Draws a new secret for the Local webhook: scripts holding the old one are turned away. */
+  regenerateSecret(): Promise<void>;
+  /** Calls `listener` whenever a Source's state, the wallpaper's setup or the Local webhook changes, until cancelled. */
   onChanged(listener: (snapshot: SettingsSnapshot) => void): () => void;
 }

@@ -1,0 +1,166 @@
+/* Sheets: the guided connection and the confirmations. A sheet drops from under the title bar and dims the window. */
+
+.sheet-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 8px 14px 10px;
+  background: var(--scrim);
+  animation: dim 0.2s ease-out;
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  width: min(700px, 100%);
+  max-height: 100%;
+  border-radius: var(--radius-sheet);
+  background: var(--window);
+  box-shadow: var(--shadow-sheet);
+  overflow: hidden;
+  animation: drop 0.28s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+@keyframes drop {
+  from {
+    transform: translateY(-36px);
+    opacity: 0;
+  }
+}
+
+@keyframes dim {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet-layer {
+    animation: none;
+  }
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px 8px;
+}
+
+.sheet-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.sheet-head p {
+  margin: 1px 0 0;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.sheet-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 268px;
+  gap: 12px 18px;
+  align-content: start;
+  grid-auto-rows: min-content;
+  padding: 2px 20px 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-3) transparent;
+}
+
+.sheet-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* The Connector's fields span both columns, two to a line, each label above its field. */
+.form-group {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.form-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 12px 9px;
+}
+
+.form-cell:nth-child(even) {
+  box-shadow: inset 0.5px 0 0 var(--separator);
+}
+
+.form-cell:nth-child(n + 3) {
+  border-top: 0.5px solid var(--separator);
+}
+
+/* A field left alone on its line takes the whole line. */
+.form-cell:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.form-cell .form-label {
+  width: auto;
+  color: var(--text-2);
+  font-size: 11.5px;
+}
+
+.sheet-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 20px 11px;
+  box-shadow: inset 0 0.5px 0 var(--separator);
+}
+
+.interval {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.interval .field {
+  width: 58px;
+  height: 24px;
+  text-align: right;
+}
+
+/* A confirmation: a small sheet, its buttons at the end, the safe answer first. */
+.sheet.alert {
+  width: min(340px, 100%);
+  padding: 18px 20px 16px;
+  gap: 6px;
+}
+
+.alert h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.alert p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.alert-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}

@@ -99,7 +99,7 @@ async function start(): Promise<void> {
     },
   });
 
-  settings = startSettings({ service: sources.service, scene, clock, sendEvent });
+  settings = startSettings({ service: sources.service, scene, webhook, clock, sendEvent });
 
   const frames = startFrameWatch(windows, clock);
 
@@ -129,6 +129,6 @@ async function start(): Promise<void> {
     sources.stop();
     settings?.stop();
     tray?.destroy();
-    void webhook.stop();
+    webhook.stop().catch((error: unknown) => writeLog('webhook', String(error)));
   });
 }

@@ -1,0 +1,11 @@
+/* Every sheet of the settings window, in the order they apply: the page and its tests draw from this one list. */
+@import './base.css';
+@import './window.css';
+@import './groups.css';
+@import './controls.css';
+@import './sources.css';
+@import './wallpaper.css';
+@import './try.css';
+@import './webhook.css';
+@import './sheet.css';
+@import './steps.css';

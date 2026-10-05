@@ -1,5 +1,5 @@
 import { app } from 'electron';
-import type { LoginItemState } from '../shared/settings-bridge.ts';
+import type { LoginItemState } from '../shared/settings-snapshot.ts';
 
 /**
  * Returns whether macOS opens the app at login, and whether it waits for the person to allow it in System Settings ›

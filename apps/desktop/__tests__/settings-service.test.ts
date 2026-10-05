@@ -1,7 +1,7 @@
 import { createFeed } from '@deskorama/connector-feed';
 import { createFakeClock, createFakeFetch, FIXTURE_TIME, type RecordedResponse } from '@deskorama/test-utils';
 import { describe, expect, test } from 'vitest';
-import type { SourceDraft } from '../src/shared/settings-bridge.ts';
+import type { SourceDraft } from '../src/shared/source-draft.ts';
 import { createSettingsService } from '../src/main/settings-window/create-settings-service.ts';
 import { createSourceRuntime } from '../src/main/sources/create-source-runtime.ts';
 import type { SourceEntry } from '../src/main/sources/source-entry.ts';
@@ -147,15 +147,16 @@ describe('the settings window', () => {
     expect(service.snapshot().sources).toEqual([]);
   });
 
-  test('tests a draft without saving it, showing its latest Events newest first in the display language', async () => {
+  test('tests a draft without saving it, showing its latest Events newest first, each with its Role', async () => {
     const { service, saved, stores } = setUp(() => PAGE);
 
     expect(await service.test(DRAFT)).toEqual({
       ok: true,
       events: [
-        { label: 'Paiement reçu', detail: 'Annuel', at: FIXTURE_TIME },
-        { label: 'New sign-up', detail: '', at: FIXTURE_TIME },
+        { label: 'Paiement reçu', detail: 'Annuel', at: FIXTURE_TIME, archetype: 'money' },
+        { label: 'New sign-up', detail: '', at: FIXTURE_TIME, archetype: 'arrival' },
       ],
+      gauges: {},
     });
     expect(saved()).toEqual([]);
     expect(stores.tokens.map.size).toBe(0);
@@ -176,10 +177,7 @@ describe('the settings window', () => {
 
     service.save(DRAFT);
 
-    expect(service.save({ ...DRAFT, id: 'src-gone', token: 'another-token' })).toEqual({
-      ok: false,
-      problems: ['source'],
-    });
+    expect(service.save({ ...DRAFT, id: 'src-gone', token: 'another-token' })).toEqual({ ok: false, gone: 'source' });
     expect(stores.tokens.map.get('src-1')).toBe('feed-token-1');
     expect(saved()).toHaveLength(1);
   });
@@ -199,5 +197,33 @@ describe('the settings window', () => {
     expect(fake.sent).toHaveLength(2);
     expect(fake.sent[1]?.init.headers['Authorization']).toBe('Bearer feed-token-2');
     expect(service.snapshot().sources[0]?.status).toMatchObject({ state: 'ok' });
+  });
+
+  test('polls again a Source stopped on a missing permission once it is saved, its token kept', async () => {
+    let answers = 0;
+    const { service, fake } = setUp(() => (answers++ === 0 ? { status: 403 } : PAGE));
+
+    service.save(DRAFT);
+    await settle();
+
+    expect(service.snapshot().sources[0]?.status).toMatchObject({ state: 'failing', failure: { kind: 'permission' } });
+
+    // The permission was fixed on the service's side: the token in the Keychain is the right one again.
+    service.save({ ...DRAFT, id: 'src-1', token: '' });
+    await settle();
+
+    expect(fake.sent).toHaveLength(2);
+    expect(fake.sent[1]?.init.headers['Authorization']).toBe('Bearer feed-token-1');
+    expect(service.snapshot().sources[0]?.status).toMatchObject({ state: 'ok' });
+  });
+
+  test('refuses a draft of a Connector the app does not know, with no field to fix', async () => {
+    const { service, saved } = setUp(() => PAGE);
+
+    const unknown = { ...DRAFT, connector: 'gone' };
+
+    expect(service.save(unknown)).toEqual({ ok: false, gone: 'connector' });
+    expect(await service.test(unknown)).toEqual({ ok: false, gone: 'connector' });
+    expect(saved()).toEqual([]);
   });
 });

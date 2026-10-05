@@ -6,6 +6,8 @@ export interface TrayText {
   readonly tooltip: string;
   readonly listening: (port: number) => string;
   readonly webhookOff: (port: number) => string;
+  /** The person turned the Local webhook off. */
+  readonly webhookDisabled: string;
   readonly copyTestCommand: string;
   readonly pause: string;
   readonly theme: string;
@@ -23,6 +25,7 @@ export const TRAY_TEXT: Readonly<Record<Language, TrayText>> = {
     tooltip: 'Deskorama',
     listening: (port) => `Webhook local sur 127.0.0.1:${port}`,
     webhookOff: (port) => `Webhook local arrêté : port ${port} déjà pris`,
+    webhookDisabled: 'Webhook local désactivé',
     copyTestCommand: 'Copier une commande de test',
     pause: 'Mettre en pause',
     theme: 'Thème',
@@ -36,6 +39,7 @@ export const TRAY_TEXT: Readonly<Record<Language, TrayText>> = {
     tooltip: 'Deskorama',
     listening: (port) => `Local webhook on 127.0.0.1:${port}`,
     webhookOff: (port) => `Local webhook off: port ${port} is taken`,
+    webhookDisabled: 'Local webhook turned off',
     copyTestCommand: 'Copy a test command',
     pause: 'Pause',
     theme: 'Theme',

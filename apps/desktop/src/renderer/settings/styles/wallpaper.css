@@ -1,0 +1,80 @@
+/* The Wallpaper pane: the Theme on the desktop large, and every Theme as a thumbnail. */
+
+.theme-hero {
+  display: grid;
+  grid-template-columns: 268px 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 4px 0 2px;
+}
+
+.theme-preview {
+  margin: 0;
+  aspect-ratio: 1440 / 795;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--group);
+  box-shadow:
+    0 0 0 0.5px var(--hairline),
+    0 6px 18px rgb(20 30 50 / 0.18);
+}
+
+.theme-preview img,
+.thumb-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.theme-about h2 {
+  margin: 1px 0 4px;
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.theme-about p {
+  margin: 0 0 10px;
+  color: var(--text-2);
+}
+
+.theme-about .small {
+  margin: 8px 0 0;
+}
+
+.theme-thumbs {
+  display: flex;
+  gap: 14px;
+  padding: 5px;
+}
+
+.theme-thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  font-size: 12px;
+}
+
+.thumb-frame {
+  width: 168px;
+  aspect-ratio: 1440 / 795;
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--group);
+  box-shadow: 0 0 0 0.5px var(--hairline);
+}
+
+.theme-thumb[aria-checked='true'] .thumb-frame {
+  box-shadow:
+    0 0 0 2.5px var(--window),
+    0 0 0 5px var(--tint);
+}
+
+.theme-thumb[aria-checked='true'] .thumb-name {
+  font-weight: 600;
+}

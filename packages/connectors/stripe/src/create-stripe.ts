@@ -1,4 +1,5 @@
 import type { Connector } from '@deskorama/core';
+import { STRIPE_ABOUT } from './stripe-about.ts';
 import { pollStripe } from './poll-stripe.ts';
 import { STRIPE_CONFIG } from './stripe-config.ts';
 import { STRIPE_GAUGES } from './stripe-gauges.ts';
@@ -16,6 +17,7 @@ export function createStripe(): Connector {
   return {
     id: 'stripe',
     title: { fr: 'Stripe', en: 'Stripe' },
+    about: STRIPE_ABOUT,
     config: STRIPE_CONFIG,
     gauges: STRIPE_GAUGES,
     poll: pollStripe,

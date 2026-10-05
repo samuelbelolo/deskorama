@@ -1,4 +1,4 @@
-import type { SourceDraft } from '../../shared/settings-bridge.ts';
+import type { SourceDraft } from '../../shared/source-draft.ts';
 import type { SourceEntry } from '../sources/source-entry.ts';
 
 /** The Sources once a draft is saved, and the entry it saved. */

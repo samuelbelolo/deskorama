@@ -1,0 +1,199 @@
+/* The Sources pane: the first-run welcome, the catalogue of services and the list of connected Sources. */
+
+/* Sources: the first-run welcome. */
+.welcome {
+  padding: 6px 4px 14px;
+  max-width: 60ch;
+}
+
+.welcome h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.welcome p {
+  margin: 0;
+  color: var(--text-2);
+}
+
+.catalogue {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.service-tile {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 58px;
+  padding: 9px 12px 9px 10px;
+  border: 0;
+  border-radius: var(--radius-group);
+  background: var(--group);
+  box-shadow: 0 0 0 0.5px var(--hairline);
+  text-align: left;
+  transition:
+    background 0.12s ease,
+    transform 0.12s ease;
+}
+
+.service-tile:hover {
+  background: var(--group-hover);
+}
+
+.service-tile:active {
+  transform: scale(0.985);
+}
+
+.service-tile > .icon {
+  color: var(--text-3);
+  font-size: 14px;
+}
+
+.service-tile:hover > .icon {
+  color: var(--tint);
+}
+
+.service-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-name {
+  font-weight: 600;
+}
+
+.service-pitch {
+  color: var(--text-2);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+.webhook-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 14px 4px 0;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+/* Sources: the connected list. */
+.source-row {
+  align-items: flex-start;
+  padding: 10px 12px;
+}
+
+.source-row .logo-tile {
+  margin-top: 1px;
+}
+
+.source-row .row-end {
+  padding-top: 2px;
+}
+
+.source-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.source-id {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;
+}
+
+.source-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.source-where {
+  color: var(--text-2);
+  font-size: 11.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.source-last {
+  color: var(--text-2);
+  font-size: 11.5px;
+}
+
+/* A Source only the person can fix tints its row. */
+.source-row.bad {
+  background: var(--bad-fill);
+}
+
+.group > .source-row.bad:first-child {
+  border-top-left-radius: var(--radius-group);
+  border-top-right-radius: var(--radius-group);
+}
+
+.group > .source-row.bad:last-child {
+  border-bottom-left-radius: var(--radius-group);
+  border-bottom-right-radius: var(--radius-group);
+}
+
+.menu-anchor {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: 30px;
+  z-index: 5;
+  min-width: 150px;
+  padding: 5px;
+  border-radius: 9px;
+  background: var(--group);
+  box-shadow: var(--shadow-sheet);
+}
+
+.menu hr {
+  margin: 4px 6px;
+  border: 0;
+  border-top: 0.5px solid var(--separator);
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 4px 9px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  text-align: left;
+}
+
+.menu-item.danger {
+  color: var(--bad);
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--tint);
+  color: var(--on-tint);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-tile {
+    transition: none;
+  }
+
+  .service-tile:active {
+    transform: none;
+  }
+}

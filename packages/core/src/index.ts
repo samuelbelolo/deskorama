@@ -1,5 +1,12 @@
 export { ARCHETYPES, type Archetype } from './archetype.ts';
 export type { Cancel, Clock } from './clock.ts';
+export type {
+  ConnectorAbout,
+  ConnectorCard,
+  ConnectorLogo,
+  ConnectorToken,
+  ConnectorTokenPage,
+} from './connector-about.ts';
 export type { ConnectorConfig, ConnectorField, ConnectorPermission, IntervalBounds } from './connector-config.ts';
 export { ConnectorError } from './connector-error.ts';
 export type { ConnectorFailure } from './connector-failure.ts';
@@ -38,6 +45,7 @@ export type { GaugeLabel, SourceGauge, SourceProfile } from './source-profile.ts
 export type { FreeSpot, LargestFreeOptions, SpotRequest } from './spot-request.ts';
 export type { StandardIssue, StandardResult, StandardSchema } from './standard-schema.ts';
 export type { Theme } from './theme.ts';
+export { THEME_MOMENTS, type ThemeAbout, type ThemeMoment, type ThemePictures } from './theme-about.ts';
 export { TILE_SIZE } from './tile-block.ts';
 export type { Today } from './today.ts';
 export type { VisibleRegions } from './visible-regions.ts';

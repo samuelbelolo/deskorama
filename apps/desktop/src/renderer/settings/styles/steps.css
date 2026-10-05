@@ -1,0 +1,180 @@
+/* Inside the connection sheet: its numbered steps, the permissions to tick and what a test found. */
+
+.step h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 5px;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.step-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--text-3);
+  color: var(--text-2);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.step.done .step-mark {
+  background: var(--tint);
+  box-shadow: none;
+  color: var(--on-tint);
+  font-size: 11px;
+}
+
+.step-title {
+  flex: 1;
+}
+
+.step h3 .btn {
+  height: 22px;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.step-body {
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.step-body .field {
+  width: 100%;
+}
+
+.step-inline {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.step-inline p {
+  flex: 1;
+  margin: 0;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.step-inline .btn {
+  flex: none;
+}
+
+.permissions,
+.found {
+  align-self: stretch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: var(--radius-group);
+  background: var(--group);
+  box-shadow: 0 0 0 0.5px var(--hairline);
+}
+
+.permissions {
+  padding: 2px 0;
+}
+
+.permissions li {
+  display: flex;
+  gap: 8px;
+  padding: 3px 10px;
+}
+
+.permissions li + li,
+.found li + li {
+  box-shadow: inset 0 0.5px 0 var(--separator);
+}
+
+.permissions li > .icon {
+  margin-top: 1px;
+  color: var(--tint);
+  font-size: 15px;
+}
+
+.permissions code {
+  display: block;
+  font: 600 12px/1.35 var(--font);
+}
+
+.permissions .why {
+  display: block;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.keychain {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.test-result {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.test-result:empty {
+  display: none;
+}
+
+.found li {
+  display: flex;
+  gap: 9px;
+  padding: 6px 10px;
+}
+
+.found .role-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+}
+
+.found-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.found-label {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.found-detail {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.found-meta {
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.found .counted {
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.test-foot {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 11px;
+}

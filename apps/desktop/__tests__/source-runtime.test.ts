@@ -219,3 +219,32 @@ describe('the connected Sources', () => {
     expect(run.from).toEqual(['src-1']);
   });
 });
+
+describe('the last Event of each Source', () => {
+  test('is the newest one it sent, kept while its address stays, and never a replay', async () => {
+    const run = await startRuntime([
+      { events: [sourceEventFixture({ id: 'a' }), sourceEventFixture({ id: 'b' })], cursor: 'c1' },
+      { events: [sourceEventFixture({ id: 'a' })], cursor: 'c1' },
+    ]);
+
+    expect(run.states.at(-1)?.[0]?.last?.id).toBe('b');
+
+    await run.step(MINUTE);
+
+    expect(run.states.at(-1)?.[0]?.last?.id).toBe('b');
+
+    run.runtime.load([{ ...TRAMLO, name: 'Tramlo prod' }]);
+
+    expect(run.runtime.states()[0]?.last?.id).toBe('b');
+
+    run.runtime.load([{ ...TRAMLO, values: { repository: 'tramlo/tramlo-kit' } }]);
+
+    expect(run.runtime.states()[0]?.last).toBeNull();
+  });
+
+  test('is none until the Source sends one', async () => {
+    const run = await startRuntime([{ events: [], cursor: 'c1' }]);
+
+    expect(run.states.at(-1)?.[0]).toMatchObject({ status: { state: 'ok' }, last: null });
+  });
+});

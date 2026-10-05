@@ -1,0 +1,158 @@
+/* The window's frame: the sidebar on the system's material, the toolbar it is dragged from, and the pane. */
+
+.window {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+}
+
+/* A solid fill unless the window sits on the system's sidebar material, which then shows through. */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 10px 12px;
+  background: var(--sidebar-solid);
+  border-right: 0.5px solid var(--hairline);
+}
+
+.vibrant .sidebar {
+  background: transparent;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .vibrant .sidebar {
+    background: var(--sidebar-solid);
+  }
+}
+
+/* The room of the hidden title bar: the traffic lights sit here, and the window is dragged from it. */
+.titlebar-room {
+  height: var(--titlebar);
+  flex: none;
+  -webkit-app-region: drag;
+}
+
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.side-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 30px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  text-align: left;
+}
+
+.side-item .icon {
+  font-size: 17px;
+  color: var(--tint);
+}
+
+.side-item:hover {
+  background: var(--sidebar-selected);
+}
+
+.side-item[aria-current='page'] {
+  background: var(--sidebar-selected);
+  font-weight: 600;
+}
+
+.side-item .label {
+  flex: 1;
+}
+
+.badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--bad);
+  color: #fdfdfd;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+
+.side-foot {
+  margin: auto 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 9px 2px;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+/* The one dot of the window: it says whether the Mac is reading any Source at all. */
+.side-foot .icon {
+  font-size: 9px;
+  color: var(--text-3);
+}
+
+.side-foot.reading .icon {
+  color: var(--ok);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--window);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--titlebar);
+  flex: none;
+  padding: 0 22px 0 12px;
+  -webkit-app-region: drag;
+}
+
+.toolbar-nav {
+  display: flex;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+}
+
+.toolbar-nav .btn {
+  background: none;
+  box-shadow: none;
+  color: var(--text-2);
+  font-size: 15px;
+}
+
+.toolbar-nav .btn:hover:not(:disabled) {
+  background: var(--sidebar-selected);
+}
+
+.toolbar h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+/* A flex child keeps its content's height unless told otherwise: without this the pane never scrolls. */
+.pane {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 24px 24px;
+  /* Thin, as in System Settings, for a Mac set to always show its scroll bars. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-3) transparent;
+}

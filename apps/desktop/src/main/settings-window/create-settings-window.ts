@@ -1,4 +1,4 @@
-import type { BrowserWindow } from 'electron';
+import { nativeTheme, type BrowserWindow } from 'electron';
 import { SETTINGS_CHANNELS } from '../../shared/settings-bridge.ts';
 import { openSettingsWindow } from './open-settings-window.ts';
 import { registerSettingsIpc, type SettingsActions } from './register-settings-ipc.ts';
@@ -15,7 +15,8 @@ export interface SettingsWindow {
 
 /**
  * Returns the settings window: it answers its page's requests with `actions`, from that page only, and keeps the
- * page up to date while it is open.
+ * page up to date while it is open. macOS does not announce a new accent colour, so the page is also refreshed
+ * whenever the window comes forward and whenever the Mac's appearance changes.
  * @example
  * const settings = createSettingsWindow(actions);
  * settings.open(); // the window opens, or comes forward when it is open
@@ -25,6 +26,14 @@ export function createSettingsWindow(actions: SettingsActions): SettingsWindow {
 
   const unregister = registerSettingsIpc(actions, () => window);
 
+  const refresh = (): void => {
+    if (window !== null && !window.isDestroyed()) {
+      window.webContents.send(SETTINGS_CHANNELS.changed, actions.snapshot());
+    }
+  };
+
+  nativeTheme.on('updated', refresh);
+
   return {
     open() {
       const opened = openSettingsWindow(window);
@@ -32,15 +41,15 @@ export function createSettingsWindow(actions: SettingsActions): SettingsWindow {
       if (opened === window) return;
 
       window = opened;
+      opened.on('focus', refresh);
       opened.once('closed', () => (window = null));
     },
 
-    refresh() {
-      if (window !== null && !window.isDestroyed()) {
-        window.webContents.send(SETTINGS_CHANNELS.changed, actions.snapshot());
-      }
-    },
+    refresh,
 
-    stop: unregister,
+    stop() {
+      nativeTheme.off('updated', refresh);
+      unregister();
+    },
   };
 }

@@ -1,5 +1,6 @@
 import type { Connector } from '@deskorama/core';
 import { pollPostHog } from './poll-posthog.ts';
+import { POSTHOG_ABOUT } from './posthog-about.ts';
 import { POSTHOG_CONFIG } from './posthog-config.ts';
 import { POSTHOG_GAUGES } from './posthog-gauges.ts';
 
@@ -16,6 +17,7 @@ export function createPostHog(): Connector {
   return {
     id: 'posthog',
     title: { fr: 'PostHog', en: 'PostHog' },
+    about: POSTHOG_ABOUT,
     config: POSTHOG_CONFIG,
     gauges: POSTHOG_GAUGES,
     poll: pollPostHog,

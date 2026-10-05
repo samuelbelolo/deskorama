@@ -1,0 +1,138 @@
+/* Tokens and resets. Drawn after a macOS settings window: quiet system chrome, the Mac's own accent colour. */
+
+:root {
+  color-scheme: light dark;
+
+  /* The Mac's own accent colour, set by the page from what the main process reads; macOS blue until then. */
+  --accent: #007aff;
+  --tint: var(--accent);
+  --tint-fill: color-mix(in srgb, var(--tint) 12%, transparent);
+  --on-tint: #fbfdff;
+
+  --window: #f4f4f6;
+  --group: #fdfdfd;
+  --group-hover: #f6f6f8;
+  --sidebar-solid: #e6e6eb;
+  --sidebar-selected: rgb(20 20 30 / 0.08);
+
+  --text: #1d1d1f;
+  --text-2: rgb(29 29 31 / 0.7);
+  --text-3: rgb(29 29 31 / 0.6);
+  --separator: rgb(20 20 40 / 0.09);
+  --tile-ring: rgb(0 0 0 / 0.12);
+  --hairline: rgb(20 20 40 / 0.14);
+  --field: #fdfdfd;
+  --field-border: rgb(20 20 40 / 0.2);
+  --control: #fdfdfd;
+  --control-border: rgb(20 20 40 / 0.14);
+  --scrim: rgb(20 20 30 / 0.16);
+
+  /* Status colours carry meaning only: read fine, waiting, needs the person. */
+  --ok: #1f8a3c;
+  --wait: #a35200;
+  --bad: #c8182a;
+  --bad-fill: rgb(208 28 42 / 0.07);
+
+  --shadow-sheet: 0 0 0 0.5px rgb(0 0 0 / 0.18), 0 22px 60px rgb(30 40 60 / 0.3);
+
+  /* One radius scale: groups and tiles 10, controls 6, sheets 16. */
+  --radius-group: 10px;
+  --radius-control: 6px;
+  --radius-sheet: 16px;
+
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* The height of the hidden title bar, which the traffic lights sit in. */
+  --titlebar: 52px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* The accent is lightened on dark surfaces, as macOS does for its own controls. */
+    --tint: color-mix(in srgb, var(--accent) 82%, white);
+    --tint-fill: color-mix(in srgb, var(--tint) 18%, transparent);
+    --on-tint: #f7faff;
+
+    --window: #1f1f22;
+    --group: #2a2a2e;
+    --group-hover: #323237;
+    --sidebar-solid: #2a2a30;
+    --sidebar-selected: rgb(255 255 255 / 0.09);
+
+    --text: #f2f2f5;
+    --text-2: rgb(242 242 245 / 0.7);
+    --text-3: rgb(242 242 245 / 0.58);
+    --separator: rgb(255 255 255 / 0.08);
+    --tile-ring: rgb(255 255 255 / 0.16);
+    --hairline: rgb(255 255 255 / 0.12);
+    --field: #1c1c1f;
+    --field-border: rgb(255 255 255 / 0.16);
+    --control: #3a3a40;
+    --control-border: rgb(255 255 255 / 0.08);
+    --scrim: rgb(0 0 8 / 0.42);
+
+    --ok: #3dc864;
+    --wait: #ffad42;
+    --bad: #ff6b66;
+    --bad-fill: rgb(255 92 88 / 0.1);
+
+    --shadow-sheet: 0 0 0 0.5px rgb(255 255 255 / 0.14), 0 22px 60px rgb(0 0 8 / 0.55);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  /* See-through, so the system's sidebar material shows where the page paints nothing. */
+  background: transparent;
+}
+
+body {
+  font: 13px/1.38 var(--font);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  cursor: default;
+  user-select: none;
+  overflow: hidden;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--tint) 55%, transparent);
+  outline-offset: 1px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.icon {
+  width: 1em;
+  height: 1em;
+  flex: none;
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+.small {
+  font-size: 11.5px;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 12px;
+}

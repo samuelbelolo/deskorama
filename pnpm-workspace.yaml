@@ -11,6 +11,8 @@ catalog:
   '@fontsource/jost': 5.3.0
   # The macOS Keychain, through prebuilt N-API binaries: no rebuild for Electron's ABI.
   '@napi-rs/keyring': 2.1.0
+  # The glyphs of the settings window, bundled as SVG files: nothing is loaded from the network.
+  '@phosphor-icons/core': 2.1.1
   '@playwright/test': 1.63.0
   # Electron 44 runs Node 24, hence @types/node 24.
   '@types/node': 24.19.1

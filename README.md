@@ -77,4 +77,4 @@ See [CONTRIBUTING](.github/CONTRIBUTING.md), the [code of conduct](.github/CODE_
 
 ## Licence
 
-[MIT](LICENSE)
+[MIT](LICENSE). The icons the app ships, and the logos of the services it connects to, keep their own terms: see [THIRD-PARTY-NOTICES](apps/desktop/THIRD-PARTY-NOTICES.md).

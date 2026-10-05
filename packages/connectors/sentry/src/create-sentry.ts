@@ -1,4 +1,5 @@
 import type { Connector } from '@deskorama/core';
+import { SENTRY_ABOUT } from './sentry-about.ts';
 import { pollSentry } from './poll-sentry.ts';
 import { SENTRY_CONFIG } from './sentry-config.ts';
 import { SENTRY_GAUGES } from './sentry-gauges.ts';
@@ -16,6 +17,7 @@ export function createSentry(): Connector {
   return {
     id: 'sentry',
     title: { fr: 'Sentry', en: 'Sentry' },
+    about: SENTRY_ABOUT,
     config: SENTRY_CONFIG,
     gauges: SENTRY_GAUGES,
     poll: pollSentry,

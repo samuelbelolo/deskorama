@@ -91,9 +91,11 @@ module.exports = {
     },
     {
       name: 'not-to-unresolvable',
+      comment:
+        'Every import resolves. The one exception is a Phosphor glyph imported as text ("?raw"): the bundler resolves it, and fails the build if it is missing.',
       severity: 'error',
       from: {},
-      to: { couldNotResolve: true },
+      to: { couldNotResolve: true, pathNot: '^@phosphor-icons/core/[^/]+/[^/]+\\.svg\\?raw$' },
     },
   ],
   options: {

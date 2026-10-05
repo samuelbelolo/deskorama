@@ -1,0 +1,52 @@
+/* The Local webhook pane: its address and secret, the example command and the Events received. */
+
+.form-label {
+  flex: none;
+  width: 74px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  margin: 18px 0 6px 4px;
+}
+
+.section-head .section-title {
+  margin: 0;
+}
+
+.secret {
+  letter-spacing: 0.08em;
+}
+
+.pane-status {
+  margin: 8px 4px 0;
+}
+
+/* Under a section's head, a status sits just above the group it speaks of. */
+.section-head + .pane-status {
+  margin: 0 4px 8px;
+}
+
+.terminal {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 10px 10px 12px;
+  border-radius: var(--radius-group);
+  background: var(--field);
+  box-shadow: 0 0 0 0.5px var(--hairline);
+}
+
+.terminal code {
+  flex: 1;
+  font: 11.5px/1.55 var(--mono);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.received-row {
+  gap: 10px;
+}
