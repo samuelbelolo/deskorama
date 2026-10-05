@@ -1,13 +1,12 @@
-import type { BuildState, DeployStep, GaugeValues, SourceEvent } from '@deskorama/core';
+import {
+  buildStateAfter,
+  isDescribedDeploy,
+  type BuildState,
+  type GaugeValues,
+  type SourceEvent,
+} from '@deskorama/core';
 import { composeGauges } from './compose-gauges.ts';
 import type { SceneSources } from './scene-sources.ts';
-
-/** The build state each deploy step leaves production in, as the engine sets it. */
-const BUILD_AFTER: Readonly<Record<DeployStep, BuildState>> = {
-  started: 'building',
-  succeeded: 'ready',
-  failed: 'error',
-};
 
 /** What passes the Sources' Gauge values and Events on to the wallpapers, for the Gauges each Source feeds. */
 export interface GaugeRelay {
@@ -15,7 +14,8 @@ export interface GaugeRelay {
   report(sourceId: string, values: Partial<GaugeValues>, sources: SceneSources): Partial<GaugeValues>;
   /**
    * Returns an Event as the wallpapers get it: its Gauge move kept only when its Source feeds that Gauge, the
-   * Local webhook (no Source id) feeding them only while no Source is connected. Keeps the build state of a deploy.
+   * Local webhook (no Source id) feeding them only while no Source is connected. Keeps the build state of a deploy
+   * its Source described, the only one whose step the engine counts.
    */
   event(sourceId: string | null, event: SourceEvent, sources: SceneSources): SourceEvent;
   /** The values to show on a scene that starts over: each Gauge's latest from its Source, and the build state. */
@@ -54,7 +54,7 @@ export function createGaugeRelay(): GaugeRelay {
     },
 
     event(sourceId, event, sources) {
-      if (event.step !== undefined) build = BUILD_AFTER[event.step];
+      if (event.step !== undefined && isDescribedDeploy(event)) build = buildStateAfter(event.step);
 
       if (event.gauge === undefined) return event;
 

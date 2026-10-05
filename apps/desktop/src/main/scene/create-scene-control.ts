@@ -61,7 +61,8 @@ export interface SceneControl {
 /**
  * Returns the control of the scene: it works out the scene from the preferences and the connected Sources, hands it
  * to the wallpapers whenever it changes, and hands them the Gauge values again whenever the scene or the Source of
- * a Gauge changes, since a scene that starts over in a new language starts its Gauges over.
+ * a Gauge changes, since a scene that starts over in a new language starts its Gauges over. A Gauge handed to
+ * another Source shows that Source's latest value, or zero until it reports one or its Events move it.
  * @example
  * const scene = createSceneControl({ connectors: CONNECTORS, fallback: LOCAL_WEBHOOK_PROFILE,
  *   systemLanguages: app.getPreferredSystemLanguages(), preferences, sources, savePreferences, wallpapers });
@@ -84,7 +85,7 @@ export function createSceneControl(options: SceneControlOptions): SceneControl {
   const scene = (): Scene => sceneOf(preferences.theme, lang(), sources(), options.fallback);
 
   /** Which Source feeds each Gauge: two Sources of one Connector word their Gauges alike, so the scene hides it. */
-  const feeders = (): string => JSON.stringify(GAUGE_ROLES.map((role) => sources()[role]?.entry.id ?? null));
+  const feeders = (): readonly (string | null)[] => GAUGE_ROLES.map((role) => sources()[role]?.entry.id ?? null);
 
   const sendGauges = (values: Partial<GaugeValues>): void => {
     if (Object.keys(values).length > 0) options.wallpapers.setGauges(values);
@@ -98,10 +99,14 @@ export function createSceneControl(options: SceneControlOptions): SceneControl {
     const next = scene();
     const json = JSON.stringify(next);
     const nextFeeders = feeders();
+    const handedOver = GAUGE_ROLES.filter((_role, index) => nextFeeders[index] !== sentFeeders[index]);
 
     if (json !== sentScene) options.wallpapers.setScene(next);
 
-    if (json !== sentScene || nextFeeders !== sentFeeders) sendGauges(relay.current(sources()));
+    // A Gauge handed to another Source counted the old one's Events: it starts from zero until the new one reports.
+    const startedOver: Partial<GaugeValues> = Object.fromEntries(handedOver.map((role) => [role, 0]));
+
+    if (json !== sentScene || handedOver.length > 0) sendGauges({ ...startedOver, ...relay.current(sources()) });
 
     sentScene = json;
     sentFeeders = nextFeeders;

@@ -1,4 +1,5 @@
 export { ARCHETYPES, type Archetype } from './archetype.ts';
+export { buildStateAfter } from './build-state-after.ts';
 export type { Cancel, Clock } from './clock.ts';
 export type {
   ConnectorAbout,
@@ -35,6 +36,7 @@ export { describeIssues } from './describe-issues.ts';
 export { GAUGE_ROLES, type GaugeMove, type GaugeRole } from './gauge-move.ts';
 export type { BuildState, GaugeValues } from './gauge-values.ts';
 export type { Host } from './host.ts';
+export { isDescribedDeploy } from './is-described-deploy.ts';
 export { LANGUAGES, type Language } from './language.ts';
 export { localiseEvent } from './localise-event.ts';
 export { localiseSource } from './localise-source.ts';

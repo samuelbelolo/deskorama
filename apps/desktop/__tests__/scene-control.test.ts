@@ -165,6 +165,21 @@ describe('the scene every wallpaper draws', () => {
     expect(on('gauges').at(-1)).toEqual({ daily: 12 });
   });
 
+  test('starts a Gauge from zero when it is handed to a Source that has reported nothing for it', () => {
+    const { scene, on } = setUp([TRAMLO, BOUTIK]);
+
+    scene.setGauges('src-1', { crowd: 4 });
+    scene.setPreferences({ gauges: { daily: 'src-2' } });
+
+    // The commits counted so far are not orders: only the Gauge that changed hands starts over.
+    expect(on('gauges').at(-1)).toEqual({ crowd: 4, daily: 0 });
+
+    scene.setSources([BOUTIK]);
+
+    // The Gauge that Boutik already fed keeps its count.
+    expect(on('gauges').at(-1)).toEqual({ crowd: 0, total: 0 });
+  });
+
   test('lets an Event move a Gauge only when its Source feeds that Gauge', () => {
     const { scene } = setUp([TRAMLO, BOUTIK], { ...DEFAULT_PREFERENCES, gauges: { daily: 'src-2' } });
     const sale = sourceEventFixture({ id: 'sale', gauge: { role: 'daily', by: 1 } });
@@ -187,5 +202,15 @@ describe('the scene every wallpaper draws', () => {
 
     expect(on('gauges').at(-1)).toEqual({ build: 'error' });
     expect(setUp([]).scene.fromSource(null, sourceEventFixture({ id: 'x' })).id).toBe('x');
+  });
+
+  test('leaves production where it stands for a step on anything but a deploy its Source described', () => {
+    const { scene, on } = setUp([TRAMLO]);
+
+    scene.fromSource('src-1', sourceEventFixture({ id: 'e', archetype: 'error', step: 'failed' }));
+    scene.fromSource('src-1', sourceEventFixture({ id: 'u', archetype: 'deploy', recognised: false, step: 'failed' }));
+    scene.restoreBuild();
+
+    expect(on('gauges').at(-1)).toEqual({ build: 'idle' });
   });
 });
