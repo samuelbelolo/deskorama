@@ -44,7 +44,8 @@ export function webhookSettings(
   const fromEnv = Number(env['DESKORAMA_WEBHOOK_PORT']);
   const port = Number.isInteger(fromEnv) && fromEnv > 0 ? fromEnv : inFile.port || DEFAULT_WEBHOOK_PORT;
 
-  const fixed = env['DESKORAMA_WEBHOOK_SECRET'];
+  // Set but empty counts as not set: no script could send an empty secret.
+  const fixed = env['DESKORAMA_WEBHOOK_SECRET'] || undefined;
 
   return { on: inFile.enabled ?? true, port, secret: fixed ?? keptSecret(), secretIsFixed: fixed !== undefined };
 }

@@ -32,6 +32,13 @@ describe('the Local webhook settings', () => {
     });
   });
 
+  test('take an empty secret in the environment as none, and keep the one in the Keychain', () => {
+    expect(webhookSettings({ DESKORAMA_WEBHOOK_SECRET: '' }, null, kept)).toMatchObject({
+      secret: 'secret-kept-in-the-keychain',
+      secretIsFixed: false,
+    });
+  });
+
   test('stay off once the person turned the Local webhook off, whatever the port says', () => {
     expect(webhookSettings({}, '{"localWebhook":{"enabled":false}}', kept).on).toBe(false);
     expect(webhookSettings({}, '{"localWebhook":{"enabled":false,"port":80}}', kept)).toMatchObject({

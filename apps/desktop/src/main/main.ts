@@ -33,7 +33,10 @@ if (ownUserData !== undefined && ownUserData !== '') app.setPath('userData', own
 if (app.requestSingleInstanceLock()) {
   // A menu-bar app keeps running without windows, e.g. while the last display is being swapped.
   app.on('window-all-closed', () => {});
-  app.whenReady().then(start, (error: unknown) => writeLog('app', String(error)));
+  app
+    .whenReady()
+    .then(start)
+    .catch((error: unknown) => writeLog('app', String(error)));
 } else {
   // A second launch would fight the first over the Local webhook's port.
   app.quit();
@@ -104,12 +107,17 @@ async function start(): Promise<void> {
     onEvent: (event, sourceId) => sendEvent(scene.fromSource(sourceId, event)),
     onGauges: (sourceId, values) => scene.setGauges(sourceId, values),
     onStates: (states) => {
+      const shown = JSON.stringify(failing);
+
       failing = states.flatMap(({ entry, status }) =>
         status.state === 'failing' ? [{ name: entry.name, failure: status.failure }] : [],
       );
 
       scene.setSources(states.map(({ entry }) => entry));
-      tray?.update({ failing });
+
+      // Every poll that worked lands here too, and changes nothing the menu shows.
+      if (JSON.stringify(failing) !== shown) tray?.update({ failing });
+
       settings?.refresh();
     },
   });

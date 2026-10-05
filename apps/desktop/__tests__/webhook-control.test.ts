@@ -94,6 +94,19 @@ describe('the Local webhook control', () => {
     expect(run.errors).toHaveLength(1);
   });
 
+  test('reports a secret its listener refuses, and runs on without listening', async () => {
+    const run = setUp({
+      listen: () => {
+        throw new Error('The Local webhook secret needs at least 16 characters.');
+      },
+    });
+
+    await run.control.start();
+
+    expect(run.control.state()).toEqual({ on: true, listening: false, port: 47_213 });
+    expect(run.errors).toHaveLength(1);
+  });
+
   test('draws a new secret and listens with it alone', async () => {
     const run = setUp();
 

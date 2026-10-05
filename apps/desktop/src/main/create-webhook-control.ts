@@ -31,7 +31,7 @@ export interface WebhookControlOptions {
   readonly listen: (secret: string, onEvent: (event: SourceEvent) => void) => Listener;
   /** Receives every accepted Event. */
   readonly onEvent: (event: SourceEvent) => void;
-  /** Receives a failure to listen, e.g. a port already taken: reported, never fatal. */
+  /** Receives a failure to listen, e.g. a port already taken or a secret too short: reported, never fatal. */
   readonly onError: (error: unknown) => void;
 }
 
@@ -87,9 +87,10 @@ export function createWebhookControl(options: WebhookControlOptions): WebhookCon
   };
 
   const open = async (): Promise<void> => {
-    const opening = options.listen(secret, accept);
-
     try {
+      // Making the listener can fail too, on a secret it refuses: reported like a port already taken.
+      const opening = options.listen(secret, accept);
+
       await opening.start();
 
       listener = opening;
