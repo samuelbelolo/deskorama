@@ -1,6 +1,6 @@
 # Deskorama
 
-![L'Aéroport, a 1960s poster airport, drawn as the desktop wallpaper behind an editor, a terminal and a browser window](docs/images/aeroport.webp)
+![L'Aéroport, a 1960s poster airport, playing as the desktop wallpaper behind an editor, a terminal and a browser window: a pull request merges, the Caption says so and a MERGED stamp lands on the apron](docs/images/aeroport-merged.webp)
 
 An animated macOS wallpaper that reacts to the tools you plug into it. A pull request merges, CI goes red, a customer pays: a calm, funny Gag plays on your desktop, with a Caption that says what happened.
 
@@ -43,7 +43,7 @@ To plug in your own product, expose one HTTPS address that returns your Events a
 
 Two Themes ship with the app. L'Aéroport is a 1960s airline-poster airport, cobalt and international orange. L'Immeuble is a pixel-art Paris building cut open, with its tenants and the crane on the roof.
 
-![L'Immeuble, a pixel-art Paris building cut open, drawn as the desktop wallpaper behind the same windows](docs/images/immeuble.webp)
+![L'Immeuble, a pixel-art Paris building cut open, playing as the desktop wallpaper behind the same windows: the same merge goes THUD! and a MERGED notice drops in front of the building](docs/images/immeuble-merged.webp)
 
 Each kind of Event has its own Gag, and every Gag shows a Caption: the fact, then one concrete detail. A Gag plays where the windows leave the wallpaper visible.
 
