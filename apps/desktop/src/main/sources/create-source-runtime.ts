@@ -6,6 +6,7 @@ import {
   type GaugeValues,
   type SourceEvent,
 } from '@deskorama/core';
+import { createEventScopes } from './create-event-scopes.ts';
 import { createSourcePoller, type SourcePoller } from './create-source-poller.ts';
 import type { CursorStore } from './cursor-store.ts';
 import { readsOf } from './reads-of.ts';
@@ -31,7 +32,10 @@ export interface SourceRuntimeOptions {
   readonly fetch: ConnectorFetch;
   readonly tokens: TokenStore;
   readonly cursors: CursorStore;
-  /** Receives each Event once, whatever the Source replays, with the id of its Source. */
+  /**
+   * Receives each Event once, whatever the Source replays, with the id of its Source. The Event's own id is made
+   * unique among every Source, so two Sources that give two Events the same id are never taken for one.
+   */
   readonly onEvent: (event: SourceEvent, sourceId: string) => void;
   /** Receives the Gauge values a Source reported, with the id of that Source. */
   readonly onGauges: (sourceId: string, gauges: Partial<GaugeValues>) => void;
@@ -69,6 +73,7 @@ export interface SourceRuntime {
  */
 export function createSourceRuntime(options: SourceRuntimeOptions): SourceRuntime {
   const dedupe = createDedupe(REMEMBERED_EVENTS);
+  const scoped = createEventScopes();
   // By Source id: the poller and the entry it polls, so a reload keeps the pollers of unchanged Sources.
   const running = new Map<string, { readonly poller: SourcePoller; readonly key: string }>();
   let states: SourceState[] = [];
@@ -97,7 +102,7 @@ export function createSourceRuntime(options: SourceRuntimeOptions): SourceRuntim
       onEvents: (events) => {
         const fresh = events.filter((event) => dedupe.firstTime(address, event.id));
 
-        for (const event of fresh) options.onEvent(event, entry.id);
+        for (const event of fresh) options.onEvent(scoped(address, event), entry.id);
 
         // Kept without telling anyone yet: the poller reports its status right after, which carries it along.
         const last = fresh.at(-1);

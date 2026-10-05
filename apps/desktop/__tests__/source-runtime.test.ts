@@ -63,7 +63,7 @@ describe('the connected Sources', () => {
 
     expect(run.inputs.map((input) => input.cursor)).toEqual([null, 'c1']);
     expect(run.stores.cursors.map.get('src-1')).toBe('c2');
-    expect(run.played.map((event) => event.id)).toEqual(['a']);
+    expect(run.played.map((event) => event.id)).toEqual(['1:a']);
   });
 
   test('play an Event once even when the Source returns it again', async () => {
@@ -72,7 +72,7 @@ describe('the connected Sources', () => {
 
     await run.step(MINUTE);
 
-    expect(run.played.map((event) => event.id)).toEqual(['a', 'b', 'c']);
+    expect(run.played.map((event) => event.id)).toEqual(['1:a', '1:b', '1:c']);
   });
 
   test('poll again at once while the Source has more, then wait its hint within the bounds', async () => {
@@ -145,7 +145,7 @@ describe('the connected Sources', () => {
     await settle();
 
     expect(run.inputs.map((input) => input.cursor)).toEqual([null, 'c1']);
-    expect(run.played.map((event) => event.id)).toEqual(['night']);
+    expect(run.played.map((event) => event.id)).toEqual(['1:night']);
   });
 
   test('stop polling a removed Source', async () => {
@@ -169,14 +169,25 @@ describe('the connected Sources', () => {
     expect(run.runtime.states()[0]?.status).toMatchObject({ state: 'failing', failure: { kind: 'rate-limit' } });
   });
 
-  test('play an id again once the Source points at another address', async () => {
+  test('play an id again once the Source points at another address, as another Event', async () => {
     const page = { events: [sourceEventFixture({ id: 'a' })], cursor: 'c1' };
     const run = await startRuntime([page, page]);
 
     run.runtime.load([{ ...TRAMLO, values: { url: 'https://other.tramlo.example/events' } }]);
     await settle();
 
-    expect(run.played.map((event) => event.id)).toEqual(['a', 'a']);
+    expect(run.played.map((event) => event.id)).toEqual(['1:a', '2:a']);
+  });
+
+  test('tell apart two Sources named alike that give two Events the same id', async () => {
+    const page = { events: [sourceEventFixture({ id: 'pr-12-merged' })], cursor: 'c1' };
+    const run = await startRuntime([page, page], { 'src-1': 'token-1', 'src-2': 'token-2' });
+
+    run.runtime.load([TRAMLO, { ...TRAMLO, id: 'src-2' }]);
+    await settle();
+
+    expect(run.played.map((event) => event.id)).toEqual(['1:pr-12-merged', '2:pr-12-merged']);
+    expect(run.from).toEqual(['src-1', 'src-2']);
   });
 
   test('hand the Events on even when the cursor cannot be saved', async () => {
@@ -204,7 +215,7 @@ describe('the connected Sources', () => {
     }).load([TRAMLO]);
     await settle();
 
-    expect(played.map((event) => event.id)).toEqual(['kept']);
+    expect(played.map((event) => event.id)).toEqual(['1:kept']);
   });
 
   test('never replay an Event after the person renames the Source or changes its interval', async () => {
@@ -215,7 +226,7 @@ describe('the connected Sources', () => {
     await run.step(0);
 
     expect(run.inputs).toHaveLength(2);
-    expect(run.played.map((event) => event.id)).toEqual(['a']);
+    expect(run.played.map((event) => event.id)).toEqual(['1:a']);
     expect(run.from).toEqual(['src-1']);
   });
 });
