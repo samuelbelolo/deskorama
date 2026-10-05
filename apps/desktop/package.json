@@ -1,6 +1,6 @@
 {
   "name": "@deskorama/desktop",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "The macOS app: one Theme window per screen between the system wallpaper and the desktop icons, a menu-bar icon and the Local webhook.",
   "license": "MIT",
