@@ -1,0 +1,15 @@
+{
+  "query": "SELECT event FROM events WHERE timestamp >= now() - INTERVAL 30 DAY GROUP BY event ORDER BY event LIKE '$%', count() DESC LIMIT 500",
+  "results": [
+    ["$pageview"],
+    ["$autocapture"],
+    ["invoice_exported"],
+    ["user_signed_up"],
+    ["$identify"],
+    ["team_created"]
+  ],
+  "columns": ["event"],
+  "types": [["event", "String"]],
+  "is_cached": true,
+  "timezone": "Europe/Paris"
+}

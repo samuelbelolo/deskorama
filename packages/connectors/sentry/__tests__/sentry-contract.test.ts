@@ -6,5 +6,10 @@ describeConnectorContract({
   connector: createSentry(),
   settings: TRAMLO_SENTRY,
   recorded: () => () => recorded('issues-last-hour.json'),
+  options: [
+    { field: 'organization', recorded: () => () => recorded('organizations.json') },
+    { field: 'projects', recorded: () => () => recorded('projects.json') },
+    { field: 'environments', recorded: () => () => recorded('environments.json') },
+  ],
   now: FIXTURE_TIME,
 });

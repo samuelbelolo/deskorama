@@ -4,7 +4,7 @@ import { POSTHOG_MARK } from './posthog-mark.ts';
 
 /**
  * How the PostHog Connector presents itself. The US and EU clouds are separate, so the token page opens on the
- * address the person typed, at the path of this one.
+ * cloud the person chose, at the path of this one.
  */
 export const POSTHOG_ABOUT: ConnectorAbout = {
   logo: { ...POSTHOG_MARK, markColour: '#1d1f27', tileColour: '#f3f1ea' },

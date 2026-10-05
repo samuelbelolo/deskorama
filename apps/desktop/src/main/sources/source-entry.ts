@@ -8,6 +8,8 @@ export interface SourceEntry {
   readonly name: string;
   /** The values of the Connector's fields, by key. */
   readonly values: Readonly<Record<string, string>>;
+  /** The values of the Connector's fields that hold several, by key; left out by a Source that has none. */
+  readonly lists?: Readonly<Record<string, readonly string[]>> | undefined;
   /** The polling interval the person chose, in milliseconds; the Connector's default when left out. */
   readonly interval?: number | undefined;
 }

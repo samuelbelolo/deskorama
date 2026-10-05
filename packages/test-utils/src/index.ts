@@ -3,6 +3,7 @@ export { createFakeFetch, type FakeFetch, type Responder, type SentRequest } fro
 export { createFakeHost, type FakeHost, type FakeHostOptions } from './create-fake-host.ts';
 export { createFakeScreenHost, type FakeScreenHost, type FakeScreenHostOptions } from './create-fake-screen-host.ts';
 export { describeConnectorContract, type ConnectorContractCase } from './describe-connector-contract.ts';
+export type { ListedOptionsCase } from './describe-listed-options.ts';
 export { FAKE_SCREEN } from './fake-screen.ts';
 export { inOrder } from './in-order.ts';
 export { replayResponse, type RecordedResponse } from './recorded-response.ts';

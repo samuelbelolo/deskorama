@@ -3,7 +3,7 @@ import * as v from 'valibot';
 import { LANGUAGE_CHOICES, type PreferencesChange } from '../../shared/preferences.ts';
 import { COPY_CHOICES, SETTINGS_CHANNELS, type CopyChoice } from '../../shared/settings-bridge.ts';
 import type { LoginItemState, SettingsSnapshot } from '../../shared/settings-snapshot.ts';
-import type { SaveAnswer, SourceDraft, TestAnswer } from '../../shared/source-draft.ts';
+import type { OptionsAnswer, SaveAnswer, SourceDraft, TestAnswer } from '../../shared/source-draft.ts';
 import { TEST_EVENT_CHOICES, type TestEventChoice } from '../../shared/test-event-choice.ts';
 import { AVAILABLE_THEMES } from '../../shared/theme-choice.ts';
 import { SOURCE_ID } from '../source-id.ts';
@@ -14,6 +14,7 @@ export interface SettingsActions {
   save(draft: SourceDraft): SaveAnswer;
   remove(id: string): void;
   test(draft: SourceDraft): Promise<TestAnswer>;
+  listOptions(draft: SourceDraft, field: string): Promise<OptionsAnswer>;
   setPreferences(change: PreferencesChange): void;
   setOpenAtLogin(on: boolean): LoginItemState;
   playTest(choice: TestEventChoice): void;
@@ -27,16 +28,26 @@ export interface SettingsActions {
 /** The values of a Connector's fields, as the settings page holds them. */
 const VALUES = v.record(v.pipe(v.string(), v.maxLength(100)), v.pipe(v.string(), v.maxLength(2000)));
 
+/** The values of the fields that hold several: a few hundred short ones at most. */
+const LISTS = v.record(
+  v.pipe(v.string(), v.maxLength(100)),
+  v.pipe(v.array(v.pipe(v.string(), v.maxLength(500))), v.maxLength(200)),
+);
+
 /** A draft as it arrives from the settings page: checked before anything reads it. */
 const DRAFT: v.GenericSchema<unknown, SourceDraft> = v.strictObject({
   id: v.nullable(v.pipe(v.string(), v.maxLength(100))),
   connector: v.pipe(v.string(), v.maxLength(100)),
   name: v.pipe(v.string(), v.maxLength(200)),
   values: VALUES,
+  lists: v.optional(LISTS),
   token: v.pipe(v.string(), v.maxLength(8000)),
   // Checked against the Connector's bounds with the rest of the draft, so a value out of them marks its field.
   interval: v.nullable(v.pipe(v.number(), v.integer())),
 });
+
+/** Which field of a draft to load the options of. */
+const OPTIONS = v.strictObject({ draft: DRAFT, field: v.pipe(v.string(), v.maxLength(100)) });
 
 /** Which Connector's token page to open, with what its fields hold now: the Connector alone decides the address. */
 const TOKEN_PAGE = v.strictObject({ connector: v.pipe(v.string(), v.maxLength(100)), values: VALUES });
@@ -63,6 +74,11 @@ export function registerSettingsIpc(actions: SettingsActions, settingsWindow: ()
     [SETTINGS_CHANNELS.load]: () => actions.snapshot(),
     [SETTINGS_CHANNELS.save]: (payload) => actions.save(v.parse(DRAFT, payload)),
     [SETTINGS_CHANNELS.test]: (payload) => actions.test(v.parse(DRAFT, payload)),
+    [SETTINGS_CHANNELS.listOptions]: (payload) => {
+      const { draft, field } = v.parse(OPTIONS, payload);
+
+      return actions.listOptions(draft, field);
+    },
     [SETTINGS_CHANNELS.remove]: (payload) => actions.remove(v.parse(SOURCE_ID, payload)),
     [SETTINGS_CHANNELS.preferences]: (payload) => actions.setPreferences(v.parse(PREFERENCES_CHANGE, payload)),
     [SETTINGS_CHANNELS.openAtLogin]: (payload) => actions.setOpenAtLogin(v.parse(v.boolean(), payload)),

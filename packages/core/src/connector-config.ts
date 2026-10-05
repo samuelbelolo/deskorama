@@ -1,15 +1,5 @@
+import type { ConnectorField } from './connector-field.ts';
 import type { Language } from './language.ts';
-
-/** One field a person fills in to connect a Source, besides its token. */
-export interface ConnectorField {
-  /** The key of the value in the Source's settings. */
-  readonly key: string;
-  /** `url` must be an `https://` address; `text` is any short line. */
-  readonly kind: 'url' | 'text';
-  readonly label: Readonly<Record<Language, string>>;
-  /** An example value, with an `.example` domain for an address. */
-  readonly placeholder: string;
-}
 
 /** A permission the token needs, named the way the service names it, so an error can say which one is missing. */
 export interface ConnectorPermission {

@@ -1,15 +1,25 @@
 import type { Clock, Connector, ConnectorFetch, Language } from '@deskorama/core';
 import type { SourcesSnapshot } from '../../shared/settings-snapshot.ts';
-import type { DraftGone, DraftProblems, SaveAnswer, SourceDraft, TestAnswer } from '../../shared/source-draft.ts';
+import type {
+  DraftGone,
+  DraftProblems,
+  OptionsAnswer,
+  SaveAnswer,
+  SourceDraft,
+  TestAnswer,
+} from '../../shared/source-draft.ts';
 import type { SourceStatus } from '../../shared/source-status.ts';
 import type { SourceRuntime } from '../sources/create-source-runtime.ts';
 import type { CursorStore } from '../sources/cursor-store.ts';
+import { readsOf } from '../sources/reads-of.ts';
 import type { SourceEntry } from '../sources/source-entry.ts';
 import type { TokenStore } from '../sources/token-store.ts';
 import { applyDraft } from './apply-draft.ts';
 import { checkDraft } from './check-draft.ts';
 import { connectorView } from './connector-view.ts';
-import { seenEvent } from './seen-event.ts';
+import { draftToken } from './draft-token.ts';
+import { listDraftOptions } from './list-draft-options.ts';
+import { sourceView } from './source-view.ts';
 import { testDraft } from './test-draft.ts';
 
 /** What the settings window acts on. */
@@ -34,13 +44,14 @@ export interface SettingsService {
   save(draft: SourceDraft): SaveAnswer;
   remove(id: string): void;
   test(draft: SourceDraft): Promise<TestAnswer>;
+  listOptions(draft: SourceDraft, field: string): Promise<OptionsAnswer>;
 }
 
 /**
  * Returns the settings window's actions: it lists the Connectors as they describe themselves and the Sources with
  * their state and last Event, saves a checked
- * draft (its token to the Keychain, the rest to `settings.json`), removes a Source with its token and cursor, and
- * tests a draft. Every change reloads the running Sources.
+ * draft (its token to the Keychain, the rest to `settings.json`), removes a Source with its token and cursor,
+ * tests a draft, and loads the options of a draft's field. Every change reloads the running Sources.
  * @example
  * const service = createSettingsService({ lang: () => 'en', connectors: [createFeed()], runtime, tokens, cursors, clock,
  *   fetch, readSources, writeSources, newId: () => randomUUID() });
@@ -52,16 +63,7 @@ export function createSettingsService(options: SettingsServiceOptions): Settings
       const lang = options.lang();
 
       const connectors = options.connectors.map(connectorView);
-
-      const sources = options.runtime.states().map(({ entry, status, last }) => ({
-        id: entry.id,
-        connector: entry.connector,
-        name: entry.name,
-        values: entry.values,
-        interval: entry.interval ?? null,
-        status,
-        last: last === null ? null : seenEvent(last, lang),
-      }));
+      const sources = options.runtime.states().map((state) => sourceView(state, lang));
 
       return { connectors, sources };
     },
@@ -86,8 +88,11 @@ export function createSettingsService(options: SettingsServiceOptions): Settings
 
       if (draft.token.trim() !== '') options.tokens.write(saved.id, draft.token.trim());
 
-      // Another address is another Feed: its old cursor means nothing there.
-      if (previous !== undefined && JSON.stringify(previous.values) !== JSON.stringify(saved.values)) {
+      const { fields } = check.connector.config;
+
+      // Another address is another Feed, and other projects are other Events: the old cursor means nothing there.
+      // A name the loaded list turned into its ID is another value too, and starts over once.
+      if (previous !== undefined && readsOf(previous, fields) !== readsOf(saved, fields)) {
         options.cursors.write(saved.id, null);
       }
 
@@ -118,7 +123,7 @@ export function createSettingsService(options: SettingsServiceOptions): Settings
 
       if ('refusal' in check) return check.refusal;
 
-      const token = draft.token.trim() || (draft.id === null ? null : options.tokens.read(draft.id));
+      const token = draftToken(draft, options.tokens);
 
       if (token === null) return { ok: false, problems: ['token'] };
 
@@ -127,6 +132,21 @@ export function createSettingsService(options: SettingsServiceOptions): Settings
       const { fetch, clock } = options;
 
       return testDraft(draft, { connector, token, fetch, now: clock.now(), lang: options.lang() });
+    },
+
+    async listOptions(draft, field) {
+      const connector = options.connectors.find((candidate) => candidate.id === draft.connector);
+
+      if (connector === undefined) return { ok: false, gone: 'connector' };
+
+      const token = draftToken(draft, options.tokens);
+
+      // Nothing is checked but the token: the name and the other fields may still be empty while a list loads.
+      if (token === null) return { ok: false, failure: { kind: 'auth' } };
+
+      const { fetch, clock } = options;
+
+      return listDraftOptions(draft, field, { connector, token, fetch, now: clock.now() });
     },
   };
 }

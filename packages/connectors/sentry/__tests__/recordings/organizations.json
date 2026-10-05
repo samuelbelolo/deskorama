@@ -1,0 +1,24 @@
+[
+  {
+    "id": "4507000000000001",
+    "slug": "tramlo",
+    "name": "Tramlo",
+    "status": { "id": "active", "name": "active" },
+    "dateCreated": "2025-03-11T09:20:00Z",
+    "isEarlyAdopter": false,
+    "require2FA": false,
+    "avatar": { "avatarType": "letter_avatar", "avatarUuid": null },
+    "links": { "organizationUrl": "https://tramlo.sentry.example", "regionUrl": "https://de.sentry.example" }
+  },
+  {
+    "id": "4507000000000002",
+    "slug": "kavelo-labs",
+    "name": "Kavelo Labs",
+    "status": { "id": "active", "name": "active" },
+    "dateCreated": "2025-11-02T14:05:00Z",
+    "isEarlyAdopter": false,
+    "require2FA": true,
+    "avatar": { "avatarType": "letter_avatar", "avatarUuid": null },
+    "links": { "organizationUrl": "https://kavelo-labs.sentry.example", "regionUrl": "https://de.sentry.example" }
+  }
+]

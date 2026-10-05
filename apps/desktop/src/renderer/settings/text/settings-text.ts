@@ -41,6 +41,29 @@ export interface SettingsText {
   readonly sheetTick: string;
   readonly sheetPaste: string;
   readonly sheetKeychain: string;
+  /** The title of the step where what the token can see is picked from lists. */
+  readonly sheetChoose: string;
+  /** Said in place of a list that waits for the token. */
+  readonly pickNeedsToken: string;
+  /** Said in place of a list that waits for another field, named by its label. */
+  readonly pickNeeds: (label: string) => string;
+  readonly pickLoading: string;
+  /** Said when the service listed nothing, above the field to type in. */
+  readonly pickEmpty: string;
+  /** How to type several values in one field. */
+  readonly pickSeveral: string;
+  /** The first line of a pop-up button nothing is chosen in yet. */
+  readonly pickChoose: string;
+  /** The name of the field that narrows a long list, given the list's label. */
+  readonly pickFilter: (label: string) => string;
+  /** What that field shows while it is empty. */
+  readonly pickFilterPlaceholder: string;
+  /** The name of the line under a loaded list where a value it lacks is typed, given the list's label. */
+  readonly pickUnlisted: (label: string) => string;
+  /** What that line shows while it is empty. */
+  readonly pickUnlistedPlaceholder: string;
+  /** Said under a list none of which is ticked, when one at least is needed. */
+  readonly pickAtLeastOne: string;
   readonly sheetEvery: string;
   readonly seconds: string;
   readonly sheetBounds: (min: string, max: string) => string;

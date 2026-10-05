@@ -1,4 +1,4 @@
-import type { GaugeRole } from '@deskorama/core';
+import type { ConnectorFailure, ConnectorOption, GaugeRole } from '@deskorama/core';
 import type { SeenEvent } from './seen-event.ts';
 import type { SourceStatus } from './source-status.ts';
 
@@ -8,6 +8,8 @@ export interface SourceDraft {
   readonly connector: string;
   readonly name: string;
   readonly values: Readonly<Record<string, string>>;
+  /** The values of the fields that hold several, by key; left out when the Connector has no such field. */
+  readonly lists?: Readonly<Record<string, readonly string[]>> | undefined;
   /** Empty when editing keeps the token already in the Keychain. */
   readonly token: string;
   /** The polling interval in milliseconds, or null for the Connector's default. */
@@ -44,3 +46,12 @@ export type TestAnswer =
   | { readonly ok: false; readonly problems: DraftProblems }
   | DraftGone
   | { readonly ok: false; readonly problems: readonly []; readonly status: SourceStatus };
+
+/**
+ * The answer to loading the options of one field of a draft: the options, why the service refused to list them, or
+ * that the app no longer knows the draft's Connector.
+ */
+export type OptionsAnswer =
+  | { readonly ok: true; readonly options: readonly ConnectorOption[] }
+  | { readonly ok: false; readonly failure: ConnectorFailure }
+  | DraftGone;

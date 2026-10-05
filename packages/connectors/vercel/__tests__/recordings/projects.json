@@ -1,0 +1,38 @@
+{
+  "projects": [
+    {
+      "accountId": "team_Tr4mLoF1ct10nalTeam0001",
+      "id": "prj_W3bTr4mLo0001FictionalAaBb",
+      "name": "tramlo-web",
+      "framework": "nextjs",
+      "nodeVersion": "24.x",
+      "directoryListing": false,
+      "serverlessFunctionRegion": "cdg1",
+      "createdAt": 1767261600000,
+      "updatedAt": 1791119700000
+    },
+    {
+      "accountId": "team_Tr4mLoF1ct10nalTeam0001",
+      "id": "prj_Ap1Tr4mLo0002FictionalCcDd",
+      "name": "tramlo-api",
+      "framework": "hono",
+      "nodeVersion": "24.x",
+      "directoryListing": false,
+      "serverlessFunctionRegion": "cdg1",
+      "createdAt": 1767348000000,
+      "updatedAt": 1791112500000
+    },
+    {
+      "accountId": "team_Tr4mLoF1ct10nalTeam0001",
+      "id": "prj_D0cTr4mLo0003FictionalEeFf",
+      "name": "tramlo-docs",
+      "framework": "astro",
+      "nodeVersion": "24.x",
+      "directoryListing": false,
+      "serverlessFunctionRegion": "cdg1",
+      "createdAt": 1770026400000,
+      "updatedAt": 1790421300000
+    }
+  ],
+  "pagination": { "count": 3, "next": null }
+}

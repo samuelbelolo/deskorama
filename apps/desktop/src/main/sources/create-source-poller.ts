@@ -88,7 +88,7 @@ export function createSourcePoller(options: SourcePollerOptions): SourcePoller {
 
       if (token === null) throw new ConnectorError({ kind: 'auth' }, `${entry.name} has no token in the Keychain.`);
 
-      const settings = { name: entry.name, values: entry.values, token };
+      const settings = { name: entry.name, values: entry.values, lists: entry.lists, token };
       const cursor = options.cursors.read(entry.id);
 
       const result = await connector.poll({ settings, cursor, fetch: options.fetch, now: clock.now() });

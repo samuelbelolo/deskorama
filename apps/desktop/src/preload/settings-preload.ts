@@ -9,6 +9,7 @@ const bridge: SettingsBridge = {
   save: (draft) => ipcRenderer.invoke(SETTINGS_CHANNELS.save, draft),
   remove: (id) => ipcRenderer.invoke(SETTINGS_CHANNELS.remove, id),
   test: (draft) => ipcRenderer.invoke(SETTINGS_CHANNELS.test, draft),
+  listOptions: (draft, field) => ipcRenderer.invoke(SETTINGS_CHANNELS.listOptions, { draft, field }),
   setPreferences: (change) => ipcRenderer.invoke(SETTINGS_CHANNELS.preferences, change),
   setOpenAtLogin: (on) => ipcRenderer.invoke(SETTINGS_CHANNELS.openAtLogin, on),
   playTest: (choice) => ipcRenderer.invoke(SETTINGS_CHANNELS.playTest, choice),

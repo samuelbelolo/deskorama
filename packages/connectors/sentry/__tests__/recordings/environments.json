@@ -1,0 +1,6 @@
+[
+  { "id": "301", "name": "production" },
+  { "id": "302", "name": "staging" },
+  { "id": "303", "name": "preview" },
+  { "id": "304", "name": "" }
+]

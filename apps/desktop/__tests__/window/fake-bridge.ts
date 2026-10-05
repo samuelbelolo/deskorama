@@ -1,6 +1,6 @@
 import type { SettingsBridge } from '../../src/shared/settings-bridge.ts';
 import type { LoginItemState, SettingsSnapshot } from '../../src/shared/settings-snapshot.ts';
-import type { SaveAnswer, SourceDraft, TestAnswer } from '../../src/shared/source-draft.ts';
+import type { OptionsAnswer, SaveAnswer, SourceDraft, TestAnswer } from '../../src/shared/source-draft.ts';
 
 /** One request the window sent through its bridge: the method's name and its arguments. */
 type BridgeCall = readonly [method: string, ...payload: unknown[]];
@@ -15,11 +15,13 @@ export interface FakeBridge {
 
 /**
  * What the fake answers where a test scripts it. Unless told otherwise, a test and a save pass with nothing found,
- * macOS grants opening at login as asked, and a new secret is drawn.
+ * a list loads with nothing in it, macOS grants opening at login as asked, and a new secret is drawn.
  */
 export interface FakeAnswers {
   readonly test?: (draft: SourceDraft) => TestAnswer;
   readonly save?: (draft: SourceDraft) => SaveAnswer;
+  /** What loading the options of one field of a draft answers. */
+  readonly listOptions?: (draft: SourceDraft, field: string) => OptionsAnswer;
   /** What macOS reports once asked to open the app at login, or not any more. */
   readonly setOpenAtLogin?: (on: boolean) => LoginItemState;
   /** Runs when a new secret is asked for: throwing refuses it, as a Keychain that cannot keep it does. */
@@ -51,6 +53,8 @@ export function fakeBridge(snapshot: SettingsSnapshot, answers: FakeAnswers = {}
     save: (draft) => answer(['save', draft], answers.save?.(draft) ?? { ok: true }),
     remove: (id) => answer(['remove', id], undefined),
     test: (draft) => answer(['test', draft], answers.test?.(draft) ?? { ok: true, events: [], gauges: {} }),
+    listOptions: (draft, field) =>
+      answer(['listOptions', draft, field], answers.listOptions?.(draft, field) ?? { ok: true, options: [] }),
     setPreferences: (change) => answer(['setPreferences', change], undefined),
     setOpenAtLogin: (on) =>
       answer(['setOpenAtLogin', on], answers.setOpenAtLogin?.(on) ?? { on, needsApproval: false }),

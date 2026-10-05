@@ -7,11 +7,23 @@ export type {
   ConnectorToken,
   ConnectorTokenPage,
 } from './connector-about.ts';
-export type { ConnectorConfig, ConnectorField, ConnectorPermission, IntervalBounds } from './connector-config.ts';
+export type { ConnectorConfig, ConnectorPermission, IntervalBounds } from './connector-config.ts';
+export type {
+  ChoiceField,
+  ConnectorField,
+  CountWords,
+  FieldChoice,
+  OtherChoice,
+  PickManyField,
+  PickOneField,
+  TypedField,
+} from './connector-field.ts';
+export type { ConnectorOption, OptionsInput } from './connector-option.ts';
 export { ConnectorError } from './connector-error.ts';
 export type { ConnectorFailure } from './connector-failure.ts';
 export type { ConnectorFetch, ConnectorRequest, ConnectorResponse } from './connector-fetch.ts';
 export type { Connector } from './connector.ts';
+export { countedWords } from './counted-words.ts';
 export { createDedupe, type Dedupe } from './create-dedupe.ts';
 export { createEngine, type Engine, type EngineOptions } from './create-engine.ts';
 export { createListeners, type Listeners } from './create-listeners.ts';
@@ -28,6 +40,7 @@ export { localiseEvent } from './localise-event.ts';
 export { localiseSource } from './localise-source.ts';
 export { onFrameAtMost } from './on-frame-at-most.ts';
 export { parsePayload } from './parse-payload.ts';
+export { pickedValues } from './picked-values.ts';
 export type { PollInput, PollResult, SourceSettings } from './poll.ts';
 export { createRandom, type Random } from './random.ts';
 export { RARITIES, type Rarity } from './rarity.ts';
@@ -48,6 +61,7 @@ export type { FreeSpot, LargestFreeOptions, SpotRequest } from './spot-request.t
 export type { StandardIssue, StandardResult, StandardSchema } from './standard-schema.ts';
 export type { Theme } from './theme.ts';
 export { THEME_MOMENTS, type ThemeAbout, type ThemeMoment, type ThemePictures } from './theme-about.ts';
+export { tidyValues } from './tidy-values.ts';
 export { TILE_SIZE } from './tile-block.ts';
 export type { Today } from './today.ts';
 export type { VisibleRegions } from './visible-regions.ts';

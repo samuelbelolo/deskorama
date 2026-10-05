@@ -1,3 +1,4 @@
+import type { Clock } from '@deskorama/core';
 import type { SettingsBridge } from '../../shared/settings-bridge.ts';
 import type { ConnectorView, LoginItemState } from '../../shared/settings-snapshot.ts';
 import { confirmSheet, type ConfirmWords } from './confirm-sheet.ts';
@@ -11,6 +12,8 @@ import type { WindowActions, WindowView } from './window-view.ts';
 /** What the window's actions work with. */
 export interface WindowContext {
   readonly bridge: SettingsBridge;
+  /** The window's Clock, which the connection sheet times its loadings on. */
+  readonly clock: Clock;
   readonly sheets: SheetLayer;
   /** What the window shows now. */
   readonly view: () => WindowView;
@@ -31,7 +34,7 @@ export interface WindowContext {
  * the last test played). A request the main process refuses redraws the window as it stands; a new secret that
  * could not be drawn is also said, since the pane would otherwise look as after a success.
  * @example
- * const actions = windowActions({ bridge, sheets, view: () => view, show, remember, reload, visit });
+ * const actions = windowActions({ bridge, clock, sheets, view: () => view, show, remember, reload, visit });
  * actions.connect(github); // the GitHub sheet drops from the title bar
  */
 export function windowActions(context: WindowContext): WindowActions {
@@ -55,9 +58,9 @@ export function windowActions(context: WindowContext): WindowActions {
 
     edit(source) {
       const connector = context.view().snapshot.connectors.find((candidate) => candidate.id === source.connector);
-      const { id, name, values, interval } = source;
+      const { id, name, values, lists, interval } = source;
 
-      if (connector !== undefined) openSheet(connector, { id, name, values, interval });
+      if (connector !== undefined) openSheet(connector, { id, name, values, lists, interval });
     },
 
     remove(source) {
@@ -114,7 +117,7 @@ interface SheetRequests {
  * askThen(words, () => bridge.remove('src-kit')); // "Remove Tramlo Kit?" drops from the title bar
  */
 function sheetRequests(context: WindowContext, redraw: () => void): SheetRequests {
-  const { bridge, sheets } = context;
+  const { bridge, clock, sheets } = context;
   const hide = (): void => sheets.hide();
 
   return {
@@ -128,7 +131,7 @@ function sheetRequests(context: WindowContext, redraw: () => void): SheetRequest
 
       const { lang } = context.view().snapshot;
 
-      sheets.show(connectionSheet({ connector, start, lang, bridge, onSaved, onCancel: hide }), hide);
+      sheets.show(connectionSheet({ connector, start, lang, bridge, clock, onSaved, onCancel: hide }), hide);
     },
 
     askThen(words, request) {

@@ -7,5 +7,6 @@ describeConnectorContract({
   settings: KAVELO_POSTHOG,
   reports: 'gauges',
   recorded: () => () => recordedPostHog('counts.json'),
+  options: [{ field: 'signupEvents', recorded: () => () => recordedPostHog('event-names.json') }],
   now: FIXTURE_TIME,
 });

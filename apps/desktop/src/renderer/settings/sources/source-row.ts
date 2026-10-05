@@ -8,6 +8,7 @@ import { sourceStanding } from '../source-standing.ts';
 import { statusLine } from '../status-line.ts';
 import { SETTINGS_TEXT } from '../text/text-by-language.ts';
 import { sourceMenu } from './source-menu.ts';
+import { sourcePlace } from './source-place.ts';
 
 /** What a row's buttons do. */
 export interface SourceRowActions {
@@ -16,8 +17,8 @@ export interface SourceRowActions {
 }
 
 /**
- * Returns the row of a connected Source: its Connector's logo, its name, its service and where it reads, where it
- * stands, and the last Event it sent. A Source only the person can fix tints its row and offers that fix as its
+ * Returns the row of a connected Source: its Connector's logo, its name, its service and where it reads (how many
+ * projects or events when it follows several), where it stands, and the last Event it sent. A Source only the person can fix tints its row and offers that fix as its
  * main button; removing sits in the "more" menu.
  * @example
  * sourceRow(kavelo, stripe, now, 'fr', { edit, remove });
@@ -33,9 +34,7 @@ export function sourceRow(
   const text = SETTINGS_TEXT[lang];
   const standing = sourceStanding(source.status, lang);
 
-  const firstField = connector.fields[0];
-  const place =
-    (firstField === undefined ? undefined : source.values[firstField.key]) ?? connector.about.token.name[lang];
+  const place = sourcePlace(source, connector, lang) || connector.about.token.name[lang];
 
   const last =
     source.last === null

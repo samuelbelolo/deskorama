@@ -7,6 +7,7 @@ const ENTRY = v.object({
   connector: v.pipe(v.string(), v.nonEmpty()),
   name: v.pipe(v.string(), v.nonEmpty()),
   values: v.record(v.string(), v.string()),
+  lists: v.optional(v.record(v.string(), v.array(v.string()))),
   interval: v.fallback(v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))), undefined),
 });
 

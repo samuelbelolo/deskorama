@@ -3,6 +3,8 @@ import type { RecordedResponse } from '@deskorama/test-utils';
 /** A deployment of the list, as Vercel words it, with the fields a test changes. */
 interface ListedFields {
   readonly uid: string;
+  /** The project's name; Tramlo's website unless a test follows several projects. */
+  readonly name?: string;
   readonly created: number;
   readonly readyState: string;
   readonly target?: 'production' | null;

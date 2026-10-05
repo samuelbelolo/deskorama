@@ -28,6 +28,20 @@ describe('the Sources in settings.json', () => {
     ]);
   });
 
+  test('keep the values of a field that holds several, and read a Source saved without any', () => {
+    const several = {
+      ...TRAMLO,
+      id: 'src-2',
+      connector: 'vercel',
+      values: {},
+      lists: { projects: ['prj_web', 'prj_api'] },
+    };
+
+    const text = withSources(null, [TRAMLO, several]);
+
+    expect(readSources(text)).toEqual([TRAMLO, several]);
+  });
+
   test('are none when the file is missing or unreadable', () => {
     expect(readSources(null)).toEqual([]);
     expect(readSources('not json')).toEqual([]);

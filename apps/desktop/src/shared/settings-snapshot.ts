@@ -32,6 +32,8 @@ export interface SourceView {
   readonly connector: string;
   readonly name: string;
   readonly values: Readonly<Record<string, string>>;
+  /** The values of its fields that hold several, by key; left out when it has none. */
+  readonly lists?: Readonly<Record<string, readonly string[]>> | undefined;
   /** The polling interval the person chose, in milliseconds; null for the Connector's default. */
   readonly interval: number | null;
   readonly status: SourceStatus;

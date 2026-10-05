@@ -188,11 +188,11 @@ describe('the connection sheet', () => {
     });
 
     await page.getByRole('button', { name: 'Connect: PostHog' }).click();
-    await page.getByLabelText('PostHog address (US or EU)').fill('https://eu.posthog.com');
+    await page.getByLabelText('Display name').fill('Kavelo');
     await page.getByLabelText('Token').fill('phx_fictional_0001');
     await testButton.click();
 
-    await expect.element(page.getByText('https://eu.posthog.com answered, here is what it counts.')).toBeVisible();
+    await expect.element(page.getByText('Kavelo answered, here is what it counts.')).toBeVisible();
     expect(Array.from(root.querySelectorAll('.counted')).map((row) => row.textContent)).toEqual([
       'People active14',
       'Sign-ups today37',

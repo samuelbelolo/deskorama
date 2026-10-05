@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import { connectedSnapshot } from './connected-snapshot.ts';
 import { emptySnapshot } from './empty-snapshot.ts';
 import { openWindow } from './open-window.ts';
+import { OLD_POSTHOG, pickedSnapshot } from './picked-snapshot.ts';
 
 /**
  * Returns the lines of one connected Source's row, as a person reads them.
@@ -41,6 +42,43 @@ describe('the connected Sources', () => {
       tinted: false,
     });
     expect(root.querySelector('.side-foot')?.textContent).toBe('3 Sources read from this Mac');
+  });
+
+  test.each([
+    [
+      'en',
+      'Vercel, 3 projects',
+      'Sentry, tramlo, 2 projects, 1 environment',
+      'Vercel, 1 project',
+      'PostHog, EU Cloud, 1 sign-up event',
+    ],
+    [
+      'fr',
+      'Vercel, 3 projets',
+      'Sentry, tramlo, 2 projets, 1 environnement',
+      'Vercel, 1 projet',
+      'PostHog, Cloud EU, 1 événement d’inscription',
+    ],
+  ] as const)(
+    'says in %s how many projects or events a Source follows, one saved before lists included',
+    async (lang, ...where) => {
+      const { root } = await openWindow(pickedSnapshot(lang));
+
+      await page.getByRole('button', { name: 'Sources' }).click();
+
+      const ids = ['src-vercel', 'src-sentry', 'src-vercel-old', 'src-posthog-old'];
+
+      expect(ids.map((id) => rowOf(root, id).where)).toEqual(where);
+    },
+  );
+
+  test('names the cloud of a Source whose address was saved with a slash at its end', async () => {
+    const slashed = { ...OLD_POSTHOG, values: { ...OLD_POSTHOG.values, host: 'https://eu.posthog.com/' } };
+    const { root } = await openWindow({ ...pickedSnapshot('en'), sources: [slashed] });
+
+    await page.getByRole('button', { name: 'Sources' }).click();
+
+    expect(rowOf(root, OLD_POSTHOG.id).where).toBe('PostHog, EU Cloud, 1 sign-up event');
   });
 
   test('tints the Source only the person can fix, counts it in the sidebar and offers its fix', async () => {

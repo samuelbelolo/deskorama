@@ -1,8 +1,12 @@
-import { ConnectorError, LANGUAGES, type Connector, type ConnectorFailure, type SourceSettings } from '@deskorama/core';
+import { LANGUAGES, type Connector, type SourceSettings } from '@deskorama/core';
 import { describe, expect, test } from 'vitest';
 import { createFakeFetch, type Responder } from './create-fake-fetch.ts';
+import { describeListedOptions, type ListedOptionsCase } from './describe-listed-options.ts';
 import { describeReportedEvents } from './describe-reported-events.ts';
+import { describeReportedFailures } from './describe-reported-failures.ts';
 import { describeReportedGauges } from './describe-reported-gauges.ts';
+import { expectDeclaredFields } from './expect-declared-fields.ts';
+import { isLoadedField } from './is-loaded-field.ts';
 
 /** What the shared suite needs to drive one Connector. */
 export interface ConnectorContractCase {
@@ -20,6 +24,8 @@ export interface ConnectorContractCase {
    * plays recordings in order starts over each time.
    */
   readonly recorded: () => Responder;
+  /** One recorded loading for each field the Connector picks among loaded options. */
+  readonly options?: readonly ListedOptionsCase[];
   /** The time of the polls. */
   readonly now: number;
 }
@@ -27,8 +33,9 @@ export interface ConnectorContractCase {
 /**
  * Registers the tests every Connector passes: the Events of a recorded poll are complete in every language and keep
  * their ids when the page is replayed, and the cursor is something to resume from, or, for a Connector that reports
- * Gauges only, its counts are sound and it never returns an Event; and each failure a service can answer becomes
- * the {@link ConnectorError} the platform acts on, never anything else.
+ * Gauges only, its counts are sound and it never returns an Event; each failure a service can answer becomes
+ * the `ConnectorError` the platform acts on, never anything else; and every field picked among loaded options
+ * loads them from a recorded answer, and fails the same way.
  * @example
  * describeConnectorContract({ connector: createFeed(), settings, recorded: () => inOrder([page]), now: FIXTURE_TIME });
  */
@@ -38,29 +45,9 @@ export function describeConnectorContract(contract: ConnectorContractCase): void
   const poll = (respond: Responder) =>
     connector.poll({ settings, cursor: null, fetch: createFakeFetch(respond).fetch, now });
 
-  /**
-   * Returns the failure a first poll answered by `respond` reports, null when it succeeds, and fails the test when
-   * the Connector throws anything but a ConnectorError.
-   * @example
-   * await failureOf(() => ({ status: 401 })); // { kind: 'auth' }
-   */
-  const failureOf = async (respond: Responder): Promise<ConnectorFailure | null> => {
-    const error: unknown = await poll(respond).then(
-      () => null,
-      (reason: unknown) => reason,
-    );
-
-    if (error === null) return null;
-
-    if (!(error instanceof ConnectorError))
-      throw new Error('poll threw something else than a ConnectorError', { cause: error });
-
-    return error.failure;
-  };
-
   describe(`the ${connector.id} Connector contract`, () => {
     test('declares its fields, permissions, interval bounds and Gauge words in every language', () => {
-      const { interval, fields, permissions } = connector.config;
+      const { interval, permissions } = connector.config;
 
       expect(interval.min).toBeGreaterThan(0);
       expect(interval.min).toBeLessThanOrEqual(interval.default);
@@ -70,8 +57,6 @@ export function describeConnectorContract(contract: ConnectorContractCase): void
       for (const lang of LANGUAGES) {
         expect(connector.title[lang]).not.toBe('');
 
-        for (const field of fields) expect(field.label[lang]).not.toBe('');
-
         for (const permission of permissions) expect(permission.why[lang]).not.toBe('');
 
         for (const gauge of Object.values(connector.gauges)) {
@@ -79,6 +64,16 @@ export function describeConnectorContract(contract: ConnectorContractCase): void
           expect(gauge.text[lang].short).not.toBe('');
         }
       }
+
+      expectDeclaredFields(connector);
+    });
+
+    test('has a recorded loading for every field picked among loaded options', () => {
+      const loaded = connector.config.fields.filter(isLoadedField);
+
+      expect((contract.options ?? []).map((listed) => listed.field).toSorted()).toEqual(
+        loaded.map((field) => field.key).toSorted(),
+      );
     });
 
     const firstPoll = () => poll(contract.recorded());
@@ -86,39 +81,13 @@ export function describeConnectorContract(contract: ConnectorContractCase): void
     if (contract.reports === 'gauges') describeReportedGauges(firstPoll);
     else describeReportedEvents(firstPoll);
 
-    test('reports a refused token, naming nothing else', async () => {
-      expect(await failureOf(() => ({ status: 401, body: { message: 'Bad credentials' } }))).toEqual({ kind: 'auth' });
+    describeReportedFailures({
+      what: 'a poll',
+      call: poll,
+      permissions: connector.config.permissions.map((permission) => permission.name),
+      now,
     });
 
-    test('names the missing permission, among those it asks for', async () => {
-      const failure = await failureOf(() => ({ status: 403, body: { message: 'Forbidden' } }));
-      const names = connector.config.permissions.map((permission) => permission.name);
-
-      expect(failure?.kind).toBe('permission');
-      expect(names).toContain(failure?.kind === 'permission' ? failure.permission : undefined);
-    });
-
-    test('waits for the reset a rate limit announces', async () => {
-      expect(await failureOf(() => ({ status: 429, headers: { 'Retry-After': '120' } }))).toEqual({
-        kind: 'rate-limit',
-        resetAt: now + 120_000,
-      });
-    });
-
-    test('reports a server error or no answer at all as a network failure', async () => {
-      expect(await failureOf(() => ({ status: 503, body: 'Service Unavailable' }))).toEqual({ kind: 'network' });
-
-      expect(
-        await failureOf(() => {
-          throw new TypeError('fetch failed');
-        }),
-      ).toEqual({ kind: 'network' });
-    });
-
-    test('reports an answer it cannot read as an unexpected response', async () => {
-      expect(await failureOf(() => ({ status: 200, body: '<html>Login</html>' }))).toEqual({
-        kind: 'invalid-response',
-      });
-    });
+    for (const listed of contract.options ?? []) describeListedOptions(connector, settings, now, listed);
   });
 }

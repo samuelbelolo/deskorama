@@ -111,6 +111,20 @@
   grid-column: 1 / -1;
 }
 
+/* Three fields share one line. */
+.form-group:has(> .form-cell:nth-child(3):last-child) {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.form-group:has(> .form-cell:nth-child(3):last-child) > .form-cell {
+  grid-column: auto;
+  border-top: 0;
+}
+
+.form-group:has(> .form-cell:nth-child(3):last-child) > .form-cell + .form-cell {
+  box-shadow: inset 0.5px 0 0 var(--separator);
+}
+
 .form-cell .form-label {
   width: auto;
   color: var(--text-2);

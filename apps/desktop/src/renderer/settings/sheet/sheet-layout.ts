@@ -7,7 +7,8 @@ import type { SheetSteps } from './sheet-steps.ts';
 
 /**
  * Returns a connection sheet laid out: the Connector's logo, name and pitch at the top, the fields across, the
- * steps in two columns, and in the footer the polling interval and the buttons that decide.
+ * steps in two columns, then across again those that pick from what the token can see, and in the footer the
+ * polling interval and the buttons that decide.
  * @example
  * sheetLayout(github, 'fr', { form, steps, buttons: [cancelButton, saveButton] });
  */
@@ -33,6 +34,7 @@ export function sheetLayout(
         form.fields,
         element('div', { className: 'sheet-col' }, steps.left),
         element('div', { className: 'sheet-col test-col' }, steps.right),
+        steps.below.length === 0 ? null : element('div', { className: 'sheet-col sheet-wide' }, steps.below),
       ]),
       element('footer', { className: 'sheet-foot' }, [
         form.every.node,

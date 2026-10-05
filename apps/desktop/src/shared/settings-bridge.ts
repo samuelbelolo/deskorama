@@ -1,6 +1,6 @@
 import type { PreferencesChange } from './preferences.ts';
 import type { LoginItemState, SettingsSnapshot } from './settings-snapshot.ts';
-import type { SaveAnswer, SourceDraft, TestAnswer } from './source-draft.ts';
+import type { OptionsAnswer, SaveAnswer, SourceDraft, TestAnswer } from './source-draft.ts';
 import type { TestEventChoice } from './test-event-choice.ts';
 
 /** The IPC channels of the settings window, each answered by the main process. */
@@ -9,6 +9,7 @@ export const SETTINGS_CHANNELS = {
   save: 'settings:save',
   remove: 'settings:remove',
   test: 'settings:test',
+  listOptions: 'settings:list-options',
   preferences: 'settings:preferences',
   openAtLogin: 'settings:open-at-login',
   playTest: 'settings:play-test',
@@ -36,6 +37,11 @@ export interface SettingsBridge {
   save(draft: SourceDraft): Promise<SaveAnswer>;
   remove(id: string): Promise<void>;
   test(draft: SourceDraft): Promise<TestAnswer>;
+  /**
+   * Loads the options of one field of a draft, with the token it holds or, for an edited Source that keeps its own,
+   * the one in the Keychain. Nothing is saved.
+   */
+  listOptions(draft: SourceDraft, field: string): Promise<OptionsAnswer>;
   /** Changes the Theme, the language, the brand Source or the Sources feeding the Gauges. */
   setPreferences(change: PreferencesChange): Promise<void>;
   /** Asks macOS to open the app at login, or not any more, and answers what macOS now reports. */

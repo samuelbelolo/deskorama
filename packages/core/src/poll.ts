@@ -8,6 +8,8 @@ export interface SourceSettings {
   readonly name: string;
   /** The values of the Connector's fields, by key. */
   readonly values: Readonly<Record<string, string>>;
+  /** The values of the fields that hold several, by key; left out by a Source that has none. */
+  readonly lists?: Readonly<Record<string, readonly string[]>> | undefined;
   /** Read from the Keychain just before the poll; never stored anywhere else. */
   readonly token: string;
 }

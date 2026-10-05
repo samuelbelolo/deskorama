@@ -1,4 +1,4 @@
-import type { Language } from '@deskorama/core';
+import type { Clock, Language } from '@deskorama/core';
 import type { SettingsBridge } from '../../../shared/settings-bridge.ts';
 import type { ConnectorView } from '../../../shared/settings-snapshot.ts';
 import type { DraftProblems } from '../../../shared/source-draft.ts';
@@ -14,27 +14,32 @@ import { sheetForm } from './sheet-form.ts';
 import { sheetLayout } from './sheet-layout.ts';
 import type { SheetStart } from './sheet-start.ts';
 import { sheetSteps } from './sheet-steps.ts';
+import { watchFields } from './watch-fields.ts';
 
 /** What a connection sheet connects, and what it tells once done. */
 export interface ConnectionSheetOptions {
   readonly connector: ConnectorView;
   readonly start: SheetStart;
   readonly lang: Language;
-  readonly bridge: Pick<SettingsBridge, 'test' | 'save' | 'openTokenPage'>;
+  readonly bridge: Pick<SettingsBridge, 'test' | 'save' | 'listOptions' | 'openTokenPage'>;
+  /** Times the wait before a list is loaded, so typing does not ask at every key. */
+  readonly clock: Clock;
   /** Called once the Source is saved. */
   readonly onSaved: () => void;
   readonly onCancel: () => void;
 }
 
 /**
- * Returns the sheet that connects a Source of one Connector, or edits one, in four steps: create the token (a
- * button opens the Connector's page, with what to choose there), tick its read-only permissions, paste it, test it.
+ * Returns the sheet that connects a Source of one Connector, or edits one, in steps: create the token (a button
+ * opens the Connector's page, with what to choose there), tick its read-only permissions, paste it, test it. A
+ * Connector with fields picked from what the token can see (its projects, its organizations) gets one more step
+ * before the test: their lists load once the token is there, and again when a field they need changes.
  * The footer holds the polling interval and the decision. Save stays off until a test has passed for exactly what
  * the fields hold: changing a field or the token asks for a new test, and so does testing again, which vouches for
  * nothing until it passes. Nothing is stored before Save.
  * @example
  * const start = { id: null, name: '', values: {}, interval: null };
- * sheets.show(connectionSheet({ connector: github, start, lang: 'fr', bridge, onSaved, onCancel }), onCancel);
+ * sheets.show(connectionSheet({ connector: github, start, lang: 'fr', bridge, clock, onSaved, onCancel }), onCancel);
  */
 export function connectionSheet(options: ConnectionSheetOptions): HTMLElement {
   const { connector, lang, bridge } = options;
@@ -48,6 +53,7 @@ export function connectionSheet(options: ConnectionSheetOptions): HTMLElement {
 
   const steps = sheetSteps(connector, lang, {
     token: form.token,
+    picks: form.picks.map((pick) => pick.node),
     result,
     testButton,
     // A page the browser could not open leaves nothing to draw again.
@@ -66,7 +72,7 @@ export function connectionSheet(options: ConnectionSheetOptions): HTMLElement {
       result.replaceChildren();
     }
 
-    steps.setDone({ token: form.hasToken(), test: passed !== null });
+    steps.setDone({ token: form.hasToken(), picksFilled: form.picksFilled(), test: passed !== null });
     testButton.textContent = passed === null ? text.sheetTest : text.sheetRetest;
     testButton.disabled = busy || !form.hasToken();
     saveButton.disabled = busy || passed === null;
@@ -100,6 +106,8 @@ export function connectionSheet(options: ConnectionSheetOptions): HTMLElement {
 
     form.mark([]);
     result.replaceChildren(...testSaid(outcome, connector, form.where(), lang));
+    // The test sits last in the sheet: what it found may lie under the fold.
+    result.scrollIntoView({ block: 'nearest' });
 
     if (outcome.kind === 'passed') passed = asked;
   };
@@ -114,8 +122,7 @@ export function connectionSheet(options: ConnectionSheetOptions): HTMLElement {
   const buttons = [pushButton(text.cancel, options.onCancel, { large: true }), saveButton];
   const sheet = sheetLayout(connector, lang, { form, steps, buttons });
 
-  sheet.addEventListener('input', refresh);
-  refresh();
+  watchFields({ sheet, connector, form, bridge, clock: options.clock, lang, refresh });
 
   return sheet;
 }

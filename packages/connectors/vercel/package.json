@@ -2,7 +2,7 @@
   "name": "@deskorama/connector-vercel",
   "version": "0.0.0",
   "private": true,
-  "description": "The Vercel Connector: polls a project's deployments and follows each one until it is ready, failed or canceled.",
+  "description": "The Vercel Connector: polls the deployments of a team's projects and follows each one until it is ready, failed or canceled.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,

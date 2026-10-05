@@ -3,10 +3,21 @@ import { join } from 'node:path';
 import type { SourceSettings } from '@deskorama/core';
 import type { RecordedResponse } from '@deskorama/test-utils';
 
-/** The Sentry organization of Tramlo, a fictional product, as a person connects it. */
+/**
+ * The Sentry organization of Tramlo, a fictional product, as a Source saved before projects and environments could
+ * be picked keeps it: its slug alone, which reads all of them.
+ */
 export const TRAMLO_SENTRY: SourceSettings = {
   name: 'Tramlo',
   values: { organization: 'tramlo' },
+  token: 'tramlo-sentry-token-for-tests',
+};
+
+/** Tramlo's website and API in production and staging, as a person picks them from the lists. */
+export const TRAMLO_PICKED: SourceSettings = {
+  name: 'Tramlo',
+  values: { organization: 'tramlo' },
+  lists: { projects: ['tramlo-web', 'tramlo-api'], environments: ['production', 'staging'] },
   token: 'tramlo-sentry-token-for-tests',
 };
 

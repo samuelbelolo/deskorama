@@ -1,0 +1,152 @@
+/* In the connection sheet: the fields picked from what the token can see, and the hints under the typed ones. */
+
+/* The steps that pick from lists span both columns, under the token they are loaded with. */
+.sheet-wide {
+  grid-column: 1 / -1;
+}
+
+.form-hint {
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+/* A pop-up button as wide as its cell. */
+.popup.wide {
+  display: flex;
+}
+
+.popup.wide select {
+  width: 100%;
+  max-width: none;
+}
+
+.popup select[aria-invalid='true'],
+.pick[data-invalid='true'] select {
+  box-shadow: 0 0 0 1px var(--bad);
+}
+
+/* The fields side by side while each has room, one under the other otherwise. */
+.picks {
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  align-items: start;
+  gap: 10px 16px;
+}
+
+.pick,
+.pick-body,
+.pick-hand,
+.pick-unlisted {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pick {
+  gap: 4px;
+}
+
+.pick-body {
+  gap: 5px;
+}
+
+.pick-hand,
+.pick-unlisted {
+  gap: 3px;
+}
+
+/* The label, then beside it how many are ticked and, at the end of the line, the field that narrows a long list. */
+.pick-head,
+.pick-aside {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+}
+
+.pick-head {
+  min-height: 22px;
+}
+
+.pick-aside {
+  flex: 1;
+}
+
+.pick .form-label {
+  width: auto;
+  color: var(--text-2);
+  font-size: 11.5px;
+}
+
+.pick-note {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.pick-count {
+  color: var(--text-3);
+  font-size: 11.5px;
+}
+
+/* The options as checkboxes, in a group that scrolls past five rows. */
+.pick-list {
+  max-height: 118px;
+  padding: 3px 0;
+  border-radius: var(--radius-group);
+  background: var(--group);
+  box-shadow: 0 0 0 0.5px var(--hairline);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-3) transparent;
+}
+
+/* A list alone in its step lays its rows out in columns, so a dozen projects stay in sight. */
+.pick:only-child .pick-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+.pick[data-invalid='true'] .pick-list {
+  box-shadow: 0 0 0 1px var(--bad);
+}
+
+/* The line under a loaded list is never what needs a fix: the list or the pop-up button above it is. */
+.pick[data-invalid='true'] .pick-hand .field {
+  box-shadow: inset 0 0 0 1px var(--bad);
+}
+
+.pick-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 22px;
+  padding: 1px 10px;
+  font-size: 12.5px;
+}
+
+.pick-row input {
+  flex: none;
+  margin: 0;
+  accent-color: var(--tint);
+}
+
+.pick-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pick-row:has(input:disabled) {
+  color: var(--text-3);
+}
+
+.field.pick-filter {
+  width: 170px;
+  height: 22px;
+  margin-left: auto;
+  font-size: 12px;
+}

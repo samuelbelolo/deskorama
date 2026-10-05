@@ -3,10 +3,21 @@ import { join } from 'node:path';
 import type { SourceSettings } from '@deskorama/core';
 import type { RecordedResponse } from '@deskorama/test-utils';
 
-/** The PostHog project of Kavelo, a fictional subscription product, as a person connects it. */
+/**
+ * The PostHog project of Kavelo, a fictional subscription product, as a Source saved for a single sign-up event
+ * keeps it: a typed address and one event name among its values.
+ */
 export const KAVELO_POSTHOG: SourceSettings = {
   name: 'Kavelo',
   values: { host: 'https://eu.posthog.com', project: '12345', signupEvent: 'user_signed_up' },
+  token: 'phx_kavelo-personal-key-for-tests',
+};
+
+/** Kavelo's project counting two sign-up events, as a person picks them from the list. */
+export const KAVELO_SIGNUPS: SourceSettings = {
+  name: 'Kavelo',
+  values: { host: 'https://eu.posthog.com', project: '12345' },
+  lists: { signupEvents: ['user_signed_up', 'team_created'] },
   token: 'phx_kavelo-personal-key-for-tests',
 };
 

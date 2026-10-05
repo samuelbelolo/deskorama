@@ -73,6 +73,7 @@ export async function mountSettingsWindow(
 
   const actions = windowActions({
     bridge,
+    clock,
     sheets,
     view: () => view,
     show,

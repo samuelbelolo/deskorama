@@ -8,6 +8,7 @@ import {
 } from '@deskorama/core';
 import { createSourcePoller, type SourcePoller } from './create-source-poller.ts';
 import type { CursorStore } from './cursor-store.ts';
+import { readsOf } from './reads-of.ts';
 import type { SourceEntry } from './source-entry.ts';
 import type { SourceStatus } from '../../shared/source-status.ts';
 import type { TokenStore } from './token-store.ts';
@@ -87,7 +88,7 @@ export function createSourceRuntime(options: SourceRuntimeOptions): SourceRuntim
   const start = (entry: SourceEntry, connector: Connector): SourcePoller => {
     // Ids are remembered per Source and address: another address may reuse an id for another Event, while a new
     // name or interval polls the same Events again.
-    const address = addressOf(entry);
+    const address = addressOf(entry, connector);
 
     return createSourcePoller({
       ...options,
@@ -120,7 +121,7 @@ export function createSourceRuntime(options: SourceRuntimeOptions): SourceRuntim
       running.delete(id);
     }
 
-    states = known.map(({ entry }) => stateAfterLoad(entry, previous.get(entry.id), running.has(entry.id)));
+    states = known.map((source) => stateAfterLoad(source, previous.get(source.entry.id), running.has(source.entry.id)));
     options.onStates(states);
 
     for (const { entry, connector, key } of known) {
@@ -169,22 +170,24 @@ function knownSources(entries: readonly SourceEntry[], connectors: readonly Conn
  * kept while its poller keeps running. Its last Event is kept while its address holds: a new name or interval
  * reads the same Events, so what the Source last sent still holds.
  * @example
- * stateAfterLoad({ ...tramlo, name: 'Tramlo prod' }, { entry: tramlo, status: read, last: merged }, false);
+ * const renamed = { ...known, entry: { ...tramlo, name: 'Tramlo prod' } };
+ * stateAfterLoad(renamed, { entry: tramlo, status: read, last: merged }, false);
  * // { entry: the renamed entry, status: { state: 'waiting' }, last: merged }
  */
-function stateAfterLoad(entry: SourceEntry, before: SourceState | undefined, keepsItsPoller: boolean): SourceState {
+function stateAfterLoad(source: KnownSource, before: SourceState | undefined, keepsItsPoller: boolean): SourceState {
+  const { entry, connector } = source;
   const status = keepsItsPoller ? before?.status : undefined;
-  const sameAddress = before !== undefined && addressOf(before.entry) === addressOf(entry);
+  const sameAddress = before !== undefined && addressOf(before.entry, connector) === addressOf(entry, connector);
 
   return { entry, status: status ?? { state: 'waiting' }, last: sameAddress ? before.last : null };
 }
 
 /**
- * Returns what a Source reads, as one string: its id, its Connector and the values of its fields, but neither its
- * name nor its interval.
+ * Returns what a Source reads, as one string: its id, its Connector and what it holds for the Connector's fields,
+ * those that hold several included, but neither its name nor its interval.
  * @example
- * addressOf(tramlo) === addressOf({ ...tramlo, name: 'Tramlo prod' }); // true
+ * addressOf(tramlo, feed) === addressOf({ ...tramlo, name: 'Tramlo prod' }, feed); // true
  */
-function addressOf(entry: SourceEntry): string {
-  return JSON.stringify([entry.id, entry.connector, entry.values]);
+function addressOf(entry: SourceEntry, connector: Connector): string {
+  return JSON.stringify([entry.id, entry.connector, readsOf(entry, connector.config.fields)]);
 }

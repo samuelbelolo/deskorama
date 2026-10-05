@@ -1,6 +1,7 @@
 import { GAUGE_ROLES, type Connector, type ConnectorFetch, type GaugeRole, type Language } from '@deskorama/core';
 import type { SourceDraft, TestAnswer } from '../../shared/source-draft.ts';
 import { failureOf } from '../sources/failure-of.ts';
+import { draftSettings } from './draft-settings.ts';
 import { seenEvent } from './seen-event.ts';
 
 /** How many of the latest Events a test shows. */
@@ -23,7 +24,7 @@ export interface DraftTest {
  * // { ok: true, events: [{ label: 'Deploy succeeded', detail: 'v2.5.0', at: 1791122400000, archetype: 'deploy' }], gauges: {} }
  */
 export async function testDraft(draft: SourceDraft, test: DraftTest): Promise<TestAnswer> {
-  const settings = { name: draft.name.trim(), values: draft.values, token: test.token };
+  const settings = draftSettings(draft, test.token);
 
   try {
     const result = await test.connector.poll({ settings, cursor: null, fetch: test.fetch, now: test.now });

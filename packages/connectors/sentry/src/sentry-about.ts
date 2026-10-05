@@ -1,7 +1,10 @@
 import type { ConnectorAbout } from '@deskorama/core';
 import { SENTRY_MARK } from './sentry-mark.ts';
 
-/** How the Sentry Connector presents itself: a personal token, whose "Issue & Event" row grants `event:read`. */
+/**
+ * How the Sentry Connector presents itself: a personal token, whose "Issue & Event" row grants `event:read` and
+ * whose "Organization" row grants `org:read`.
+ */
 export const SENTRY_ABOUT: ConnectorAbout = {
   logo: { ...SENTRY_MARK, markColour: '#fbfbfb', tileColour: '#362d59' },
   pitch: {
@@ -12,8 +15,8 @@ export const SENTRY_ABOUT: ConnectorAbout = {
     name: { fr: 'Jeton personnel', en: 'Personal token' },
     page: { site: 'Sentry', url: 'https://sentry.io/settings/account/api/auth-tokens/' },
     note: {
-      fr: 'Créez un jeton personnel avec «\u00a0Issue & Event\u00a0» sur Read, et rien d’autre.',
-      en: 'Create a personal token with “Issue & Event” set to Read, and nothing else.',
+      fr: 'Créez un jeton personnel avec «\u00a0Issue & Event\u00a0» et «\u00a0Organization\u00a0» sur Read, et rien d’autre.',
+      en: 'Create a personal token with “Issue & Event” and “Organization” set to Read, and nothing else.',
     },
   },
 };

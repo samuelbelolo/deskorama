@@ -1,33 +1,9 @@
-import type { PollResult, SourceSettings } from '@deskorama/core';
-import { createFakeFetch, FIXTURE_TIME, inOrder, type RecordedResponse, type SentRequest } from '@deskorama/test-utils';
-import * as v from 'valibot';
+import { createFakeFetch, FIXTURE_TIME, inOrder } from '@deskorama/test-utils';
 import { describe, expect, test } from 'vitest';
 import { createPostHog } from '../src/create-posthog.ts';
+import { askedOf } from './asked-of.ts';
 import { KAVELO_POSTHOG, recordedPostHog } from './kavelo-posthog.ts';
-
-/** The body of a query request, as far as the tests read it. */
-const QUERY_BODY = v.object({
-  query: v.object({ kind: v.string(), query: v.string(), values: v.record(v.string(), v.string()) }),
-  refresh: v.string(),
-});
-
-/**
- * Polls Kavelo's PostHog project once with `settings`, through a fake `fetch` answering `recording`, and returns the
- * result with the requests sent.
- * @example
- * const { result, sent } = await pollOnce(recordedPostHog('counts.json'));
- * // result: { events: [], gauges: { crowd: 14, daily: 37 }, cursor: null }, sent[0].init.method: 'POST'
- */
-async function pollOnce(
-  recording: RecordedResponse,
-  settings: SourceSettings = KAVELO_POSTHOG,
-): Promise<{ result: PollResult; sent: readonly SentRequest[] }> {
-  const fake = createFakeFetch(inOrder([recording]));
-
-  const result = await createPostHog().poll({ settings, cursor: null, fetch: fake.fetch, now: FIXTURE_TIME });
-
-  return { result, sent: fake.sent };
-}
+import { pollOnce } from './poll-once.ts';
 
 describe('the PostHog Connector', () => {
   test('runs one counting query on the project, with the personal key', async () => {
@@ -44,12 +20,12 @@ describe('the PostHog Connector', () => {
   test('counts afresh in the query, never selects rows, and sends the sign-up event as a value', async () => {
     const { sent } = await pollOnce(recordedPostHog('counts.json'));
 
-    const body = v.parse(QUERY_BODY, JSON.parse(sent[0]?.init.body ?? '{}'));
+    const body = askedOf(sent);
 
     expect(body.query.kind).toBe('HogQLQuery');
     expect(body.refresh).toBe('force_blocking');
-    expect(body.query.values).toEqual({ signup: 'user_signed_up' });
-    expect(body.query.query).toMatch(/^SELECT\s+uniqIf\(.+\s+countIf\(/su);
+    expect(body.query.values).toEqual({ signup_0: 'user_signed_up' });
+    expect(body.query.query).toMatch(/^SELECT\s+uniqIf\(.+\s+countIf\(\(event = \{signup_0\}\) AND /su);
     expect(body.query.query).not.toContain('user_signed_up');
     expect(body.query.query).not.toMatch(/SELECT\s+\*|properties|LIMIT/iu);
   });
@@ -95,7 +71,7 @@ describe('the PostHog Connector', () => {
     const { sent } = await pollOnce(recordedPostHog('counts.json'), { ...KAVELO_POSTHOG, values });
 
     expect(sent[0]?.url).toBe('https://eu.posthog.com/api/projects/12345/query/');
-    expect(sent[0]?.init.body).toContain('"signup":"user_signed_up"');
+    expect(sent[0]?.init.body).toContain('"signup_0":"user_signed_up"');
   });
 
   test('queries a self-hosted PostHog at its own address, without a trailing path', async () => {

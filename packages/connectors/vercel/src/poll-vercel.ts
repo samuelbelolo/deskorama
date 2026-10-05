@@ -1,4 +1,4 @@
-import { ConnectorError, type GaugeValues, type PollInput, type PollResult } from '@deskorama/core';
+import { ConnectorError, pickedValues, type GaugeValues, type PollInput, type PollResult } from '@deskorama/core';
 import { buildLeftOpen } from './build-left-open.ts';
 import { followPending } from './follow-pending.ts';
 import { listDeployments } from './list-deployments.ts';
@@ -8,26 +8,30 @@ import { observationEvents } from './observation-events.ts';
 import { observeListed } from './observe-listed.ts';
 import { readVercelState } from './read-vercel-state.ts';
 import { refreshPending } from './refresh-pending.ts';
-import { VERCEL_CONFIG, VERCEL_PROJECT_FIELD } from './vercel-config.ts';
+import { MAX_PROJECTS, VERCEL_CONFIG, VERCEL_PROJECT_FIELD, VERCEL_PROJECTS_FIELD } from './vercel-config.ts';
 import type { VercelState } from './vercel-state.ts';
 
 /**
- * Polls a Vercel project once: lists the deployments created since the last poll, and reads again by id, ten at a
- * time and in turn, those an earlier poll saw unfinished, so a deploy going from building to failed is never missed.
+ * Polls the Vercel projects of a Source once: lists, in one request, the deployments created in any of them since
+ * the last poll, and reads again by id, ten at a time and in turn, those an earlier poll saw unfinished, so a deploy
+ * going from building to failed is never missed. A Source saved for a single project still names it alone.
  * Returns their Events oldest first (a catch-up over several pages is told at its last page), the number of
  * unfinished deployments as the crowd, the cursor, and a sooner poll while a deploy builds or more pages wait.
  * @example
- * await pollVercel({ settings: { name: 'Tramlo', values: { project: 'tramlo-web' }, token }, cursor: null, fetch, now });
+ * await pollVercel({ settings: { name: 'Tramlo', values: {}, lists: { projects: ['prj_web', 'prj_api'] }, token },
+ *   cursor: null, fetch, now });
  * // { events: [{ kind: 'deployment.started', … }], gauges: { crowd: 1 }, cursor: '{"since":…}', delay: 30000 }
  */
 export async function pollVercel(input: PollInput): Promise<PollResult> {
-  const project = input.settings.values[VERCEL_PROJECT_FIELD] ?? '';
+  const projects = pickedValues(input.settings, VERCEL_PROJECTS_FIELD, VERCEL_PROJECT_FIELD);
 
-  if (project === '') throw new ConnectorError({ kind: 'invalid-response' }, 'A Vercel Source names its project.');
+  if (projects.length === 0 || projects.length > MAX_PROJECTS) {
+    throw new ConnectorError({ kind: 'invalid-response' }, `A Vercel Source names 1 to ${MAX_PROJECTS} projects.`);
+  }
 
   const state = readVercelState(input.cursor, input.now);
 
-  const list = await listDeployments(input, project, state);
+  const list = await listDeployments(input, projects, state);
 
   const turn = followPending(state.pending, new Set(list.deployments.map((deployment) => deployment.uid)));
 
