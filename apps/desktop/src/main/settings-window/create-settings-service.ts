@@ -50,8 +50,9 @@ export interface SettingsService {
 /**
  * Returns the settings window's actions: it lists the Connectors as they describe themselves and the Sources with
  * their state and last Event, saves a checked
- * draft (its token to the Keychain, the rest to `settings.json`), removes a Source with its token and cursor,
- * tests a draft, and loads the options of a draft's field. Every change reloads the running Sources.
+ * draft (its token to the Keychain, the rest to `settings.json`, or neither when the Keychain refuses the token and
+ * throws), removes a Source with its token and cursor, tests a draft, and loads the options of a draft's field.
+ * Every change reloads the running Sources.
  * @example
  * const service = createSettingsService({ lang: () => 'en', connectors: [createFeed()], runtime, tokens, cursors, clock,
  *   fetch, readSources, writeSources, newId: () => randomUUID() });
@@ -82,11 +83,18 @@ export function createSettingsService(options: SettingsServiceOptions): Settings
       const { sources, saved } = applied;
       const previous = before.find((entry) => entry.id === saved.id);
 
-      // The file first: if the Keychain then refuses the token, the Source shows a refused token instead of a token
-      // left behind in the Keychain for a Source that does not exist.
+      // The file first, so no token is left behind in the Keychain for a Source that does not exist. If the Keychain
+      // then refuses the token, the file goes back to what it held: nothing is saved, and saving again once the
+      // Keychain is unlocked does not add the Source a second time.
       options.writeSources(sources);
 
-      if (draft.token.trim() !== '') options.tokens.write(saved.id, draft.token.trim());
+      try {
+        if (draft.token.trim() !== '') options.tokens.write(saved.id, draft.token.trim());
+      } catch (error) {
+        options.writeSources(before);
+
+        throw error;
+      }
 
       const { fields } = check.connector.config;
 

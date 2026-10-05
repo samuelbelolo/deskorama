@@ -182,6 +182,41 @@ describe('the settings window', () => {
     expect(saved()).toHaveLength(1);
   });
 
+  test('saves nothing when the Keychain refuses the token, so saving again adds the Source once', async () => {
+    const { service, stores, saved, fake } = setUp(() => PAGE);
+    stores.tokens.write = () => {
+      throw new Error('The user denied access to the Keychain.');
+    };
+
+    expect(() => service.save(DRAFT)).toThrow('denied');
+    await settle();
+
+    expect(saved()).toEqual([]);
+    expect(service.snapshot().sources).toEqual([]);
+    expect(fake.sent).toHaveLength(0);
+
+    // The Keychain is unlocked: it keeps tokens again.
+    stores.tokens.write = (id, token) => void stores.tokens.map.set(id, token);
+
+    expect(service.save(DRAFT)).toEqual({ ok: true });
+    expect(saved()).toHaveLength(1);
+  });
+
+  test('keeps an edited Source as it was when the Keychain refuses its new token', () => {
+    const { service, stores, saved } = setUp(() => PAGE);
+
+    service.save(DRAFT);
+
+    stores.tokens.write = () => {
+      throw new Error('The user denied access to the Keychain.');
+    };
+
+    expect(() => service.save({ ...DRAFT, id: 'src-1', name: 'Tramlo prod', token: 'feed-token-2' })).toThrow('denied');
+
+    expect(saved()).toEqual([{ id: 'src-1', connector: 'feed', name: 'Tramlo', values: { url: URL } }]);
+    expect(stores.tokens.map.get('src-1')).toBe('feed-token-1');
+  });
+
   test('polls again a Source stopped on a refused token once a new token is saved', async () => {
     let answers = 0;
     const { service, fake } = setUp(() => (answers++ === 0 ? { status: 401 } : PAGE));
