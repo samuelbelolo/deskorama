@@ -1,4 +1,5 @@
 import type { Cancel } from './clock.ts';
+import { createFixedInstance } from './create-fixed-instance.ts';
 import { createRouter } from './create-router.ts';
 import { createScreenInstances } from './create-screen-instances.ts';
 import { createScreenMounts } from './create-screen-mounts.ts';
@@ -12,6 +13,7 @@ import { localiseSource } from './localise-source.ts';
 import { createRandom } from './random.ts';
 import type { Screen } from './screen.ts';
 import type { ScreenLayers } from './screen-layers.ts';
+import type { SharedSnapshot } from './shared-snapshot.ts';
 import type { SourceEvent } from './source-event.ts';
 import type { SourceProfile } from './source-profile.ts';
 import type { Theme } from './theme.ts';
@@ -23,9 +25,10 @@ const RECAP_AFTER_MS = 120_000;
 const ROUTING_SALT = 0x5bd1e995;
 
 /**
- * The engine: turns Connector output into what each screen's Theme receives. A platform that draws every screen
- * from one place (the demo) mounts with `mountScreens` and gets routing between screens; a platform that runs one
- * page per screen (the desktop app's windows) mounts each page's screen with `mount`.
+ * The engine: turns Connector output into what each screen's Theme receives. A platform mounts with `mountScreens`
+ * and gets routing between screens. One that draws every screen from one place (the demo) mounts the Theme itself;
+ * one that draws each screen in a page of its own (the desktop app's windows) mounts a Theme that carries what its
+ * screen is handed to that page, where a screen player plays it, and carries the shared state to every page.
  */
 export interface Engine {
   /** Mounts `theme` on the host's first screen and returns what unmounts it; throws when there is no screen. */
@@ -36,6 +39,13 @@ export interface Engine {
   send(event: SourceEvent): void;
   /** Sets the Gauge values a Source reported; roles left out keep their value. */
   setGauges(values: Partial<GaugeValues>): void;
+  /** What every screen shares right now: the Gauges, today's tally and the recent Events. */
+  state(): SharedSnapshot;
+  /**
+   * Calls `listener` with what every screen shares whenever it changes, until cancelled: before the Event that
+   * changed it plays, so a page told of both shows the new counts when the Gag starts.
+   */
+  onState(listener: (state: SharedSnapshot) => void): Cancel;
 }
 
 /** How an engine is set up. */
@@ -99,10 +109,7 @@ export function createEngine(host: Host, options: EngineOptions): Engine {
       if (screen === undefined) throw new Error('The host reports no screen to mount the Theme on.');
 
       // The first screen as it is now, kept for good: a page that draws one screen never follows the others.
-      const fixedLayer: ScreenLayers<Layer> = { open: () => layer, close: () => {} };
-      const instances = createScreenInstances(theme, fixedLayer, lifecycle);
-
-      return mounts.track({ sync: () => instances.sync([screen]), clear: () => instances.clear() });
+      return mounts.track(createFixedInstance(theme, layer, screen, lifecycle));
     },
     mountScreens: (theme, layers) => mounts.track(createScreenInstances(theme, layers, lifecycle)),
     send(event: SourceEvent): void {
@@ -111,5 +118,7 @@ export function createEngine(host: Host, options: EngineOptions): Engine {
       if (shared.accept(localised)) router.send(localised);
     },
     setGauges: shared.setGauges,
+    state: shared.snapshot,
+    onState: (listener) => shared.onChange(() => listener(shared.snapshot())),
   };
 }

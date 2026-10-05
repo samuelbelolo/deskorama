@@ -60,7 +60,7 @@ async function setUp() {
     preferences: DEFAULT_PREFERENCES,
     sources: [],
     savePreferences: () => {},
-    send: () => {},
+    wallpapers: { setScene: () => {}, setGauges: () => {}, setPaused: () => {} },
   });
 
   const webhook = createWebhookControl({

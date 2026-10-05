@@ -4,9 +4,10 @@ import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 import {
   EVENT_CHANNEL,
   FRAMES_CHANNEL,
-  GAUGES_CHANNEL,
-  PAUSED_CHANNEL,
+  RECAP_CHANNEL,
   SCENE_CHANNEL,
+  SCREENS_CHANNEL,
+  STATE_CHANNEL,
   type WallpaperBridge,
 } from '../shared/wallpaper-bridge.ts';
 
@@ -14,7 +15,7 @@ import {
  * Calls `listener` with the payload of each message on one channel, until the returned function is called. The
  * payload's type is the one the bridge declares for that channel.
  * @example
- * const cancel = subscribe<WireEvent>(EVENT_CHANNEL, (event) => engine.send(fromWireEvent(event)));
+ * const cancel = subscribe<WireEvent>(EVENT_CHANNEL, (event) => player.play(fromWireEvent(event)));
  */
 // oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- it types the payload the channel carries.
 function subscribe<Payload>(channel: string, listener: (payload: Payload) => void): () => void {
@@ -27,10 +28,11 @@ function subscribe<Payload>(channel: string, listener: (payload: Payload) => voi
 
 const bridge: WallpaperBridge = {
   onEvent: (listener) => subscribe(EVENT_CHANNEL, listener),
+  onRecap: (listener) => subscribe(RECAP_CHANNEL, listener),
+  onState: (listener) => subscribe(STATE_CHANNEL, listener),
   onWindowFrames: (listener) => subscribe(FRAMES_CHANNEL, listener),
+  onScreens: (listener) => subscribe(SCREENS_CHANNEL, listener),
   onScene: (listener) => subscribe(SCENE_CHANNEL, listener),
-  onGauges: (listener) => subscribe(GAUGES_CHANNEL, listener),
-  onPaused: (listener) => subscribe(PAUSED_CHANNEL, listener),
 };
 
 contextBridge.exposeInMainWorld('wallpaper', bridge);

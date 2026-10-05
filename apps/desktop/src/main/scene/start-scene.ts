@@ -6,18 +6,18 @@ import { settingsPath } from '../settings-path.ts';
 import { readSources } from '../sources/read-sources.ts';
 import { withSettings } from '../with-settings.ts';
 import { writeFileAtomically } from '../write-file-atomically.ts';
-import { createSceneControl, type SceneControl } from './create-scene-control.ts';
+import { createSceneControl, type SceneControl, type SceneControlOptions } from './create-scene-control.ts';
 import { readPreferences } from './read-preferences.ts';
 
 /**
  * Returns the scene control of the app, from the preferences and the Sources saved in `settings.json` and the Mac's
- * preferred languages: it saves the preferences back to that file, and sends the scene through `send`. The Local
+ * preferred languages: it saves the preferences back to that file, and hands the scene to `wallpapers`. The Local
  * webhook names the scene while no Source is connected.
  * @example
- * const scene = startScene(app.getPath('userData'), (channel, payload) => sendToWindows(windows, channel, payload));
+ * const scene = startScene(app.getPath('userData'), stage);
  * scene.scene().theme; // "aeroport" on a new install
  */
-export function startScene(userData: string, send: (channel: string, payload: unknown) => void): SceneControl {
+export function startScene(userData: string, wallpapers: SceneControlOptions['wallpapers']): SceneControl {
   const settingsFile = readSettingsFile(userData);
 
   return createSceneControl({
@@ -28,6 +28,6 @@ export function startScene(userData: string, send: (channel: string, payload: un
     sources: readSources(settingsFile),
     savePreferences: (preferences) =>
       writeFileAtomically(settingsPath(userData), withSettings(readSettingsFile(userData), { ...preferences })),
-    send,
+    wallpapers,
   });
 }

@@ -1,15 +1,12 @@
-// The main process: one wallpaper window per display, the menu-bar icon, the Local webhook, the connected Sources,
-// the frames of other windows and the release watch.
+// The main process: one wallpaper window per display and the engine that routes between them, the menu-bar icon,
+// the Local webhook, the connected Sources, the frames of other windows and the release watch.
 import type { SourceEvent } from '@deskorama/core';
-import { app, net, powerMonitor, screen, session, type BrowserWindow } from 'electron';
+import { app, net, powerMonitor, session, systemPreferences } from 'electron';
 import { randomInt } from 'node:crypto';
-import { toWireEvent } from '../shared/to-wire-event.ts';
-import { EVENT_CHANNEL } from '../shared/wallpaper-bridge.ts';
 import { createNodeClock } from './create-node-clock.ts';
 import type { AppTray } from './create-tray.ts';
 import { openWallpaperWindow } from './open-wallpaper-window.ts';
 import { startScene } from './scene/start-scene.ts';
-import { sendToWindows } from './send-to-windows.ts';
 import type { SettingsWindow } from './settings-window/create-settings-window.ts';
 import { createKeychain } from './sources/create-keychain.ts';
 import { startFrameWatch } from './start-frame-watch.ts';
@@ -18,6 +15,9 @@ import { startMenuBar } from './start-menu-bar.ts';
 import { startSettings } from './start-settings.ts';
 import { startSources } from './start-sources.ts';
 import type { TrayState } from './tray-menu.ts';
+import { createDisplayHost } from './wallpapers/create-display-host.ts';
+import { createWallpaperStage, type WallpaperStage } from './wallpapers/create-wallpaper-stage.ts';
+import { electronDisplays } from './wallpapers/electron-displays.ts';
 import { watchReleases } from './watch-releases.ts';
 import { writeLog } from './write-log.ts';
 
@@ -40,9 +40,10 @@ if (app.requestSingleInstanceLock()) {
 }
 
 /**
- * Starts the app once Electron is ready: opens the wallpapers on the scene the settings describe, listens for local
- * Events, polls the connected Sources, reads the other windows' frames, shows the menu-bar icon, starts watching for
- * new releases, and removes the Dock icon. Polling catches up and frames are read again when the Mac wakes.
+ * Starts the app once Electron is ready: opens a wallpaper on every display, on the scene the settings describe,
+ * and keeps them in step with the displays, listens for local Events, polls the connected Sources, reads the other
+ * windows' frames, shows the menu-bar icon, starts watching for new releases, and removes the Dock icon. Polling
+ * catches up and frames are read again when the Mac wakes.
  * @example
  * app.whenReady().then(start);
  */
@@ -53,18 +54,35 @@ async function start(): Promise<void> {
   const clock = createNodeClock();
   const userData = app.getPath('userData');
 
-  const windows: BrowserWindow[] = [];
-  const send = (channel: string, payload: unknown): void => sendToWindows(windows, channel, payload);
-  const sendEvent = (event: SourceEvent): void => send(EVENT_CHANNEL, toWireEvent(event));
+  const displays = electronDisplays();
 
-  // Read before the windows open, so each page draws the chosen Theme, language and brand from its first frame.
-  const scene = startScene(userData, send);
+  const host = createDisplayHost({
+    displays,
+    clock,
+    reducedMotion: systemPreferences.getAnimationSettings().prefersReducedMotion,
+  });
 
-  const opened = screen
-    .getAllDisplays()
-    .map((display) => openWallpaperWindow(display, scene.scene(), randomInt(2 ** 31)));
+  // The scene and the wallpapers need each other: the scene is read first, so each page draws the chosen Theme,
+  // language and brand from its first frame, and its later changes go to the wallpapers.
+  let stage: WallpaperStage | undefined;
 
-  windows.push(...opened.map(({ window }) => window));
+  const scene = startScene(userData, {
+    setScene: (next) => stage?.setScene(next),
+    setGauges: (values) => stage?.setGauges(values),
+    setPaused: (paused) => stage?.setPaused(paused),
+  });
+
+  // A page still loading keeps what it is sent, so the first poll loses no Event.
+  const wallpapers = createWallpaperStage({
+    host,
+    scene: scene.scene(),
+    open: openWallpaperWindow,
+    seed: () => randomInt(2 ** 31),
+  });
+
+  stage = wallpapers;
+
+  const sendEvent = (event: SourceEvent): void => wallpapers.send(event);
 
   const webhook = await startLocalWebhook(
     (event) => sendEvent(scene.fromSource(null, event)),
@@ -72,9 +90,6 @@ async function start(): Promise<void> {
     userData,
     createKeychain(''),
   );
-
-  // The pages must listen before the first poll, or its Events are lost while its cursor moves on.
-  await Promise.all(opened.map(({ loaded }) => loaded));
 
   // The Sources start before the menu and the settings window do, so their first states only reach them once they
   // exist.
@@ -101,7 +116,11 @@ async function start(): Promise<void> {
 
   settings = startSettings({ service: sources.service, scene, webhook, clock, sendEvent });
 
-  const frames = startFrameWatch(windows, clock);
+  const frames = startFrameWatch(clock, displays, (next) => host.setWindowFrames(next));
+
+  // A display that comes, goes or moves takes its menu bar and its Dock along: what covers the wallpapers is read
+  // again at once.
+  const stopDisplays = displays.onChange(() => frames.refresh());
 
   tray = startMenuBar({ scene, webhook, failing, openSettings: () => settings?.open() });
 
@@ -125,7 +144,10 @@ async function start(): Promise<void> {
 
   app.on('before-quit', () => {
     stopWatching();
+    stopDisplays();
     frames.stop();
+    wallpapers.stop();
+    host.stop();
     sources.stop();
     settings?.stop();
     tray?.destroy();

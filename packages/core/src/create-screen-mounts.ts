@@ -4,6 +4,9 @@ import type { ScreenInstances } from './create-screen-instances.ts';
 import type { Host } from './host.ts';
 import type { Screen } from './screen.ts';
 
+/** The mounted screens as the mounts drive them: an engine's router, or the one screen of a page's player. */
+export type MountedScreens = Pick<Router, 'hasViews' | 'follow' | 'arrange' | 'refresh'>;
+
 /** The sets of Theme instances mounted on an engine. */
 export interface ScreenMounts {
   /** Mounts a set of instances on the current screens and returns what unmounts them all. */
@@ -17,7 +20,7 @@ export interface ScreenMounts {
  * const mounts = createScreenMounts(host, router);
  * const unmount = mounts.track(createScreenInstances(theme, layers, lifecycle));
  */
-export function createScreenMounts(host: Host, router: Router): ScreenMounts {
+export function createScreenMounts(host: Host, router: MountedScreens): ScreenMounts {
   const mounts = new Set<ScreenInstances>();
   let stopFrames: Cancel | null = null;
   let stopScreens: Cancel | null = null;

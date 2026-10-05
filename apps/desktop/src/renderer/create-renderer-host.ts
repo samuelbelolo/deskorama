@@ -1,57 +1,38 @@
-import type { Host, Rect, Screen } from '@deskorama/core';
+import { createListeners, type Host, type Rect, type Screen } from '@deskorama/core';
 import { createRendererClock } from './create-renderer-clock.ts';
 
-/** The Host of one wallpaper page, which the menu bar can pause. */
-export interface RendererHost extends Host {
-  /** While paused, the whole screen counts as covered: the scene freezes and no Gag plays. */
-  setPaused(paused: boolean): void;
-}
-
 /**
- * Returns the Host a wallpaper page plays for its one screen: the page's Clock, the system's reduced-motion
- * setting, and the frames of everything covering the wallpapers as the main process reads them. Until the first
- * frames arrive, the whole wallpaper counts as visible. While paused it reports the screen fully covered, so the
- * engine stops its display frames and keeps the Events for the recap; resuming reports the real frames again.
+ * Returns the Host of a wallpaper page: the page's Clock, the system's reduced-motion setting, and the screens and
+ * the frames of everything covering the wallpapers as the main process reports them. The page opens on `screens`;
+ * until the first frames arrive, the whole wallpaper counts as visible. A paused wallpaper arrives as frames
+ * covering every screen, so the scene freezes by itself.
  * @example
- * const host = createRendererHost(setup.screen);
- * const engine = createEngine(host, { lang: scene.lang, seed: setup.seed, source: scene.source });
- * host.setPaused(true); // the scene freezes
+ * const host = createRendererHost(setup.screens);
+ * const player = createScreenPlayer(host, { screen: setup.screen, lang: 'fr', seed: setup.seed, source });
  */
-export function createRendererHost(screen: Screen): RendererHost {
-  const cover: readonly Rect[] = [{ x: screen.x, y: screen.y, w: screen.width, h: screen.height }];
-  const listeners = new Set<(frames: readonly Rect[]) => void>();
+export function createRendererHost(screens: readonly Screen[]): Host {
+  const frameListeners = createListeners<readonly Rect[]>();
+  const screenListeners = createListeners<readonly Screen[]>();
 
   let frames: readonly Rect[] = [];
-  let paused = false;
-
-  const covering = (): readonly Rect[] => (paused ? cover : frames);
-
-  const emit = (): void => {
-    for (const listener of listeners) listener(covering());
-  };
+  let connected = screens;
 
   window.wallpaper.onWindowFrames((next) => {
     frames = next;
+    frameListeners.emit(next);
+  });
 
-    if (!paused) emit();
+  window.wallpaper.onScreens((next) => {
+    connected = next;
+    screenListeners.emit(next);
   });
 
   return {
-    screens: () => [screen],
+    screens: () => connected,
+    onScreens: screenListeners.add,
     clock: createRendererClock(),
     reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-    windowFrames: covering,
-    onWindowFrames(listener) {
-      listeners.add(listener);
-
-      return () => void listeners.delete(listener);
-    },
-    setPaused(next) {
-      if (next === paused) return;
-
-      paused = next;
-
-      emit();
-    },
+    windowFrames: () => frames,
+    onWindowFrames: frameListeners.add,
   };
 }

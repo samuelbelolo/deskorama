@@ -10,9 +10,9 @@ import {
 } from '@deskorama/core';
 import type { Preferences, PreferencesChange } from '../../shared/preferences.ts';
 import type { Scene } from '../../shared/scene.ts';
-import { GAUGES_CHANNEL, PAUSED_CHANNEL, SCENE_CHANNEL } from '../../shared/wallpaper-bridge.ts';
 import { displayLanguage } from '../display-language.ts';
 import type { SourceEntry } from '../sources/source-entry.ts';
+import type { WallpaperStage } from '../wallpapers/create-wallpaper-stage.ts';
 import { applyPreferences } from './apply-preferences.ts';
 import { createGaugeRelay } from './create-gauge-relay.ts';
 import { sceneOf } from './scene-of.ts';
@@ -29,8 +29,8 @@ export interface SceneControlOptions {
   readonly sources: readonly SourceEntry[];
   /** Keeps the preferences in `settings.json`; a failure is thrown back and nothing changes. */
   readonly savePreferences: (preferences: Preferences) => void;
-  /** Sends one message to every wallpaper window. */
-  readonly send: (channel: string, payload: unknown) => void;
+  /** The wallpapers, which redraw on a new scene, show new Gauge values and freeze. */
+  readonly wallpapers: Pick<WallpaperStage, 'setScene' | 'setGauges' | 'setPaused'>;
 }
 
 /** The scene every wallpaper draws, and what changes it. */
@@ -59,12 +59,12 @@ export interface SceneControl {
 }
 
 /**
- * Returns the control of the scene: it works out the scene from the preferences and the connected Sources, sends it
- * to every wallpaper window whenever it changes, and sends the Gauge values again whenever the scene or the Source
- * of a Gauge changes, since a page that rebuilds its scene starts its Gauges over.
+ * Returns the control of the scene: it works out the scene from the preferences and the connected Sources, hands it
+ * to the wallpapers whenever it changes, and hands them the Gauge values again whenever the scene or the Source of
+ * a Gauge changes, since a scene that starts over in a new language starts its Gauges over.
  * @example
  * const scene = createSceneControl({ connectors: CONNECTORS, fallback: LOCAL_WEBHOOK_PROFILE,
- *   systemLanguages: app.getPreferredSystemLanguages(), preferences, sources, savePreferences, send });
+ *   systemLanguages: app.getPreferredSystemLanguages(), preferences, sources, savePreferences, wallpapers });
  * scene.setPreferences({ language: 'en' }); // every wallpaper redraws in English
  * scene.setPaused(true); // every wallpaper freezes
  */
@@ -87,19 +87,19 @@ export function createSceneControl(options: SceneControlOptions): SceneControl {
   const feeders = (): string => JSON.stringify(GAUGE_ROLES.map((role) => sources()[role]?.entry.id ?? null));
 
   const sendGauges = (values: Partial<GaugeValues>): void => {
-    if (Object.keys(values).length > 0) options.send(GAUGES_CHANNEL, values);
+    if (Object.keys(values).length > 0) options.wallpapers.setGauges(values);
   };
 
   let sentScene = JSON.stringify(scene());
   let sentFeeders = feeders();
 
-  /** Sends the scene if it changed, the Gauges if the scene or their Sources changed, then tells every listener. */
+  /** Hands on the scene if it changed, the Gauges if the scene or their Sources changed, then tells every listener. */
   const changed = (): void => {
     const next = scene();
     const json = JSON.stringify(next);
     const nextFeeders = feeders();
 
-    if (json !== sentScene) options.send(SCENE_CHANNEL, next);
+    if (json !== sentScene) options.wallpapers.setScene(next);
 
     if (json !== sentScene || nextFeeders !== sentFeeders) sendGauges(relay.current(sources()));
 
@@ -131,7 +131,7 @@ export function createSceneControl(options: SceneControlOptions): SceneControl {
       if (next === paused) return;
 
       paused = next;
-      options.send(PAUSED_CHANNEL, paused);
+      options.wallpapers.setPaused(paused);
 
       listeners.emit();
     },
@@ -149,7 +149,7 @@ export function createSceneControl(options: SceneControlOptions): SceneControl {
 
     fromSource: (sourceId, event) => relay.event(sourceId, event, sources()),
 
-    restoreBuild: () => options.send(GAUGES_CHANNEL, { build: relay.build() }),
+    restoreBuild: () => options.wallpapers.setGauges({ build: relay.build() }),
 
     onChange: (listener) => listeners.add(listener),
   };

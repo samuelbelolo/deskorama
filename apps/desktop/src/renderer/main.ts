@@ -1,11 +1,14 @@
-// A wallpaper page: the chosen Theme on one screen, fed with the Events the main process sends through the bridge.
+// A wallpaper page: the chosen Theme on one screen, playing what the main process sends through the bridge. The main
+// process decides which screen plays each Event; this page decides nothing.
 import '@fontsource/jost/400.css';
 import '@fontsource/jost/600.css';
 import '@fontsource/jost/700.css';
 import '@fontsource/barlow-condensed/600.css';
 import './styles.css';
-import { createEngine, type Engine } from '@deskorama/core';
+import { createScreenPlayer, type ScreenPlayer, type SharedSnapshot } from '@deskorama/core';
 import { fromWireEvent } from '../shared/from-wire-event.ts';
+import { fromWireRecap } from '../shared/from-wire-recap.ts';
+import { fromWireState } from '../shared/from-wire-state.ts';
 import { readScreenSetup } from '../shared/read-screen-setup.ts';
 import type { Scene } from '../shared/scene.ts';
 import { createRendererHost } from './create-renderer-host.ts';
@@ -16,71 +19,59 @@ const layer = document.querySelector<HTMLElement>('#screen');
 
 if (layer === null) throw new Error('The wallpaper page lacks #screen.');
 
-const host = createRendererHost(setup.screen);
+const host = createRendererHost(setup.screens);
 
 /**
- * Returns the engine of one scene, in its language and named after its brand Source.
+ * Returns the player of one scene on this page's screen, in its language and named after its brand Source.
  * @example
- * const engine = sceneEngine(setup.scene);
- * engine.mount(themeFor('aeroport'), layer); // the scene draws, named after the brand Source
+ * const player = scenePlayer(setup.scene);
+ * player.mount(themeFor('aeroport'), layer); // the scene draws, named after the brand Source
  */
-function sceneEngine({ lang, source }: Scene): Engine {
-  return createEngine(host, { lang, seed: setup.seed, source });
+function scenePlayer({ lang, source }: Scene): ScreenPlayer {
+  return createScreenPlayer(host, { screen: setup.screen, lang, seed: setup.seed, source });
 }
 
 let scene = setup.scene;
-let engine = sceneEngine(scene);
-let unmount = engine.mount(themeFor(scene.theme), layer);
+let player = scenePlayer(scene);
 
-// While paused, nothing on screen may change, not even a sign: what arrives waits here until the pause ends.
-let paused = false;
-let held: (() => void)[] = [];
+// What every screen shares as the main process last sent it, and what unmounts the Theme once it is mounted.
+let state: SharedSnapshot | null = null;
+let unmount: (() => void) | null = null;
 
-/**
- * Applies what the main process sent now, or once the pause ends.
- * @example
- * whenPlaying(() => engine.setGauges({ daily: 3 })); // at once, or on resume while paused
- */
-function whenPlaying(apply: () => void): void {
-  if (paused) held.push(apply);
-  else apply();
-}
+window.wallpaper.onState((wire) => {
+  state = fromWireState(wire);
+  player.setState(state);
 
-window.wallpaper.onScene((next) => {
-  const before = unmount;
-
-  if (next.lang !== scene.lang || JSON.stringify(next.source) !== JSON.stringify(scene.source)) {
-    // A new language or brand needs a new engine, and starts the day's tally over.
-    before();
-    engine = sceneEngine(next);
-    unmount = engine.mount(themeFor(next.theme), layer);
-  } else {
-    // A new Theme alone mounts on the same engine before the old one leaves, so the Events kept for the recap stay.
-    unmount = engine.mount(themeFor(next.theme), layer);
-    before();
-  }
-
-  scene = next;
+  // The scene opens once the page knows what every screen shares, the first thing it is sent: a Theme reads today's
+  // counts and the recent Events as it mounts, and a display plugged in later must show what its neighbours show.
+  unmount ??= player.mount(themeFor(scene.theme), layer);
 });
 
-window.wallpaper.onPaused((next) => {
-  paused = next;
+window.wallpaper.onScene((next) => {
+  const startsOver = next.lang !== scene.lang || JSON.stringify(next.source) !== JSON.stringify(scene.source);
+  const before = unmount;
 
-  if (paused) {
-    host.setPaused(true);
+  scene = next;
+
+  if (state === null || before === null) {
+    // Nothing is mounted yet: the scene will open on `next`.
+    if (startsOver) player = scenePlayer(next);
 
     return;
   }
 
-  // What was held goes in while the screen still counts as covered, so it plays, or comes as a recap, on reveal.
-  const waiting = held;
-
-  held = [];
-
-  for (const apply of waiting) apply();
-
-  host.setPaused(false);
+  if (startsOver) {
+    // A new language or brand needs a new player, which opens on what every screen shares now.
+    before();
+    player = scenePlayer(next);
+    player.setState(state);
+    unmount = player.mount(themeFor(next.theme), layer);
+  } else {
+    // A new Theme alone mounts on the same player before the old one leaves, so the scene is never empty.
+    unmount = player.mount(themeFor(next.theme), layer);
+    before();
+  }
 });
 
-window.wallpaper.onGauges((values) => whenPlaying(() => engine.setGauges(values)));
-window.wallpaper.onEvent((wire) => whenPlaying(() => engine.send(fromWireEvent(wire))));
+window.wallpaper.onEvent((wire) => player.play(fromWireEvent(wire)));
+window.wallpaper.onRecap((wire) => player.recap(fromWireRecap(wire)));

@@ -4,7 +4,7 @@ import type { Today } from './today.ts';
 import type { WallpaperEvent } from './wallpaper-event.ts';
 
 /** How many recent Events the engine keeps, newest first. */
-const RECENT_SIZE = 40;
+export const RECENT_SIZE = 40;
 
 /** How many recent Events a Theme gets when it does not say. */
 const RECENT_DEFAULT = 12;
@@ -18,6 +18,8 @@ export interface Tally {
   today(): Today;
   /** The latest Events, newest first, at most `count`. */
   readonly recent: (count?: number) => readonly WallpaperEvent[];
+  /** Takes over the counts of the day `counted` and the recent Events another tally kept. */
+  restore(counted: string, today: Today, recent: readonly WallpaperEvent[]): void;
 }
 
 /**
@@ -59,5 +61,13 @@ export function createTally(day: string): Tally {
 
     today: () => ({ kinds: { ...kinds }, roles: { ...roles }, lastDeploy }),
     recent: (count = RECENT_DEFAULT) => latest.slice(0, Math.max(0, count)),
+
+    restore(counted, today, recent) {
+      counting = counted;
+      kinds = { ...today.kinds };
+      roles = { ...today.roles };
+      lastDeploy = today.lastDeploy;
+      latest = recent.slice(0, RECENT_SIZE);
+    },
   };
 }

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { captionPages } from '../src/caption-pages.ts';
 import { launchDesktop } from '../src/launch-desktop.ts';
 import { postEvent } from '../src/post-event.ts';
 import { sampleCpu } from '../src/sample-cpu.ts';
@@ -31,10 +32,14 @@ test('an Event posted to the Local webhook shows its Caption on the desktop', as
 
     expect(await postEvent(port, secret, RELEASE)).toBe(202);
 
-    await expect(page.locator('[data-part="caption-source"]')).toHaveText('Tramlo CI');
-    await expect(page.locator('[data-part="caption-fact"]')).toHaveText(RELEASE.text[lang].label);
-    await expect(page.locator('[data-part="caption-detail"]')).toHaveText(RELEASE.text[lang].detail);
-    await page.screenshot({ path: test.info().outputPath('caption.png') });
+    // One display plays the Event, whichever the app drew when the Mac has several.
+    await expect.poll(async () => (await captionPages(app)).length).toBe(1);
+    const [playing = page] = await captionPages(app);
+
+    await expect(playing.locator('[data-part="caption-source"]')).toHaveText('Tramlo CI');
+    await expect(playing.locator('[data-part="caption-fact"]')).toHaveText(RELEASE.text[lang].label);
+    await expect(playing.locator('[data-part="caption-detail"]')).toHaveText(RELEASE.text[lang].detail);
+    await playing.screenshot({ path: test.info().outputPath('caption.png') });
     // The main process logs a failed start, menu-bar or Local webhook error under these topics.
     expect(errors).not.toMatch(/^\[(app|tray|webhook)\]/m);
   } finally {
@@ -49,7 +54,7 @@ test('the Local webhook turns away a request without the secret, and nothing pla
     await expect(page.locator('[data-theme="aeroport"]')).toBeVisible();
     expect(await postEvent(port, 'not-the-secret-at-all', RELEASE)).toBe(401);
     await page.waitForTimeout(1000);
-    await expect(page.locator('[data-part="caption"]')).toHaveCount(0);
+    expect(await captionPages(app)).toHaveLength(0);
   } finally {
     await app.close();
   }

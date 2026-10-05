@@ -3,7 +3,6 @@ import type { Connector } from '@deskorama/core';
 import { sourceEventFixture } from '@deskorama/test-utils';
 import { describe, expect, test } from 'vitest';
 import { DEFAULT_PREFERENCES, type Preferences } from '../src/shared/preferences.ts';
-import { GAUGES_CHANNEL, PAUSED_CHANNEL, SCENE_CHANNEL } from '../src/shared/wallpaper-bridge.ts';
 import { createSceneControl } from '../src/main/scene/create-scene-control.ts';
 import type { SourceEntry } from '../src/main/sources/source-entry.ts';
 import { scriptedConnector } from './scripted-connector.ts';
@@ -29,13 +28,13 @@ const TRAMLO: SourceEntry = { id: 'src-1', connector: 'repo', name: 'Tramlo', va
 const BOUTIK: SourceEntry = { id: 'src-2', connector: 'shop', name: 'Boutik', values: {} };
 
 /**
- * Returns a scene control over `sources`, a Mac set to French, and what it sent and saved.
+ * Returns a scene control over `sources`, a Mac set to French, and what it handed the wallpapers and saved.
  * @example
  * const { scene, saved } = setUp([TRAMLO]);
  * scene.scene().source.name; // "Tramlo"
  */
 function setUp(sources: readonly SourceEntry[], preferences: Preferences = DEFAULT_PREFERENCES) {
-  const sent: { channel: string; payload: unknown }[] = [];
+  const sent: { to: 'scene' | 'gauges' | 'paused'; payload: unknown }[] = [];
   const saved: Preferences[] = [];
 
   const scene = createSceneControl({
@@ -45,11 +44,15 @@ function setUp(sources: readonly SourceEntry[], preferences: Preferences = DEFAU
     preferences,
     sources,
     savePreferences: (next) => void saved.push(next),
-    send: (channel, payload) => void sent.push({ channel, payload }),
+    wallpapers: {
+      setScene: (next) => void sent.push({ to: 'scene', payload: next }),
+      setGauges: (values) => void sent.push({ to: 'gauges', payload: values }),
+      setPaused: (paused) => void sent.push({ to: 'paused', payload: paused }),
+    },
   });
 
-  const on = (channel: string): unknown[] =>
-    sent.filter((message) => message.channel === channel).map((m) => m.payload);
+  const on = (to: 'scene' | 'gauges' | 'paused'): unknown[] =>
+    sent.filter((message) => message.to === to).map((message) => message.payload);
 
   return { scene, sent, saved, on };
 }
@@ -68,7 +71,7 @@ describe('the scene every wallpaper draws', () => {
 
     expect(scene.lang()).toBe('en');
     expect(saved).toEqual([{ ...DEFAULT_PREFERENCES, language: 'en' }]);
-    expect(on(SCENE_CHANNEL)).toEqual([
+    expect(on('scene')).toEqual([
       { theme: 'aeroport', lang: 'en', source: expect.objectContaining({ name: 'Tramlo' }) },
     ]);
 
@@ -95,7 +98,7 @@ describe('the scene every wallpaper draws', () => {
     scene.setGauges('src-2', { daily: 3 });
     scene.setGauges('src-1', { crowd: 4, daily: 12 });
 
-    expect(on(GAUGES_CHANNEL)).toEqual([{ crowd: 4, daily: 12 }]);
+    expect(on('gauges')).toEqual([{ crowd: 4, daily: 12 }]);
 
     scene.setPreferences({ gauges: { daily: 'src-2' } });
 
@@ -108,11 +111,11 @@ describe('the scene every wallpaper draws', () => {
     ]);
 
     // The new scene starts its Gauges over with the latest values of the Sources that now feed them.
-    expect(on(GAUGES_CHANNEL).at(-1)).toEqual({ crowd: 4, daily: 3 });
+    expect(on('gauges').at(-1)).toEqual({ crowd: 4, daily: 3 });
 
     scene.setGauges('src-1', { daily: 40 });
 
-    expect(on(GAUGES_CHANNEL).at(-1)).toEqual({ crowd: 4, daily: 3 });
+    expect(on('gauges').at(-1)).toEqual({ crowd: 4, daily: 3 });
   });
 
   test('passes on the build state whatever Source reports it', () => {
@@ -120,7 +123,7 @@ describe('the scene every wallpaper draws', () => {
 
     scene.setGauges('src-2', { build: 'building' });
 
-    expect(on(GAUGES_CHANNEL)).toEqual([{ build: 'building' }]);
+    expect(on('gauges')).toEqual([{ build: 'building' }]);
   });
 
   test('falls back to the remaining Source when the chosen brand is removed', () => {
@@ -141,7 +144,7 @@ describe('the scene every wallpaper draws', () => {
     scene.setPaused(true);
     scene.setPaused(false);
 
-    expect(on(PAUSED_CHANNEL)).toEqual([true, false]);
+    expect(on('paused')).toEqual([true, false]);
     expect(heard).toBe(2);
   });
 
@@ -153,13 +156,13 @@ describe('the scene every wallpaper draws', () => {
     scene.setGauges('src-3', { daily: 5 });
     scene.setPreferences({ gauges: { daily: 'src-3' } });
 
-    expect(on(SCENE_CHANNEL)).toEqual([]);
-    expect(on(GAUGES_CHANNEL).at(-1)).toEqual({ daily: 5 });
+    expect(on('scene')).toEqual([]);
+    expect(on('gauges').at(-1)).toEqual({ daily: 5 });
 
     scene.setPreferences({ gauges: { daily: null } });
 
     expect(scene.sources().daily?.entry.id).toBe('src-1');
-    expect(on(GAUGES_CHANNEL).at(-1)).toEqual({ daily: 12 });
+    expect(on('gauges').at(-1)).toEqual({ daily: 12 });
   });
 
   test('lets an Event move a Gauge only when its Source feeds that Gauge', () => {
@@ -178,11 +181,11 @@ describe('the scene every wallpaper draws', () => {
     scene.fromSource('src-1', sourceEventFixture({ id: 'd', archetype: 'deploy', step: 'failed' }));
     scene.setPreferences({ language: 'en' });
 
-    expect(on(GAUGES_CHANNEL).at(-1)).toEqual({ build: 'error' });
+    expect(on('gauges').at(-1)).toEqual({ build: 'error' });
 
     scene.restoreBuild();
 
-    expect(on(GAUGES_CHANNEL).at(-1)).toEqual({ build: 'error' });
+    expect(on('gauges').at(-1)).toEqual({ build: 'error' });
     expect(setUp([]).scene.fromSource(null, sourceEventFixture({ id: 'x' })).id).toBe('x');
   });
 });

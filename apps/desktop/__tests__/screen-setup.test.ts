@@ -5,10 +5,11 @@ import { screenSetupQuery } from '../src/shared/screen-setup-query.ts';
 import { screenOfDisplay } from '../src/main/screen-of-display.ts';
 
 describe('the screen setup a wallpaper page opens with', () => {
-  test('carries an external display, its place in the arrangement, the scene and the seed', () => {
+  test('carries an external display, its place among its neighbours, the scene and the seed', () => {
+    const builtin = screenOfDisplay({ id: 1, bounds: { x: 0, y: 0, width: 1728, height: 1117 } });
     const screen = screenOfDisplay({ id: 69_734_208, bounds: { x: 1728, y: -200, width: 2560, height: 1440 } });
     const scene = { theme: 'aeroport', lang: 'fr', source: LOCAL_WEBHOOK_PROFILE } as const;
-    const setup = { screen, scene, seed: 1_234_567 };
+    const setup = { screen, screens: [builtin, screen], scene, seed: 1_234_567 };
     const search = `?${new URLSearchParams(screenSetupQuery(setup)).toString()}`;
     expect(readScreenSetup(search)).toEqual(setup);
     expect(setup.screen).toEqual({ id: '69734208', x: 1728, y: -200, width: 2560, height: 1440 });
@@ -19,8 +20,18 @@ describe('the screen setup a wallpaper page opens with', () => {
     expect(() => readScreenSetup('?screen=1&x=0&y=0&width=wide&height=900&seed=1')).toThrow(/"width"/);
   });
 
-  test('refuses a page opened without a scene it can draw', () => {
+  test('refuses a page opened without its neighbours', () => {
     const page = '?screen=1&x=0&y=0&width=1440&height=900&seed=1';
+    const halfScreen = [{ id: '1', x: 0, y: 0, width: 1440 }];
+
+    expect(() => readScreenSetup(page)).toThrow(/"screens"/);
+    expect(() => readScreenSetup(`${page}&screens=${encodeURIComponent(JSON.stringify(halfScreen))}`)).toThrow(
+      /"screens"/,
+    );
+  });
+
+  test('refuses a page opened without a scene it can draw', () => {
+    const page = '?screen=1&x=0&y=0&width=1440&height=900&seed=1&screens=[]';
     const scene = { theme: 'tabloid', lang: 'fr', source: LOCAL_WEBHOOK_PROFILE };
 
     expect(() => readScreenSetup(page)).toThrow(/"scene"/);

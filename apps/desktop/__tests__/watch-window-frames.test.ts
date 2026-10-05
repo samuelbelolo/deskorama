@@ -32,11 +32,12 @@ async function startWatch(initial: readonly Rect[]) {
   const clock = createFakeClock(FIXTURE_TIME);
   const sent: (readonly Rect[])[] = [];
   let windows = initial;
+  let displays: readonly DisplayArea[] = [BUILTIN];
   let reads = 0;
 
   const watch = watchWindowFrames({
     clock,
-    displays: () => [BUILTIN],
+    displays: () => displays,
     readWindows: async () => {
       reads += 1;
 
@@ -52,7 +53,14 @@ async function startWatch(initial: readonly Rect[]) {
     await settle();
   };
 
-  return { watch, sent, reads: () => reads, setWindows: (next: readonly Rect[]) => void (windows = next), step };
+  return {
+    watch,
+    sent,
+    reads: () => reads,
+    setWindows: (next: readonly Rect[]) => void (windows = next),
+    setDisplays: (next: readonly DisplayArea[]) => void (displays = next),
+    step,
+  };
 }
 
 describe('the frame watch', () => {
@@ -93,6 +101,38 @@ describe('the frame watch', () => {
     run.watch.resume();
     await settle();
     expect(run.reads()).toBe(2);
+  });
+
+  test('follows the displays: a screen plugged in brings its menu bar, at once when asked to read again', async () => {
+    const external: DisplayArea = {
+      id: 2,
+      bounds: { x: 1728, y: 0, width: 2560, height: 1440 },
+      workArea: { x: 1728, y: 25, width: 2560, height: 1415 },
+    };
+    const run = await startWatch([]);
+
+    run.setDisplays([BUILTIN, external]);
+    run.watch.refresh();
+    await settle();
+
+    expect(run.reads()).toBe(2);
+    expect(run.sent.at(-1)).toEqual([MENU_BAR, DOCK, { x: 1728, y: 0, w: 2560, h: 25 }]);
+
+    run.setDisplays([BUILTIN]);
+    await run.step(VISIBLE_EVERY_MS);
+
+    expect(run.reads()).toBe(3);
+    expect(run.sent.at(-1)).toEqual([MENU_BAR, DOCK]);
+  });
+
+  test('does not start reading again when asked while paused', async () => {
+    const run = await startWatch([]);
+
+    run.watch.pause();
+    run.watch.refresh();
+    await run.step(10 * COVERED_EVERY_MS);
+
+    expect(run.reads()).toBe(1);
   });
 
   test('ignores a window that is exactly a whole display, an invisible overlay of macOS', async () => {

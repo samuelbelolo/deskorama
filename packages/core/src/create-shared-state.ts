@@ -3,8 +3,10 @@ import type { Cancel, Clock } from './clock.ts';
 import { createDayKey } from './create-day-key.ts';
 import { createDedupe } from './create-dedupe.ts';
 import { createGauges } from './create-gauges.ts';
-import { createTally } from './create-tally.ts';
+import { createListeners } from './create-listeners.ts';
+import { createTally, RECENT_SIZE } from './create-tally.ts';
 import type { GaugeValues } from './gauge-values.ts';
+import type { SharedSnapshot } from './shared-snapshot.ts';
 import { stepOf } from './step-of.ts';
 import type { Today } from './today.ts';
 import type { WallpaperEvent } from './wallpaper-event.ts';
@@ -21,6 +23,12 @@ export interface SharedState {
   readonly setGauges: (values: Partial<GaugeValues>) => void;
   readonly today: () => Today;
   readonly recent: (count?: number) => readonly WallpaperEvent[];
+  /** Everything above at this instant, as plain values. */
+  readonly snapshot: () => SharedSnapshot;
+  /** Takes over the values another shared state kept, when it read them. */
+  readonly restore: (snapshot: SharedSnapshot) => void;
+  /** Calls `listener` once whenever a Gauge, today's tally or the recent Events changed, until cancelled. */
+  readonly onChange: (listener: () => void) => Cancel;
 }
 
 /**
@@ -37,12 +45,32 @@ export function createSharedState(clock: Clock, timeZone: string | undefined): S
   const gauges = createGauges();
   const tally = createTally(dayOf(clock.now()));
   const dedupe = createDedupe(DEDUPE_CAPACITY);
+  const changes = createListeners<void>();
+
+  // Several values can move in one step (an Event counts and moves a Gauge): the listeners hear of it once.
+  let changed = false;
+
+  gauges.onChange(() => {
+    changed = true;
+  });
+
   const rollover = (): string => {
     const day = dayOf(clock.now());
 
-    if (tally.startDay(day)) gauges.set({ daily: 0 });
+    if (tally.startDay(day)) {
+      gauges.set({ daily: 0 });
+      changed = true;
+    }
 
     return day;
+  };
+
+  /** Tells the listeners of what changed since they last heard, if anything did. */
+  const settle = (): void => {
+    if (!changed) return;
+
+    changed = false;
+    changes.emit();
   };
 
   return {
@@ -57,21 +85,42 @@ export function createSharedState(clock: Clock, timeZone: string | undefined): S
       const step = stepOf(event);
       if (step !== undefined) gauges.set({ build: buildStateAfter(step) });
 
+      changed = true;
+      settle();
+
       return true;
     },
     gauges() {
       rollover();
+      settle();
+
       return gauges.values();
     },
     onGauges: gauges.onChange,
     setGauges(values) {
       rollover();
       gauges.set(values);
+      settle();
     },
     today() {
       rollover();
+      settle();
+
       return tally.today();
     },
     recent: tally.recent,
+    snapshot() {
+      rollover();
+      settle();
+
+      return { at: clock.now(), gauges: gauges.values(), today: tally.today(), recent: tally.recent(RECENT_SIZE) };
+    },
+    restore(snapshot) {
+      tally.restore(dayOf(snapshot.at), snapshot.today, snapshot.recent);
+      gauges.set(snapshot.gauges);
+      rollover();
+      settle();
+    },
+    onChange: changes.add,
   };
 }

@@ -61,7 +61,7 @@ export interface SourceRuntime {
  * memory of Event ids so a replayed page never plays twice, and the state of each Source for the menu bar.
  * @example
  * const runtime = createSourceRuntime({ connectors: [createFeed()], clock, fetch, tokens, cursors,
- *   onEvent: (event) => sendToWindows(windows, EVENT_CHANNEL, toWireEvent(event)),
+ *   onEvent: (event, sourceId) => stage.send(scene.fromSource(sourceId, event)),
  *   onGauges: (sourceId, gauges) => scene.setGauges(sourceId, gauges),
  *   onStates: (states) => void (latest = states) });
  * runtime.load(readSources(readSettingsFile(userData)));

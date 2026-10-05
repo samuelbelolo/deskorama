@@ -51,6 +51,26 @@ describe('an engine on several screens', () => {
     expect(builtin / 400).toBeCloseTo(0.47, 1);
   });
 
+  test('plays an Event on exactly one screen out of three, each in proportion to its area', () => {
+    const left = { id: 'left', x: -1920, y: 0, width: 1920, height: 1080 };
+    const platform = createManualHost({ screens: [left, BUILTIN, EXTERNAL] });
+    const engine = createEngine(platform, { lang: 'en', seed: 7, source: TRAMLO });
+    const recorder = screenRecorder();
+    engine.mountScreens(recorder.theme, recorder.layers);
+
+    engine.send(tramloEvent({ id: 'alone' }));
+
+    const played = ['left', 'builtin', 'external'].map((id) => recorder.on(id).events.length);
+    expect(played.toSorted((a, b) => a - b)).toEqual([0, 0, 1]);
+
+    sendMany(engine, 599);
+
+    // 1920 x 1080 against 1440 x 900 and 1600 x 900: the left screen shows 43 % of the wallpaper.
+    expect(recorder.instances.reduce((sum, each) => sum + each.events.length, 0)).toBe(600);
+    expect(recorder.on('left').events.length / 600).toBeCloseTo(0.43, 1);
+    expect(recorder.on('builtin').events.length / 600).toBeCloseTo(0.27, 1);
+  });
+
   test('weighs a screen by the wallpaper it shows, and never sends to a covered one', () => {
     const { engine, platform, recorder } = twoScreens();
     platform.setWindowFrames([{ x: 1440, y: 0, w: 1200, h: 900 }]);

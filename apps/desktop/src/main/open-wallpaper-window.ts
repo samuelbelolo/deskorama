@@ -1,28 +1,30 @@
-import { BrowserWindow, type Display } from 'electron';
+import { BrowserWindow } from 'electron';
 import { join } from 'node:path';
-import type { Scene } from '../shared/scene.ts';
+import type { ScreenSetup } from '../shared/screen-setup.ts';
 import { screenSetupQuery } from '../shared/screen-setup-query.ts';
-import { screenOfDisplay } from './screen-of-display.ts';
-
-/** A wallpaper window, and when its page has loaded and listens to the main process. */
-export interface WallpaperWindow {
-  readonly window: BrowserWindow;
-  readonly loaded: Promise<void>;
-}
+import { createPageOutbox } from './wallpapers/create-page-outbox.ts';
+import type { WallpaperPort } from './wallpapers/wallpaper-port.ts';
 
 /**
- * Opens the wallpaper window of one display: at the desktop level, between the system wallpaper and the icons
- * (`type: 'desktop'`, checked on macOS 27), on every Space but not over full-screen apps, transparent
- * to the mouse so the icons stay clickable. Its renderer runs the Theme with context isolation, a sandbox and no
- * Node; it may not navigate nor open windows. It opens on `scene`, and `seed` seeds the Theme's random generator.
+ * Opens the wallpaper window of one screen, at that screen's bounds: at the desktop level, between the system
+ * wallpaper and the icons (`type: 'desktop'`, checked on macOS 27), on every Space but not over full-screen apps,
+ * transparent to the mouse so the icons stay clickable. Its renderer plays the Theme with context isolation, a
+ * sandbox and no Node; it may not navigate nor open windows. What is sent while its page loads reaches it once it
+ * listens. The window never moves: when its display does, it is closed and another is opened.
  * @example
- * const { window, loaded } = openWallpaperWindow(screen.getPrimaryDisplay(), scene.scene(), 7);
- * await loaded; // the page listens: Events sent from now on reach it
+ * const port = openWallpaperWindow({ screen, screens: [screen], scene: scene.scene(), seed: 7 });
+ * port.send(EVENT_CHANNEL, toWireEvent(event)); // the page plays it, as soon as it has loaded
+ * port.close(); // the display was unplugged
  */
-export function openWallpaperWindow(display: Display, scene: Scene, seed: number): WallpaperWindow {
+export function openWallpaperWindow(setup: ScreenSetup): WallpaperPort {
+  const { x, y, width, height } = setup.screen;
+
   const window = new BrowserWindow({
     type: 'desktop',
-    ...display.bounds,
+    x,
+    y,
+    width,
+    height,
     frame: false,
     show: false,
     hasShadow: false,
@@ -42,12 +44,24 @@ export function openWallpaperWindow(display: Display, scene: Scene, seed: number
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.once('ready-to-show', () => window.showInactive());
 
-  const loaded = window
-    .loadFile(join(__dirname, '../renderer/index.html'), {
-      query: screenSetupQuery({ screen: screenOfDisplay(display), scene, seed }),
-    })
-    // A page that fails to load is waited for no longer: the app runs on without it.
-    .catch(() => undefined);
+  const outbox = createPageOutbox((channel, payload) => {
+    if (!window.isDestroyed()) window.webContents.send(channel, payload);
+  });
 
-  return { window, loaded };
+  window
+    .loadFile(join(__dirname, '../renderer/index.html'), { query: screenSetupQuery(setup) })
+    // A page that fails to load, or whose window closed first, is sent nothing: the app runs on without it.
+    .then(
+      () => outbox.open(),
+      () => outbox.drop(),
+    );
+
+  return {
+    send: (channel, payload) => outbox.send(channel, payload),
+    close() {
+      outbox.drop();
+
+      if (!window.isDestroyed()) window.destroy();
+    },
+  };
 }

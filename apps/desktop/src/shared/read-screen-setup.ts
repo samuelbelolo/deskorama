@@ -1,3 +1,4 @@
+import type { Screen } from '@deskorama/core';
 import type { Scene } from './scene.ts';
 import type { ScreenSetup } from './screen-setup.ts';
 import { AVAILABLE_THEMES } from './theme-choice.ts';
@@ -5,7 +6,7 @@ import { AVAILABLE_THEMES } from './theme-choice.ts';
 /**
  * Returns the screen setup a renderer page was opened with; throws when a parameter is missing or malformed.
  * @example
- * readScreenSetup('?screen=1&x=0&y=0&width=1728&height=1117&seed=7&scene={…}').screen.width; // 1728
+ * readScreenSetup('?screen=1&x=0&y=0&width=1728&height=1117&seed=7&screens=[…]&scene={…}').screen.width; // 1728
  */
 export function readScreenSetup(search: string): ScreenSetup {
   const query = new URLSearchParams(search);
@@ -24,7 +25,50 @@ export function readScreenSetup(search: string): ScreenSetup {
 
   const screen = { id, x: number('x'), y: number('y'), width: number('width'), height: number('height') };
 
-  return { screen, scene: readScene(query.get('scene')), seed: number('seed') };
+  return {
+    screen,
+    screens: readScreens(query.get('screens')),
+    scene: readScene(query.get('scene')),
+    seed: number('seed'),
+  };
+}
+
+/**
+ * Returns the screens written as JSON in the page's query; throws when they are missing or one is not a screen.
+ * @example
+ * readScreens('[{"id":"1","x":0,"y":0,"width":1728,"height":1117}]').length; // 1
+ */
+function readScreens(json: string | null): readonly Screen[] {
+  const screens: unknown = JSON.parse(json ?? 'null');
+
+  if (!Array.isArray(screens) || !screens.every(isScreen)) {
+    throw new Error('The renderer page lacks a valid "screens" parameter.');
+  }
+
+  return screens;
+}
+
+/**
+ * Returns true for a screen: an id, and a place and a size in numbers.
+ * @example
+ * isScreen({ id: '1', x: 0, y: 0, width: 1728, height: 1117 }); // true
+ * isScreen({ id: '1', x: 0, y: 0 }); // false
+ */
+function isScreen(value: unknown): value is Screen {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    typeof value.id === 'string' &&
+    'x' in value &&
+    Number.isFinite(value.x) &&
+    'y' in value &&
+    Number.isFinite(value.y) &&
+    'width' in value &&
+    Number.isFinite(value.width) &&
+    'height' in value &&
+    Number.isFinite(value.height)
+  );
 }
 
 /**

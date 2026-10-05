@@ -26,12 +26,15 @@ export interface FrameWatchOptions {
 export interface FrameWatch {
   pause(): void;
   resume(): void;
+  /** Reads again at once, without waiting for the next turn: the displays changed. */
+  refresh(): void;
   stop(): void;
 }
 
 /**
  * Reads what covers the wallpapers every second while some of it shows, every three seconds while all of it is
- * covered, and sends the frames on whenever they change.
+ * covered, and sends the frames on whenever they change. It reads the displays at every turn, so it follows a
+ * screen plugged in or unplugged; `refresh` makes it do so at once.
  * @example
  * const watch = watchWindowFrames({ clock, displays: () => screen.getAllDisplays(),
  *   readWindows: () => readWindowFrames(binary),
@@ -81,7 +84,14 @@ export function watchWindowFrames(options: FrameWatchOptions): FrameWatch {
     timer?.();
   };
 
+  const refresh = (): void => {
+    if (!running) return;
+
+    pause();
+    resume();
+  };
+
   resume();
 
-  return { pause, resume, stop: pause };
+  return { pause, resume, refresh, stop: pause };
 }
