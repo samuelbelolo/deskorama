@@ -1,11 +1,11 @@
-import type { GaugeRole } from '@deskorama/core';
+import { LANGUAGES, type GaugeRole, type Language } from '@deskorama/core';
 import { DEFAULT_THEME, type ShippedThemeId } from './theme-choice.ts';
 
-/** Every display language a person can pick, in the order the settings window offers them: the Mac's own first. */
-export const LANGUAGE_CHOICES = ['system', 'fr', 'en'] as const;
-
 /** The display language: the Mac's own, or one the person picked. */
-export type LanguageChoice = (typeof LANGUAGE_CHOICES)[number];
+export type LanguageChoice = 'system' | Language;
+
+/** Every display language a person can pick, in the order the settings window offers them: the Mac's own first. */
+export const LANGUAGE_CHOICES: readonly LanguageChoice[] = ['system', ...LANGUAGES];
 
 /** How the person set up the wallpaper, kept in `settings.json` next to the Sources. */
 export interface Preferences {

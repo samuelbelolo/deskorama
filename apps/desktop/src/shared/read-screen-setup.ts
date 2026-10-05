@@ -1,4 +1,4 @@
-import type { Screen } from '@deskorama/core';
+import { LANGUAGES, type Screen } from '@deskorama/core';
 import type { Scene } from './scene.ts';
 import type { ScreenSetup } from './screen-setup.ts';
 import { AVAILABLE_THEMES } from './theme-choice.ts';
@@ -98,7 +98,7 @@ function isScene(value: unknown): value is Scene {
     'theme' in value &&
     AVAILABLE_THEMES.some((id) => id === value.theme) &&
     'lang' in value &&
-    (value.lang === 'fr' || value.lang === 'en') &&
+    LANGUAGES.some((lang) => lang === value.lang) &&
     'source' in value &&
     typeof value.source === 'object' &&
     value.source !== null &&

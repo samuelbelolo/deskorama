@@ -1,7 +1,7 @@
+import type { ThemeMoment } from '@deskorama/core';
 import type { PreferencesChange } from './preferences.ts';
 import type { LoginItemState, SettingsSnapshot } from './settings-snapshot.ts';
 import type { OptionsAnswer, SaveAnswer, SourceDraft, TestAnswer } from './source-draft.ts';
-import type { TestEventChoice } from './test-event-choice.ts';
 
 /** The IPC channels of the settings window, each answered by the main process. */
 export const SETTINGS_CHANNELS = {
@@ -47,7 +47,7 @@ export interface SettingsBridge {
   /** Asks macOS to open the app at login, or not any more, and answers what macOS now reports. */
   setOpenAtLogin(on: boolean): Promise<LoginItemState>;
   /** Plays one test Event on the wallpaper. */
-  playTest(choice: TestEventChoice): Promise<void>;
+  playTest(choice: ThemeMoment): Promise<void>;
   /** Opens, in the browser, the page where a Connector's token is created, given what the sheet's fields hold. */
   openTokenPage(connector: string, values: Readonly<Record<string, string>>): Promise<void>;
   /** Puts the Local webhook's address, its secret, or a working `curl` with the secret on the clipboard. */

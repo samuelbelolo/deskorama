@@ -1,5 +1,4 @@
-import type { Clock, SourceEvent } from '@deskorama/core';
-import type { TestEventChoice } from '../../shared/test-event-choice.ts';
+import type { Clock, SourceEvent, ThemeMoment } from '@deskorama/core';
 import { testDeployEvent } from './test-deploy-event.ts';
 import { testEvent } from './test-event.ts';
 
@@ -11,7 +10,7 @@ const DEPLOY_SHOW_MS = 30_000;
 
 /** What plays the test Events. */
 export interface TestPlayer {
-  play(choice: TestEventChoice): void;
+  play(choice: ThemeMoment): void;
   /** Cancels the deploys still running. */
   stop(): void;
 }

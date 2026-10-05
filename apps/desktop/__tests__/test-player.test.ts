@@ -1,7 +1,6 @@
-import { ARCHETYPES, type SourceEvent } from '@deskorama/core';
+import { ARCHETYPES, THEME_MOMENTS, type SourceEvent } from '@deskorama/core';
 import { createFakeClock, FIXTURE_TIME } from '@deskorama/test-utils';
 import { describe, expect, test } from 'vitest';
-import { TEST_EVENT_CHOICES } from '../src/shared/test-event-choice.ts';
 import { createTestPlayer } from '../src/main/test-events/create-test-player.ts';
 
 /**
@@ -29,7 +28,7 @@ describe('the test Events of the settings window', () => {
   test('play one Event per Role, worded in both languages, each with its own id', () => {
     const { tests, sent } = setUp();
 
-    for (const choice of TEST_EVENT_CHOICES) tests.play(choice);
+    for (const choice of THEME_MOMENTS) tests.play(choice);
 
     expect(sent.map((event) => event.archetype)).toEqual([...ARCHETYPES, 'deploy']);
     expect(new Set(sent.map((event) => event.id)).size).toBe(sent.length);

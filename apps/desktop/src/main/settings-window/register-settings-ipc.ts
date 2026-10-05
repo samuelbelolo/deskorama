@@ -1,10 +1,10 @@
+import { THEME_MOMENTS, type ThemeMoment } from '@deskorama/core';
 import { ipcMain, type BrowserWindow, type IpcMainInvokeEvent } from 'electron';
 import * as v from 'valibot';
 import { LANGUAGE_CHOICES, type PreferencesChange } from '../../shared/preferences.ts';
 import { COPY_CHOICES, SETTINGS_CHANNELS, type CopyChoice } from '../../shared/settings-bridge.ts';
 import type { LoginItemState, SettingsSnapshot } from '../../shared/settings-snapshot.ts';
 import type { OptionsAnswer, SaveAnswer, SourceDraft, TestAnswer } from '../../shared/source-draft.ts';
-import { TEST_EVENT_CHOICES, type TestEventChoice } from '../../shared/test-event-choice.ts';
 import { AVAILABLE_THEMES } from '../../shared/theme-choice.ts';
 import { SOURCE_ID } from '../source-id.ts';
 
@@ -17,7 +17,7 @@ export interface SettingsActions {
   listOptions(draft: SourceDraft, field: string): Promise<OptionsAnswer>;
   setPreferences(change: PreferencesChange): void;
   setOpenAtLogin(on: boolean): LoginItemState;
-  playTest(choice: TestEventChoice): void;
+  playTest(choice: ThemeMoment): void;
   openTokenPage(connector: string, values: Readonly<Record<string, string>>): void;
   copy(choice: CopyChoice): void;
   revealSecret(): string;
@@ -82,7 +82,7 @@ export function registerSettingsIpc(actions: SettingsActions, settingsWindow: ()
     [SETTINGS_CHANNELS.remove]: (payload) => actions.remove(v.parse(SOURCE_ID, payload)),
     [SETTINGS_CHANNELS.preferences]: (payload) => actions.setPreferences(v.parse(PREFERENCES_CHANGE, payload)),
     [SETTINGS_CHANNELS.openAtLogin]: (payload) => actions.setOpenAtLogin(v.parse(v.boolean(), payload)),
-    [SETTINGS_CHANNELS.playTest]: (payload) => actions.playTest(v.parse(v.picklist(TEST_EVENT_CHOICES), payload)),
+    [SETTINGS_CHANNELS.playTest]: (payload) => actions.playTest(v.parse(v.picklist(THEME_MOMENTS), payload)),
     [SETTINGS_CHANNELS.openTokenPage]: (payload) => {
       const { connector, values } = v.parse(TOKEN_PAGE, payload);
 

@@ -1,6 +1,5 @@
-import type { Connector } from '@deskorama/core';
+import type { Connector, ThemeMoment } from '@deskorama/core';
 import type { CopyChoice } from '../../shared/settings-bridge.ts';
-import type { TestEventChoice } from '../../shared/test-event-choice.ts';
 import type { WebhookControl } from '../create-webhook-control.ts';
 import { displayLanguage } from '../display-language.ts';
 import type { SceneControl } from '../scene/create-scene-control.ts';
@@ -21,7 +20,7 @@ export interface SettingsActionsOptions {
   readonly webhook: WebhookControl;
   /** The Connectors whose token pages the window may open. */
   readonly connectors: readonly Connector[];
-  readonly playTest: (choice: TestEventChoice) => void;
+  readonly playTest: (choice: ThemeMoment) => void;
   readonly system: SystemAccess;
 }
 
