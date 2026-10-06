@@ -35,7 +35,7 @@ export type ReleaseAnswer = LatestRelease | 'none' | 'unreachable';
 export async function fetchLatestRelease(
   fetch: Fetch,
   repository: string,
-  arch: string = process.arch,
+  arch: NodeJS.Architecture = process.arch,
 ): Promise<ReleaseAnswer> {
   try {
     const response = await fetch(`https://api.github.com/repos/${repository}/releases/latest`, {

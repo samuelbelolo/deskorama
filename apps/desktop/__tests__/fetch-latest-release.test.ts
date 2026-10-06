@@ -9,6 +9,7 @@ const DMG = `https://github.com/${REPOSITORY}/releases/download/v0.3.0/Deskorama
  * Returns a fake GitHub whose latest release is v0.3.0 with these files.
  * @example
  * github([{ name: 'Deskorama-0.3.0-mac-arm64.dmg', browser_download_url: DMG }]);
+ * // a Fetch answering v0.3.0 with these files
  */
 function github(assets: { name: string; browser_download_url: string }[]): Fetch {
   return async () => Response.json({ tag_name: 'v0.3.0', html_url: PAGE, assets });
