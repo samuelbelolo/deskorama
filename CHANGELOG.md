@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/samuelbelolo/deskorama/compare/v0.3.0...v0.4.0) (2026-10-06)
+
+
+### Features
+
+* **desktop:** download the dmg built for this Mac from the menu bar ([368a50a](https://github.com/samuelbelolo/deskorama/commit/368a50ab7eccd9d1ec7b73c01519a897edbb5782))
+
 ## [0.3.0](https://github.com/samuelbelolo/deskorama/compare/v0.2.1...v0.3.0) (2026-10-06)
 
 
