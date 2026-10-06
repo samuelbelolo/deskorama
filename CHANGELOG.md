@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.1](https://github.com/samuelbelolo/deskorama/compare/v0.2.0...v0.2.1) (2026-10-06)
+
+
+### Bug Fixes
+
+* **aeroport:** stand the scene above the Dock ([cbea1e0](https://github.com/samuelbelolo/deskorama/commit/cbea1e05197eaba057b241b830146871a4d17392))
+* **desktop:** dissolve the scene into place when the Dock moves it ([d904e71](https://github.com/samuelbelolo/deskorama/commit/d904e713333d4fd4f31cbd82551edf62dcffea7e))
+* **desktop:** keep the wallpaper window when the Dock moves ([29d66c4](https://github.com/samuelbelolo/deskorama/commit/29d66c4674d36df5fd4637564c91c041fd27b411))
+
 ## [0.2.0](https://github.com/samuelbelolo/deskorama/compare/v0.1.0...v0.2.0) (2026-10-05)
 
 
