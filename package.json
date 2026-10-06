@@ -1,6 +1,6 @@
 {
   "name": "deskorama",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Animated macOS desktop wallpapers that react to events from the systems you plug in.",
   "license": "MIT",
