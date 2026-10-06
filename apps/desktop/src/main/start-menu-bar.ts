@@ -1,10 +1,12 @@
-import { app, clipboard, shell } from 'electron';
+import { clipboard, shell } from 'electron';
 import type { PreferencesChange } from '../shared/preferences.ts';
+import { checkForRelease } from './check-for-release.ts';
 import { createTray, type AppTray, type TrayView } from './create-tray.ts';
 import type { SceneControl } from './scene/create-scene-control.ts';
 import type { WebhookControl } from './create-webhook-control.ts';
 import { testCommand } from './test-command.ts';
 import type { TrayState } from './tray-menu.ts';
+import type { ReleaseWatch } from './watch-releases.ts';
 import { writeLog } from './write-log.ts';
 
 /** What the menu bar shows and opens. */
@@ -14,15 +16,20 @@ export interface MenuBarOptions {
   /** The Sources failing when the menu bar appears. */
   readonly failing: TrayState['failing'];
   readonly openSettings: () => void;
+  /** The release watch, which the menu asks to check now. */
+  readonly releases: Pick<ReleaseWatch, 'on' | 'check'>;
+  /** Leaves the desktop, then quits. */
+  readonly quit: () => void;
 }
 
 /**
- * Puts the app's icon in the menu bar: pause, the Theme, the Local webhook and its test command, the settings and
- * quit, in the display language. It follows the scene and the Local webhook until it is destroyed: a new language,
- * Theme or pause, or the webhook turned off, redraws the menu; an Event the webhook accepts does not. The test
- * command carries the secret of the moment it is copied.
+ * Puts the app's icon in the menu bar: pause, the Theme, the Local webhook and its test command, the settings, the
+ * check for a newer release and quit, in the display language. It follows the scene and the Local webhook until it
+ * is destroyed: a new language, Theme or pause, or the webhook turned off, redraws the menu; an Event the webhook
+ * accepts does not. The test command carries the secret of the moment it is copied.
  * @example
- * const tray = startMenuBar({ scene, webhook, failing, openSettings: () => settings.open() });
+ * const tray = startMenuBar({ scene, webhook, failing, releases, openSettings: () => settings.open(),
+ *   quit: () => app.quit() });
  * tray.update({ failing }); // the menu now names the failing Sources first
  */
 export function startMenuBar(options: MenuBarOptions): AppTray {
@@ -53,7 +60,14 @@ export function startMenuBar(options: MenuBarOptions): AppTray {
   };
 
   const tray = createTray(
-    { ...sceneView(), ...webhookView(), port, newRelease: null, failing: options.failing },
+    {
+      ...sceneView(),
+      ...webhookView(),
+      port,
+      newRelease: null,
+      releaseCheck: options.releases.on ? 'ready' : 'off',
+      failing: options.failing,
+    },
     {
       copyTestCommand: () => {
         // Electron 44's clipboard is promise-based, like the W3C Clipboard API.
@@ -65,7 +79,8 @@ export function startMenuBar(options: MenuBarOptions): AppTray {
       chooseTheme: (theme) => choose({ theme }),
       openSettings: options.openSettings,
       openNewRelease: (release) => void shell.openExternal(release.url),
-      quit: () => app.quit(),
+      checkForRelease: () => void checkForRelease(options.releases, (releaseCheck) => tray.update({ releaseCheck })),
+      quit: options.quit,
     },
   );
 

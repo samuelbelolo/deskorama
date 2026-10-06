@@ -17,7 +17,7 @@ export interface WallpaperWindows {
 /**
  * Returns the wallpaper windows, none open yet: the engine opens and closes them as it follows the screens.
  * @example
- * const windows = createWallpaperWindows((screen) => openWallpaperWindow({ screen, screens, scene, seed }));
+ * const windows = createWallpaperWindows((screen) => openWallpaperWindow({ screen, screens, scene, seed }, host));
  * const unmount = engine.mountScreens(relayTheme(), windows.layers((port) => port.send(STATE_CHANNEL, state)));
  * windows.broadcast(FRAMES_CHANNEL, frames); // every page hears the frames
  */

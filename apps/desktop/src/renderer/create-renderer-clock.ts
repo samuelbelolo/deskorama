@@ -16,11 +16,19 @@ export function createRendererClock(): Clock {
       return () => window.clearTimeout(timer);
     },
     onFrame(listener) {
+      let stopped = false;
+
       let frame = window.requestAnimationFrame(function tick() {
         listener(Date.now());
-        frame = window.requestAnimationFrame(tick);
+
+        // A listener that stops from inside its own frame cancelled the frame already running: none is asked again.
+        if (!stopped) frame = window.requestAnimationFrame(tick);
       });
-      return () => window.cancelAnimationFrame(frame);
+
+      return () => {
+        stopped = true;
+        window.cancelAnimationFrame(frame);
+      };
     },
   };
 }

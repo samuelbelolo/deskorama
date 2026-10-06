@@ -12,6 +12,7 @@ const STATE: TrayState = {
   webhookOn: true,
   listening: true,
   newRelease: null,
+  releaseCheck: 'off',
   failing: [],
   theme: 'aeroport',
   paused: false,
@@ -24,6 +25,7 @@ const NO_ACTIONS = {
   chooseTheme: () => {},
   openSettings: () => {},
   openNewRelease: () => {},
+  checkForRelease: () => {},
   quit: () => {},
 };
 
@@ -50,6 +52,7 @@ function menu(
     chooseTheme: (theme: string) => void opened.push(theme),
     openSettings: () => void opened.push('settings'),
     openNewRelease: (release: LatestRelease) => void opened.push(release.url),
+    checkForRelease: () => void opened.push('check'),
   };
 
   const items = trayMenu(state, TRAY_TEXT[lang], actions);
@@ -88,6 +91,31 @@ describe('the menu-bar menu', () => {
     english.click('Download version 0.3.0…');
 
     expect(english.opened).toEqual([RELEASE.url]);
+  });
+
+  test('offers to check for a newer release now, says when it is asking and what it came back with', () => {
+    const ready = menu({ ...STATE, releaseCheck: 'ready' });
+    ready.click('Check for updates');
+
+    expect(ready.opened).toEqual(['check']);
+    expect(menu(STATE).labels).not.toContain('Check for updates');
+
+    const asking = menu({ ...STATE, releaseCheck: 'checking' }, 'fr');
+
+    expect(asking.items.find((item) => item.label === 'Recherche d’une mise à jour…')?.enabled).toBe(false);
+
+    const none = menu({ ...STATE, releaseCheck: 'none' });
+    none.click('No new version · Check again');
+
+    expect(none.opened).toEqual(['check']);
+
+    const unreachable = menu({ ...STATE, releaseCheck: 'unreachable' }, 'fr');
+    unreachable.click('GitHub injoignable · Réessayer');
+
+    expect(unreachable.opened).toEqual(['check']);
+    expect(menu({ ...STATE, releaseCheck: 'none', newRelease: RELEASE }).labels).not.toContain(
+      'No new version · Check again',
+    );
   });
 
   test('says when the Local webhook could not listen, and offers no command for it', () => {
