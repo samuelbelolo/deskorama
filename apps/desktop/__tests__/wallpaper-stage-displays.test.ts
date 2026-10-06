@@ -49,6 +49,18 @@ describe('the wallpaper windows while displays come and go', () => {
     expect(run.on('builtin')).toBe(run.opened[0]);
   });
 
+  test('keep the window of a display whose Dock moves, and tell its page the new screen', () => {
+    const run = startStage([BUILTIN, RIGHT]);
+    const before = run.on('builtin');
+    const docked = { ...BUILTIN, bottomInset: 75 };
+
+    run.host.setScreens([docked, RIGHT]);
+
+    expect(before.closed).toBe(false);
+    expect(run.opened).toHaveLength(2);
+    expect(run.heard('builtin', SCREENS_CHANNEL)).toEqual([[docked, RIGHT]]);
+  });
+
   test('send an Event to exactly one window out of three', () => {
     const run = startStage([LEFT, BUILTIN, RIGHT]);
 

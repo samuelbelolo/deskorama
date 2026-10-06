@@ -47,7 +47,7 @@ interface Run {
  * its window: an Event goes to one window drawn by visible area, a deploy to all, the recap to the most visible,
  * and every page hears the same Gauges, tally and recent Events, a page that opens later included. A display that
  * leaves loses its window, one that arrives gets one, one that moves or changes size gets a fresh one at its new
- * bounds. While paused, every screen counts as covered and what arrives waits.
+ * bounds; one whose Dock moves keeps its window, whose page lays the scene out again. While paused, every screen counts as covered and what arrives waits.
  * @example
  * const stage = createWallpaperStage({ host, scene: scene.scene(), open: openWallpaperWindow, seed });
  * stage.send(mergedPullRequest); // the page of one window plays the Gag

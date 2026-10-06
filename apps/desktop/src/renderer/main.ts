@@ -5,7 +5,7 @@ import '@fontsource/jost/600.css';
 import '@fontsource/jost/700.css';
 import '@fontsource/barlow-condensed/600.css';
 import './styles.css';
-import { createScreenPlayer, type ScreenPlayer, type SharedSnapshot } from '@deskorama/core';
+import { clearHeight, createScreenPlayer, type ScreenPlayer, type SharedSnapshot } from '@deskorama/core';
 import { fromWireEvent } from '../shared/from-wire-event.ts';
 import { fromWireRecap } from '../shared/from-wire-recap.ts';
 import { fromWireState } from '../shared/from-wire-state.ts';
@@ -21,6 +21,9 @@ if (layer === null) throw new Error('The wallpaper page lacks #screen.');
 
 const host = createRendererHost(setup.screens);
 
+// The page's screen as the main process last reported it: its place and size for good, its Dock as it is now.
+let screen = setup.screen;
+
 /**
  * Returns the player of one scene on this page's screen, in its language and named after its brand Source.
  * @example
@@ -28,7 +31,7 @@ const host = createRendererHost(setup.screens);
  * player.mount(themeFor('aeroport'), layer); // the scene draws, named after the brand Source
  */
 function scenePlayer({ lang, source }: Scene): ScreenPlayer {
-  return createScreenPlayer(host, { screen: setup.screen, lang, seed: setup.seed, source });
+  return createScreenPlayer(host, { screen, lang, seed: setup.seed, source });
 }
 
 let scene = setup.scene;
@@ -71,6 +74,25 @@ window.wallpaper.onScene((next) => {
     unmount = player.mount(themeFor(next.theme), layer);
     before();
   }
+});
+
+host.onScreens?.((screens) => {
+  const reported = screens.find((each) => each.id === screen.id);
+
+  // Only a Dock that moves the line the ground ends on changes the scene: a display that moves gets a new window.
+  if (reported === undefined || clearHeight(reported) === clearHeight(screen)) return;
+
+  const before = unmount;
+
+  screen = reported;
+  player = scenePlayer(scene);
+
+  if (state === null || before === null) return;
+
+  // The scene is laid out again in this window, the new one drawn before the old one leaves: no empty frame.
+  player.setState(state);
+  unmount = player.mount(themeFor(scene.theme), layer);
+  before();
 });
 
 window.wallpaper.onEvent((wire) => player.play(fromWireEvent(wire)));
