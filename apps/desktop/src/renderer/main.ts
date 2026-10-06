@@ -12,6 +12,8 @@ import { fromWireState } from '../shared/from-wire-state.ts';
 import { readScreenSetup } from '../shared/read-screen-setup.ts';
 import type { Scene } from '../shared/scene.ts';
 import { createRendererHost } from './create-renderer-host.ts';
+import { dissolveIn } from './dissolve-in.ts';
+import { openScene } from './open-scene.ts';
 import { themeFor } from './theme-for.ts';
 
 const setup = readScreenSetup(window.location.search);
@@ -28,7 +30,7 @@ let screen = setup.screen;
  * Returns the player of one scene on this page's screen, in its language and named after its brand Source.
  * @example
  * const player = scenePlayer(setup.scene);
- * player.mount(themeFor('aeroport'), layer); // the scene draws, named after the brand Source
+ * openScene(layer, player, themeFor('aeroport')); // the scene draws, named after the brand Source
  */
 function scenePlayer({ lang, source }: Scene): ScreenPlayer {
   return createScreenPlayer(host, { screen, lang, seed: setup.seed, source });
@@ -47,7 +49,7 @@ window.wallpaper.onState((wire) => {
 
   // The scene opens once the page knows what every screen shares, the first thing it is sent: a Theme reads today's
   // counts and the recent Events as it mounts, and a display plugged in later must show what its neighbours show.
-  unmount ??= player.mount(themeFor(scene.theme), layer);
+  unmount ??= openScene(layer, player, themeFor(scene.theme)).close;
 });
 
 window.wallpaper.onScene((next) => {
@@ -68,10 +70,10 @@ window.wallpaper.onScene((next) => {
     before();
     player = scenePlayer(next);
     player.setState(state);
-    unmount = player.mount(themeFor(next.theme), layer);
+    unmount = openScene(layer, player, themeFor(next.theme)).close;
   } else {
     // A new Theme alone mounts on the same player before the old one leaves, so the scene is never empty.
-    unmount = player.mount(themeFor(next.theme), layer);
+    unmount = openScene(layer, player, themeFor(next.theme)).close;
     before();
   }
 });
@@ -89,10 +91,13 @@ host.onScreens?.((screens) => {
 
   if (state === null || before === null) return;
 
-  // The scene is laid out again in this window, the new one drawn before the old one leaves: no empty frame.
+  // The scene is laid out again in this window and dissolves in over the old one, which leaves once covered.
   player.setState(state);
-  unmount = player.mount(themeFor(scene.theme), layer);
-  before();
+
+  const opened = openScene(layer, player, themeFor(scene.theme));
+
+  unmount = opened.close;
+  dissolveIn(opened.frame, host, before);
 });
 
 window.wallpaper.onEvent((wire) => player.play(fromWireEvent(wire)));
