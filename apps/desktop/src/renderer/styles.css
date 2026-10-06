@@ -13,3 +13,10 @@ body {
   width: 100%;
   height: 100%;
 }
+
+/* One scene: it fills the display and stacks on its own, so a scene laid out again can fade in over the last one. */
+.scene-frame {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+}
