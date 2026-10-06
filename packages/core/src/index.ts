@@ -65,6 +65,7 @@ export type { Theme } from './theme.ts';
 export { THEME_MOMENTS, type ThemeAbout, type ThemeMoment, type ThemePictures } from './theme-about.ts';
 export { tidyValues } from './tidy-values.ts';
 export { TILE_SIZE } from './tile-block.ts';
+export { clearHeight } from './clear-height.ts';
 export type { Today } from './today.ts';
 export type { VisibleRegions } from './visible-regions.ts';
 export type { EventMeta, WallpaperEvent } from './wallpaper-event.ts';

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'vitest';
 import { SIGNS_SETTLE_MS } from '../src/create-signs.ts';
+import { layoutFor } from '../src/layout.ts';
 import { boxOf } from './box-of.ts';
 import { intersects } from './intersects.ts';
 import { mountAirport, type MountedAirport } from './mount-airport.ts';
@@ -48,6 +49,33 @@ describe("L'Aéroport's signs", () => {
     host.setGauges({ build: 'error' });
     expect(partText(layer, 'sign-build-value')).toBe('FAILED');
     expect(deploy?.classList.contains('aeroport-sign--news')).toBe(true);
+  });
+
+  test('stand above the Dock along the bottom edge, fully visible at home', () => {
+    const screen = { id: 'builtin', x: 0, y: 0, width: 1728, height: 1117, bottomInset: 75 };
+    mounted = mountAirport({ screen });
+    const { layer, host } = mounted;
+
+    host.setWindowFrames([
+      { x: 0, y: 0, w: 1728, h: 33 },
+      { x: 0, y: 1042, w: 1728, h: 75 },
+    ]);
+    host.clock.advance(SIGNS_SETTLE_MS);
+
+    const signs = boxOf(layer, '[data-part="signs"]');
+    expect(signs).toMatchObject({ x: 24, y: 954 });
+    expect(signs === null ? 0 : host.visibleFraction(signs)).toBe(1);
+  });
+
+  test('share the lifted ground with a tower that stays under the Departures board', () => {
+    const tall = layoutFor({ id: 'builtin', x: 0, y: 0, width: 1440, height: 900 });
+    const lifted = layoutFor({ id: 'builtin', x: 0, y: 0, width: 1440, height: 900, bottomInset: 75 });
+
+    expect(tall.tower).toMatchObject({ cabTop: 300, cabBottom: 372 });
+    expect(lifted.groundEnd).toBe(780);
+    expect(lifted.runwayBand.y + lifted.runwayBand.h).toBe(780);
+    expect(lifted.tower.cabTop).toBeGreaterThanOrEqual(lifted.board.y + lifted.board.h + 10);
+    expect(lifted.tower.cabBottom).toBeLessThan(lifted.horizon);
   });
 
   test('reserve their spot, so no free spot lands on them', () => {

@@ -48,6 +48,24 @@ describe('screens changing while the wallpaper runs', () => {
     expect(recorder.instances.filter((each) => each.host.screen.id === 'builtin')).toHaveLength(1);
   });
 
+  test('mount a fresh instance when the Dock along a screen’s bottom edge comes, grows or goes', () => {
+    const { platform, recorder } = mountedOn([BUILTIN]);
+    const before = recorder.on('builtin');
+
+    platform.setScreens([{ ...BUILTIN, bottomInset: 75 }]);
+    const above = recorder.on('builtin');
+    // A Dock that grows within one tile row leaves the ground where it is: nothing is mounted again.
+    platform.setScreens([{ ...BUILTIN, bottomInset: 80 }]);
+
+    expect(before.unmounted).toBe(true);
+    expect(above.unmounted).toBe(false);
+    expect(above.host.screen.bottomInset).toBe(75);
+
+    platform.setScreens([BUILTIN]);
+
+    expect(above.unmounted).toBe(true);
+  });
+
   test('tell every instance the new arrangement, so a Theme can hand an animation to its neighbour', () => {
     const { platform, recorder } = mountedOn([BUILTIN]);
     const heard: string[][] = [];

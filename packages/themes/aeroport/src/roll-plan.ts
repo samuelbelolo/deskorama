@@ -24,10 +24,10 @@ const SLICE = 40;
  * path(TIMING.roll); // the gear at the rotation point, nose 7° up
  */
 export function rollPlan(regions: VisibleRegions, layout: Layout, gearX: number): (t: number) => GearPose {
-  const ground = runwayWheels(layout.height);
+  const ground = runwayWheels(layout.groundEnd);
   const span = visibleRunway(regions, layout, gearX + PLANE.noseAhead);
   const rotateX = gearX + Math.min(Math.max(0.6 * span, SHORTEST_ROLL), LONGEST_ROLL);
-  const { a, b } = climbOut(layout.width, layout.height);
+  const { a, b } = climbOut(layout.width, layout.groundEnd);
   const climbA = TIMING.climb - TIMING.handoff;
   const finalPitch = pitchOf(a, b);
 
@@ -60,7 +60,7 @@ export function rollPlan(regions: VisibleRegions, layout: Layout, gearX: number)
  * visibleRunway(host, layoutFor(host.screen), 474); // 486 when a window starts at x 980
  */
 function visibleRunway(regions: VisibleRegions, layout: Layout, noseX: number): number {
-  const ground = runwayWheels(layout.height);
+  const ground = runwayWheels(layout.groundEnd);
   const band = { y: ground - 47 * PLANE.scale, h: 24 * PLANE.scale };
 
   let x = noseX;

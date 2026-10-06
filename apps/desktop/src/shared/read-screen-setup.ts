@@ -6,7 +6,8 @@ import { AVAILABLE_THEMES } from './theme-choice.ts';
 /**
  * Returns the screen setup a renderer page was opened with; throws when a parameter is missing or malformed.
  * @example
- * readScreenSetup('?screen=1&x=0&y=0&width=1728&height=1117&seed=7&screens=[…]&scene={…}').screen.width; // 1728
+ * readScreenSetup('?screen=1&x=0&y=0&width=1728&height=1117&bottomInset=75&seed=7&screens=[…]&scene={…}').screen;
+ * // { id: '1', x: 0, y: 0, width: 1728, height: 1117, bottomInset: 75 }
  */
 export function readScreenSetup(search: string): ScreenSetup {
   const query = new URLSearchParams(search);
@@ -23,10 +24,10 @@ export function readScreenSetup(search: string): ScreenSetup {
 
   if (id === null || id === '') throw new Error('The renderer page lacks its "screen" parameter.');
 
-  const screen = { id, x: number('x'), y: number('y'), width: number('width'), height: number('height') };
+  const frame = { id, x: number('x'), y: number('y'), width: number('width'), height: number('height') };
 
   return {
-    screen,
+    screen: query.has('bottomInset') ? { ...frame, bottomInset: number('bottomInset') } : frame,
     screens: readScreens(query.get('screens')),
     scene: readScene(query.get('scene')),
     seed: number('seed'),
@@ -49,9 +50,11 @@ function readScreens(json: string | null): readonly Screen[] {
 }
 
 /**
- * Returns true for a screen: an id, and a place and a size in numbers.
+ * Returns true for a screen: an id, a place and a size in numbers, and a number for the room kept at the bottom when
+ * it says so.
  * @example
  * isScreen({ id: '1', x: 0, y: 0, width: 1728, height: 1117 }); // true
+ * isScreen({ id: '1', x: 0, y: 0, width: 1728, height: 1117, bottomInset: 75 }); // true
  * isScreen({ id: '1', x: 0, y: 0 }); // false
  */
 function isScreen(value: unknown): value is Screen {
@@ -67,7 +70,8 @@ function isScreen(value: unknown): value is Screen {
     'width' in value &&
     Number.isFinite(value.width) &&
     'height' in value &&
-    Number.isFinite(value.height)
+    Number.isFinite(value.height) &&
+    (!('bottomInset' in value) || Number.isFinite(value.bottomInset))
   );
 }
 
