@@ -42,7 +42,7 @@ export interface TrayActions {
   readonly togglePause: () => void;
   readonly chooseTheme: (theme: ShippedThemeId) => void;
   readonly openSettings: () => void;
-  /** Opens the new release's page, where the dmg is downloaded. */
+  /** Downloads the new release's dmg, or opens its page when none fits this Mac. */
   readonly openNewRelease: (release: LatestRelease) => void;
   /** Asks GitHub for a newer release now. */
   readonly checkForRelease: () => void;
