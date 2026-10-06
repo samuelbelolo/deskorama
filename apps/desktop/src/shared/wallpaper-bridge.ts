@@ -25,10 +25,13 @@ export const SCREENS_CHANNEL = 'wallpaper:screens';
 /** The IPC channel on which the main process sends every page the scene, whenever the person changes it. */
 export const SCENE_CHANNEL = 'wallpaper:scene';
 
+/** The IPC channel on which a wallpaper page tells the main process that its scene is drawn. */
+export const DRAWN_CHANNEL = 'wallpaper:drawn';
+
 /**
- * Everything a wallpaper page hears from the main process, exposed by the preload as `window.wallpaper`. It is the
- * whole bridge: pages run with context isolation, a sandbox and no Node, so they reach nothing else. The main
- * process decides which screen plays what; a page plays what it receives.
+ * Everything a wallpaper page hears from the main process, and the one thing it says back, exposed by the preload
+ * as `window.wallpaper`. It is the whole bridge: pages run with context isolation, a sandbox and no Node, so they
+ * reach nothing else. The main process decides which screen plays what; a page plays what it receives.
  */
 export interface WallpaperBridge {
   /** Calls `listener` with every Event the main process routes to this screen, until cancelled. */
@@ -46,4 +49,9 @@ export interface WallpaperBridge {
   onScreens(listener: (screens: readonly Screen[]) => void): () => void;
   /** Calls `listener` with the new scene whenever the Theme, the language or the brand Source changes. */
   onScene(listener: (scene: Scene) => void): () => void;
+  /**
+   * Tells the main process that the page's first scene is on screen. Its window stays fully transparent until
+   * then, so a page still loading never shows as a blank rectangle over the desktop.
+   */
+  drawn(): void;
 }

@@ -24,6 +24,12 @@ test('an Event posted to the Local webhook shows its Caption on the desktop', as
   try {
     const page = await app.firstWindow();
     await expect(page.locator('[data-theme="aeroport"]')).toBeVisible();
+    // Each window stays transparent until its page has drawn its scene, then fades in: none stays invisible.
+    await expect
+      .poll(() =>
+        app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().every((each) => each.getOpacity() === 1)),
+      )
+      .toBe(true);
     // A menu-bar app: no Dock icon, once its windows are up.
     await expect.poll(() => app.evaluate(({ app: electronApp }) => electronApp.dock?.isVisible() ?? false)).toBe(false);
     // The app speaks the Mac's language: the Caption is in French or English.

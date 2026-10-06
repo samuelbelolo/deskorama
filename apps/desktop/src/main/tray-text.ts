@@ -16,6 +16,13 @@ export interface TrayText {
   readonly settings: string;
   readonly failing: (name: string, failure: ConnectorFailure) => string;
   readonly newRelease: (tag: string) => string;
+  /** Asks GitHub for a newer release now. */
+  readonly checkForRelease: string;
+  readonly checkingForRelease: string;
+  /** The last check found nothing newer; choosing it checks again. */
+  readonly noNewRelease: string;
+  /** The last check got no answer from GitHub; choosing it checks again. */
+  readonly releaseUnreachable: string;
   readonly quit: string;
 }
 
@@ -33,6 +40,10 @@ export const TRAY_TEXT: Readonly<Record<Language, TrayText>> = {
     settings: 'Réglages…',
     failing: (name, failure) => `⚠ ${name} : ${failureText(failure, 'fr')}`,
     newRelease: (tag) => `Télécharger la version ${tag.replace(/^v/, '')}…`,
+    checkForRelease: 'Rechercher une mise à jour',
+    checkingForRelease: 'Recherche d’une mise à jour…',
+    noNewRelease: 'Aucune nouvelle version · Rechercher à nouveau',
+    releaseUnreachable: 'GitHub injoignable · Réessayer',
     quit: 'Quitter Deskorama',
   },
   en: {
@@ -47,6 +58,10 @@ export const TRAY_TEXT: Readonly<Record<Language, TrayText>> = {
     settings: 'Settings…',
     failing: (name, failure) => `⚠ ${name}: ${failureText(failure, 'en')}`,
     newRelease: (tag) => `Download version ${tag.replace(/^v/, '')}…`,
+    checkForRelease: 'Check for updates',
+    checkingForRelease: 'Checking for updates…',
+    noNewRelease: 'No new version · Check again',
+    releaseUnreachable: 'GitHub unreachable · Try again',
     quit: 'Quit Deskorama',
   },
 };

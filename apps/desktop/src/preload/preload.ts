@@ -2,6 +2,7 @@
 // nothing else. The renderer never sees ipcRenderer, Node or Electron.
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 import {
+  DRAWN_CHANNEL,
   EVENT_CHANNEL,
   FRAMES_CHANNEL,
   RECAP_CHANNEL,
@@ -33,6 +34,7 @@ const bridge: WallpaperBridge = {
   onWindowFrames: (listener) => subscribe(FRAMES_CHANNEL, listener),
   onScreens: (listener) => subscribe(SCREENS_CHANNEL, listener),
   onScene: (listener) => subscribe(SCENE_CHANNEL, listener),
+  drawn: () => ipcRenderer.send(DRAWN_CHANNEL),
 };
 
 contextBridge.exposeInMainWorld('wallpaper', bridge);

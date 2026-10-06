@@ -15,6 +15,7 @@ import { createRendererHost } from './create-renderer-host.ts';
 import { dissolveIn } from './dissolve-in.ts';
 import { openScene } from './open-scene.ts';
 import { themeFor } from './theme-for.ts';
+import { whenPainted } from './when-painted.ts';
 
 const setup = readScreenSetup(window.location.search);
 const layer = document.querySelector<HTMLElement>('#screen');
@@ -49,7 +50,12 @@ window.wallpaper.onState((wire) => {
 
   // The scene opens once the page knows what every screen shares, the first thing it is sent: a Theme reads today's
   // counts and the recent Events as it mounts, and a display plugged in later must show what its neighbours show.
-  unmount ??= openScene(layer, player, themeFor(scene.theme)).close;
+  if (unmount !== null) return;
+
+  unmount = openScene(layer, player, themeFor(scene.theme)).close;
+
+  // The window is transparent until its page says the scene is on screen: nothing blank ever shows.
+  whenPainted(host.clock, () => window.wallpaper.drawn());
 });
 
 window.wallpaper.onScene((next) => {

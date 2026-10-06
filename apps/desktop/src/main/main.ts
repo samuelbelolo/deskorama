@@ -1,9 +1,10 @@
 // The main process: one wallpaper window per display and the engine that routes between them, the menu-bar icon,
 // the Local webhook, the connected Sources, the frames of other windows and the release watch.
 import type { SourceEvent } from '@deskorama/core';
-import { app, net, powerMonitor, session, systemPreferences } from 'electron';
+import { app, BrowserWindow, net, powerMonitor, session, systemPreferences } from 'electron';
 import { randomInt } from 'node:crypto';
 import { createNodeClock } from './create-node-clock.ts';
+import { fadeWindowsOut } from './fade-windows-out.ts';
 import type { AppTray } from './create-tray.ts';
 import { openWallpaperWindow } from './open-wallpaper-window.ts';
 import { startScene } from './scene/start-scene.ts';
@@ -45,8 +46,9 @@ if (app.requestSingleInstanceLock()) {
 /**
  * Starts the app once Electron is ready: opens a wallpaper on every display, on the scene the settings describe,
  * and keeps them in step with the displays, listens for local Events, polls the connected Sources, reads the other
- * windows' frames, shows the menu-bar icon, starts watching for new releases, and removes the Dock icon. Polling
- * catches up and frames are read again when the Mac wakes.
+ * windows' frames, shows the menu-bar icon, starts watching for new releases, and removes the Dock icon. When the
+ * Mac wakes, polling catches up, frames are read again and GitHub is asked for a release. Quitting from the menu
+ * fades the windows out first.
  * @example
  * app.whenReady().then(start);
  */
@@ -79,7 +81,7 @@ async function start(): Promise<void> {
   const wallpapers = createWallpaperStage({
     host,
     scene: scene.scene(),
-    open: openWallpaperWindow,
+    open: (setup) => openWallpaperWindow(setup, host),
     seed: () => randomInt(2 ** 31),
   });
 
@@ -130,9 +132,8 @@ async function start(): Promise<void> {
   // again at once.
   const stopDisplays = displays.onChange(() => frames.refresh());
 
-  tray = startMenuBar({ scene, webhook, failing, openSettings: () => settings?.open() });
-
-  const stopWatching = watchReleases({
+  // Its first check answers after the menu bar is up, which it then tells.
+  const releases = watchReleases({
     repository: BUILD_REPOSITORY,
     version: app.getVersion(),
     clock,
@@ -140,10 +141,22 @@ async function start(): Promise<void> {
     onNewRelease: (newRelease) => tray?.update({ newRelease }),
   });
 
+  tray = startMenuBar({
+    scene,
+    webhook,
+    failing,
+    releases,
+    openSettings: () => settings?.open(),
+    // The windows fade out first, then the app quits; a quit the system asks for (a logout) is never held back.
+    quit: () => fadeWindowsOut(BrowserWindow.getAllWindows(), host, () => app.quit()),
+  });
+
   powerMonitor.on('suspend', () => frames.pause());
   powerMonitor.on('resume', () => {
     frames.resume();
     sources.pollAll();
+    // A Mac that slept through the hourly check hears of a release as it wakes.
+    void releases.check();
   });
 
   // No Dock icon. The packaged app starts as a regular Dock app despite LSUIElement, and a policy set at the top of
@@ -151,7 +164,7 @@ async function start(): Promise<void> {
   app.setActivationPolicy('accessory');
 
   app.on('before-quit', () => {
-    stopWatching();
+    releases.stop();
     stopDisplays();
     frames.stop();
     wallpapers.stop();

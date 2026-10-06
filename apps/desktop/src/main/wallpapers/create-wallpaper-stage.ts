@@ -49,7 +49,8 @@ interface Run {
  * leaves loses its window, one that arrives gets one, one that moves or changes size gets a fresh one at its new
  * bounds; one whose Dock moves keeps its window, whose page lays the scene out again. While paused, every screen counts as covered and what arrives waits.
  * @example
- * const stage = createWallpaperStage({ host, scene: scene.scene(), open: openWallpaperWindow, seed });
+ * const stage = createWallpaperStage({ host, scene: scene.scene(), seed,
+ *   open: (setup) => openWallpaperWindow(setup, host) });
  * stage.send(mergedPullRequest); // the page of one window plays the Gag
  * stage.setPaused(true); // every scene freezes
  */
