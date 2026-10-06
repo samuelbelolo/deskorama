@@ -16,7 +16,10 @@ export const STATE_CHANNEL = 'wallpaper:state';
 /** The IPC channel on which the main process sends every page what covers the wallpapers. */
 export const FRAMES_CHANNEL = 'wallpaper:frames';
 
-/** The IPC channel on which the main process sends every page the screens, whenever one comes, goes or moves. */
+/**
+ * The IPC channel on which the main process sends every page the screens, whenever one comes, goes or moves, or
+ * its Dock does.
+ */
 export const SCREENS_CHANNEL = 'wallpaper:screens';
 
 /** The IPC channel on which the main process sends every page the scene, whenever the person changes it. */

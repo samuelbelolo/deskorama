@@ -48,7 +48,7 @@ describe('screens changing while the wallpaper runs', () => {
     expect(recorder.instances.filter((each) => each.host.screen.id === 'builtin')).toHaveLength(1);
   });
 
-  test('mount a fresh instance when the Dock along a screen’s bottom edge comes, grows or goes', () => {
+  test('lay the scene out again on the same layer when the Dock moves the line its ground ends on', () => {
     const { platform, recorder } = mountedOn([BUILTIN]);
     const before = recorder.on('builtin');
 
@@ -60,10 +60,13 @@ describe('screens changing while the wallpaper runs', () => {
     expect(before.unmounted).toBe(true);
     expect(above.unmounted).toBe(false);
     expect(above.host.screen.bottomInset).toBe(75);
+    expect(above.layer).toBe(before.layer);
 
     platform.setScreens([BUILTIN]);
 
     expect(above.unmounted).toBe(true);
+    expect(recorder.on('builtin').host.screen).toEqual(BUILTIN);
+    expect(recorder.log).toEqual(['open builtin']);
   });
 
   test('tell every instance the new arrangement, so a Theme can hand an animation to its neighbour', () => {
