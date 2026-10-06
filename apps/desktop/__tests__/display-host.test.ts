@@ -68,7 +68,7 @@ describe('the displays as the engine sees them', () => {
 
     expect(host.screens()).toEqual([
       { id: '2', x: -1920, y: 0, width: 1920, height: 1080 },
-      { id: '1', x: 0, y: 0, width: 1728, height: 1117 },
+      { id: '1', x: 0, y: 0, width: 1728, height: 1117, bottomInset: 70 },
       { id: '3', x: 1728, y: -323, width: 2560, height: 1440 },
     ]);
   });
@@ -91,12 +91,25 @@ describe('the displays as the engine sees them', () => {
     ]);
   });
 
-  test('stay quiet when only a Dock or a menu bar changed', () => {
+  test('stay quiet when only a menu bar changed', () => {
     const run = startHost([BUILTIN, RIGHT]);
 
-    run.plug([{ ...BUILTIN, workArea: { x: 0, y: 33, width: 1728, height: 1084 } }, RIGHT]);
+    run.plug([{ ...BUILTIN, workArea: { x: 0, y: 25, width: 1728, height: 1022 } }, RIGHT]);
 
     expect(run.heard).toEqual([]);
+  });
+
+  test('follow a Dock that grows or hides along a bottom edge, since the scene stands above it', () => {
+    const run = startHost([BUILTIN, RIGHT]);
+
+    run.plug([{ ...BUILTIN, workArea: { x: 0, y: 33, width: 1728, height: 994 } }, RIGHT]);
+    run.plug([{ ...BUILTIN, workArea: { x: 0, y: 33, width: 1728, height: 1084 } }, RIGHT]);
+
+    expect(run.heard).toEqual([
+      ['1', '3'],
+      ['1', '3'],
+    ]);
+    expect(run.host.screens().map((screen) => screen.bottomInset)).toEqual([undefined, undefined]);
   });
 
   test('report the window frames they are given', () => {

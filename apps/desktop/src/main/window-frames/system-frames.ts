@@ -1,4 +1,5 @@
 import type { Rect } from '@deskorama/core';
+import { bottomStrip } from './bottom-strip.ts';
 import type { DisplayArea } from './display-area.ts';
 
 /**
@@ -10,10 +11,11 @@ import type { DisplayArea } from './display-area.ts';
  * // [{ x: 0, y: 0, w: 1728, h: 33 }, { x: 0, y: 1047, w: 1728, h: 70 }]
  */
 export function systemFrames(displays: readonly DisplayArea[]): Rect[] {
-  return displays.flatMap(({ bounds, workArea }) => {
+  return displays.flatMap((display) => {
+    const { bounds, workArea } = display;
     const top = workArea.y - bounds.y;
     const left = workArea.x - bounds.x;
-    const bottom = bounds.y + bounds.height - (workArea.y + workArea.height);
+    const bottom = bottomStrip(display);
     const right = bounds.x + bounds.width - (workArea.x + workArea.width);
 
     const strips: Rect[] = [

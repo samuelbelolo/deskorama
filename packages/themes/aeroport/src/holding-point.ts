@@ -9,5 +9,5 @@ import { runwayWheels } from './runway-wheels.ts';
  * holdingPoint(layoutFor(builtin)); // { x: 255, y: 814 }
  */
 export function holdingPoint(layout: Layout): Point {
-  return { x: 30 + PLANE.gear.x, y: runwayWheels(layout.height) };
+  return { x: 30 + PLANE.gear.x, y: runwayWheels(layout.groundEnd) };
 }

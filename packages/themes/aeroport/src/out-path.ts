@@ -1,4 +1,4 @@
-import type { Point, Screen, VisibleRegions } from '@deskorama/core';
+import { clearHeight, type Point, type Screen, type VisibleRegions } from '@deskorama/core';
 import { PLANE, STEEPEST_CLIMB, TIMING, type GearPose } from './flight-geometry.ts';
 import { climbOut } from './climb-out.ts';
 import { pitchOf } from './pitch-of.ts';
@@ -27,7 +27,7 @@ export function outPath(regions: VisibleRegions, layout: Layout, from: { own: Sc
   const { own, terminal } = from;
   const dx = terminal.x - own.x;
   const dy = terminal.y - own.y;
-  const climb = climbOut(terminal.width, terminal.height);
+  const climb = climbOut(terminal.width, clearHeight(terminal));
   const a = { x: climb.a.x + dx, y: climb.a.y + dy };
   const b = { x: climb.b.x + dx, y: climb.b.y + dy };
 

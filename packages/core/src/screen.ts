@@ -10,4 +10,9 @@ export interface Screen {
   readonly width: number;
   /** Height in CSS pixels. */
   readonly height: number;
+  /**
+   * How many CSS pixels the system keeps for itself along the bottom edge (the Dock on a Mac); left out when it
+   * keeps none. A Theme may stand its ground above them, so what matters is never drawn under the Dock.
+   */
+  readonly bottomInset?: number;
 }
