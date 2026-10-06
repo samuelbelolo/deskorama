@@ -46,8 +46,8 @@ export interface ReleaseWatch {
 
 /**
  * Checks GitHub Releases at launch and every hour, and whenever asked to, and reports each release newer than the
- * running app. The app is not signed by Apple, so it cannot update itself: the menu bar offers the release's page
- * instead.
+ * running app. The app is not signed by Apple, so it cannot update itself: the menu bar downloads the release's dmg
+ * instead, or opens its page.
  * @example
  * const releases = watchReleases({ repository: 'samuelbelolo/deskorama', version: app.getVersion(), clock,
  *   fetch: net.fetch, onNewRelease: (release) => tray.update({ newRelease: release }) });
