@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/samuelbelolo/deskorama/compare/v0.2.1...v0.3.0) (2026-10-06)
+
+
+### Features
+
+* **desktop:** check for a new release from the menu bar ([11c9b2e](https://github.com/samuelbelolo/deskorama/commit/11c9b2e07097501ce310e134fb075a1597895de0))
+
+
+### Bug Fixes
+
+* **desktop:** no blank rectangle when the app opens or quits ([11c9b2e](https://github.com/samuelbelolo/deskorama/commit/11c9b2e07097501ce310e134fb075a1597895de0))
+
 ## [0.2.1](https://github.com/samuelbelolo/deskorama/compare/v0.2.0...v0.2.1) (2026-10-06)
 
 
